@@ -22,7 +22,8 @@ LEBANESE_DISHES = [
     "Malfouf Mahchi", "Moujadara", "Moghrabia", "Mousaka Batinjan",
     "Riz a Dajaj", "Riz bi Lahma", "Sayadia", "Shawarma Dajaj",
     "Shawarma Lahma", "Tabboula", "Warak Enab", "Yakhnat Bamia",
-    "Yakhnat Fassoulia", "Yakhnat Mouloukhia",
+    "Yakhnat Fassoulia", "Yakhnat Mouloukhia", "Beid bil Awarma (Eggs)",
+    "Grilled Steak", "Grilled Chicken", "Labneh", "Manoushe", "Zaatar"
 ]
 
 

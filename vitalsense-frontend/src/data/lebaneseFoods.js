@@ -38,6 +38,11 @@ const lebaneseFoods = [
   { id: "m28", name: "Yakhnat Bamia", arabicName: "يخنة بامية", category: "main", calories: 350, protein: 20, carbs: 22, fat: 20, serving: "1 bowl", tags: [] },
   { id: "m29", name: "Yakhnat Fassoulia", arabicName: "يخنة فاصوليا", category: "main", calories: 380, protein: 22, carbs: 30, fat: 18, serving: "1 bowl", tags: ["high-protein"] },
   { id: "m30", name: "Yakhnat Mouloukhia", arabicName: "يخنة ملوخية", category: "main", calories: 360, protein: 24, carbs: 18, fat: 22, serving: "1 bowl", tags: ["high-protein"] },
+  { id: "m31", name: "Beid bil Awarma (Eggs)", arabicName: "بيض بالقاورما", category: "main", calories: 350, protein: 22, carbs: 4, fat: 28, serving: "2 eggs", tags: ["high-protein"] },
+  { id: "m32", name: "Grilled Steak", arabicName: "ستيك مشوي", category: "main", calories: 450, protein: 52, carbs: 0, fat: 24, serving: "200g", tags: ["high-protein"] },
+  { id: "m33", name: "Grilled Chicken", arabicName: "دجاج مشوي", category: "main", calories: 380, protein: 48, carbs: 0, fat: 18, serving: "200g", tags: ["high-protein"] },
+  { id: "m34", name: "Labneh", arabicName: "لبنة", category: "main", calories: 120, protein: 8, carbs: 6, fat: 8, serving: "100g", tags: ["vegetarian", "high-protein"] },
+  { id: "m35", name: "Manoushe Zaatar", arabicName: "منقوشة زعتر", category: "main", calories: 320, protein: 8, carbs: 42, fat: 14, serving: "1 piece", tags: ["vegetarian"] },
 
   // ═══════════════════════════════════════════
   //  DESSERTS

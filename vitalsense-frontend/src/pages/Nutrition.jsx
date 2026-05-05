@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Check, Camera, ChevronDown, ChevronUp, Flame, ArrowLeftRight, X, Search, Upload, FileText } from 'lucide-react'
+import { Check, Camera, ChevronDown, ChevronUp, Flame, ArrowLeftRight, X, Search, Upload, FileText, Sparkles } from 'lucide-react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import MacroBar from '../components/MacroBar'
 import { useAuth } from '../context/AuthContext'
@@ -72,6 +72,7 @@ export default function Nutrition() {
   const [photoAnalyzing, setPhotoAnalyzing] = useState(false)
   const [photoResults, setPhotoResults] = useState(null)
   const [portionScale, setPortionScale] = useState(1)
+  const [isGeneratingDiet, setIsGeneratingDiet] = useState(false)
 
   // ── Load profile & AI plan from Supabase ──
   useEffect(() => {
@@ -218,6 +219,75 @@ export default function Nutrition() {
     dayMeals[`Extra Meal ${nextIdx}`] = []
     nextMeals[activeDay] = dayMeals
     updateMeals(nextMeals)
+  }
+
+  const handleGenerateDiet = async () => {
+    if (!user || !profile) return
+    setIsGeneratingDiet(true)
+    try {
+      const res = await authFetch(`${API_BASE}/api/generate-plan/`, {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: user.id,
+          age: profile.age,
+          gender: profile.gender || 'male',
+          weight: profile.weight,
+          height: profile.height,
+          tdee: profile.tdee || 2000,
+          calorie_target: profile.calorie_target || 2000,
+          goal: profile.goal || 'improve_health',
+          medical_conditions: profile.medical_conditions,
+          activity_level: profile.activity_level || 'moderate',
+          gym_type: profile.gym_type || 'home',
+          equipment_list: profile.equipment_list || []
+        })
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        const planData = data.plan_data
+        if (planData?.weeklyMealPlan) {
+          setAiPlan(planData)
+          // Convert & update meals state
+          const converted = {}
+          const dayMap = { 'Monday': 'Mon', 'Tuesday': 'Tue', 'Wednesday': 'Wed', 'Thursday': 'Thu', 'Friday': 'Fri', 'Saturday': 'Sat', 'Sunday': 'Sun' }
+          Object.entries(planData.weeklyMealPlan).forEach(([dayName, dayMeals]) => {
+            const shortDay = dayMap[dayName] || dayName
+            if (Array.isArray(dayMeals)) {
+              const slotNames = ['Breakfast', 'Lunch', 'Dinner', 'Snack']
+              converted[shortDay] = {}
+              dayMeals.forEach((meal, i) => {
+                const slotName = slotNames[i] || `Meal${i}`
+                const matched = lebaneseFoods.find(f =>
+                  f.name.toLowerCase() === meal.name?.toLowerCase()
+                ) || {
+                  id: `ai_${shortDay}_${i}`,
+                  name: meal.name,
+                  arabicName: meal.arabicName || '',
+                  category: 'main',
+                  calories: meal.calories || 0,
+                  protein: meal.protein || 0,
+                  carbs: meal.carbs || 0,
+                  fat: meal.fat || 0,
+                  serving: '1 serving',
+                  tags: [],
+                }
+                converted[shortDay][slotName] = [matched]
+              })
+            }
+          })
+          setMeals(converted)
+          alert('✅ Personalized diet plan generated successfully!')
+        }
+      } else {
+        throw new Error('Failed to generate diet plan')
+      }
+    } catch (err) {
+      console.error('Diet generation error:', err)
+      alert('❌ Failed to generate diet. Please check your internet connection and try again.')
+    } finally {
+      setIsGeneratingDiet(false)
+    }
   }
 
   // ── Filter foods for swap modal ──
@@ -463,21 +533,26 @@ export default function Nutrition() {
                 />
               </PieChart>
             </ResponsiveContainer>
-            <div className="space-y-2 mt-2">
-              {pieData.map((d, i) => (
-                <div key={i} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }}></div>
-                    <span className="text-xs text-text-muted">{d.name}</span>
-                  </div>
-                  <span className="text-xs font-bold text-text-primary">
-                    {pieData.reduce((s, x) => s + x.value, 0) > 0
-                      ? Math.round(d.value / pieData.reduce((s, x) => s + x.value, 0) * 100)
-                      : 0}%
-                  </span>
-                </div>
               ))}
             </div>
+            {/* Generate Diet Button */}
+            <button
+              onClick={handleGenerateDiet}
+              disabled={isGeneratingDiet}
+              className="w-full mt-6 flex items-center justify-center gap-2 bg-primary-accent text-white font-bold py-3 rounded-xl hover:bg-primary-accent/90 transition-all shadow-md shadow-primary-accent/15 disabled:opacity-50"
+            >
+              {isGeneratingDiet ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={16} />
+                  Generate a diet for me
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>
