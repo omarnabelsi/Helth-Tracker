@@ -57,16 +57,22 @@ function convertAiPlan(planData, currentCalorieTarget) {
           const matched = lebaneseFoods.find(f => 
             f.name.toLowerCase() === dish.name?.toLowerCase()
           )
-          if (matched) return matched
-          
+          const g = dish.grams || 100
+          const ratio = g / 100
+
+          if (matched) {
+            return {
+              ...matched,
+              id: `${matched.id}-${shortDay}-${di}`,
+              calories: Math.round(matched.caloriesPer100g * ratio),
+              protein: Math.round(matched.proteinPer100g * ratio),
+              carbs: Math.round(matched.carbsPer100g * ratio),
+              fat: Math.round(matched.fatPer100g * ratio),
+              loggedGrams: g
+            }
+          }
+          // Fallback if not in DB but has data
           return {
-            id: `ai_${shortDay}_${slotName}_${di}`,
-            name: dish.name,
-            arabicName: dish.arabicName || '',
-            category: 'main',
-            calories: dish.calories || 0,
-            protein: dish.protein || 0,
-            carbs: dish.carbs || 0,
             fat: dish.fat || 0,
             serving: '1 serving',
             tags: [],
@@ -119,6 +125,8 @@ export default function Nutrition() {
   const [photoResults, setPhotoResults] = useState(null)
   const [portionScale, setPortionScale] = useState(1)
   const [isGeneratingDiet, setIsGeneratingDiet] = useState(false)
+  const [gramsInput, setGramsInput] = useState(100)
+  const [selectedFoodForGrams, setSelectedFoodForGrams] = useState(null)
 
   // ── Load profile & AI plan from Supabase ──
   useEffect(() => {
@@ -185,20 +193,37 @@ export default function Nutrition() {
 
   const handleFoodSelect = (food) => {
     const nextMeals = { ...meals }
-    const dayMeals = { ...nextMeals[swapModal.day] }
-    
-    if (swapModal.mode === 'add') {
-      dayMeals[swapModal.mealSlot] = [...(dayMeals[swapModal.mealSlot] || []), food]
-    } else {
-      const slot = [...(dayMeals[swapModal.mealSlot] || [])]
-      slot[swapModal.index] = food
-      dayMeals[swapModal.mealSlot] = slot
+    if (!food) return
+    const g = parseFloat(gramsInput) || 100
+    const ratio = g / 100
+
+    const finalFood = {
+      ...food,
+      id: food.id + '-' + Date.now(),
+      calories: Math.round(food.caloriesPer100g * ratio),
+      protein: Math.round(food.proteinPer100g * ratio),
+      carbs: Math.round(food.carbsPer100g * ratio),
+      fat: Math.round(food.fatPer100g * ratio),
+      loggedGrams: g
     }
-    
-    nextMeals[swapModal.day] = dayMeals
+
+    const { day, mealSlot, mode, index } = swapModal
+    const nextMeals = { ...meals }
+    const dayMeals = { ...nextMeals[day] }
+
+    if (mode === 'swap') {
+      const slot = [...dayMeals[mealSlot]]
+      slot[index] = finalFood
+      dayMeals[mealSlot] = slot
+    } else {
+      dayMeals[mealSlot] = [...(dayMeals[mealSlot] || []), finalFood]
+    }
+
+    nextMeals[day] = dayMeals
     updateMeals(nextMeals)
-    
-    setSwapModal({ open: false, day: null, mealSlot: null, mode: 'swap', index: null })
+    setSwapModal({ open: false, day: null, mealSlot: null })
+    setGramsInput(100)
+    setSelectedFoodForGrams(null)
     setSwapSearch('')
     setSwapFilter('all')
 
@@ -664,84 +689,116 @@ export default function Nutrition() {
                   </p>
                 </div>
                 <button
-                  onClick={() => { setSwapModal({ open: false, day: null, mealSlot: null }); setSwapSearch(''); setSwapFilter('all') }}
+                  onClick={() => { setSwapModal({ open: false, day: null, mealSlot: null }); setSwapSearch(''); setSwapFilter('all'); setSelectedFoodForGrams(null) }}
                   className="w-10 h-10 rounded-xl bg-bg-main flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-gray-200 transition-colors"
                 >
                   <X size={20} />
                 </button>
               </div>
 
-              {/* Search Bar */}
-              <div className="pt-4 pb-2">
-                <div className="relative">
-                  <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-light" />
-                  <input
-                    type="text"
-                    placeholder="Search Lebanese dishes..."
-                    value={swapSearch}
-                    onChange={e => setSwapSearch(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-bg-main rounded-xl text-sm text-text-primary border border-gray-200 focus:border-primary-accent focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all"
-                  />
+              {/* Grams Input Section (If food selected) */}
+              {selectedFoodForGrams ? (
+                <div className="pt-4 pb-2 animate-fade-in">
+                  <div className="bg-primary-pale rounded-2xl p-4 border border-primary-accent/20">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-bold text-primary-accent">Setting grams for {selectedFoodForGrams.name}</span>
+                      <button onClick={() => setSelectedFoodForGrams(null)} className="text-xs text-text-muted hover:text-primary-accent underline">Change Food</button>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1 relative">
+                        <input
+                          type="number"
+                          value={gramsInput}
+                          onChange={e => setGramsInput(e.target.value)}
+                          className="w-full pl-4 pr-12 py-3 bg-white rounded-xl text-lg font-bold text-text-primary border border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted font-bold">g</span>
+                      </div>
+                      <button
+                        onClick={() => handleFoodSelect(selectedFoodForGrams)}
+                        className="bg-primary-accent text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-primary-accent/20 hover:scale-[1.02] active:scale-95 transition-all"
+                      >
+                        Confirm
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-text-muted mt-2">
+                      Total: {Math.round(selectedFoodForGrams.caloriesPer100g * (gramsInput/100))} kcal | 
+                      P: {Math.round(selectedFoodForGrams.proteinPer100g * (gramsInput/100))}g | 
+                      C: {Math.round(selectedFoodForGrams.carbsPer100g * (gramsInput/100))}g | 
+                      F: {Math.round(selectedFoodForGrams.fatPer100g * (gramsInput/100))}g
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <>
+                  {/* Search Bar */}
+                  <div className="pt-4 pb-2">
+                    <div className="relative">
+                      <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-light" />
+                      <input
+                        type="text"
+                        placeholder="Search Lebanese dishes..."
+                        value={swapSearch}
+                        onChange={e => setSwapSearch(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3 bg-bg-main rounded-xl text-sm text-text-primary border border-gray-200 focus:border-primary-accent focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
 
-              {/* Filter Pills */}
-              <div className="flex gap-2 pb-3 overflow-x-auto">
-                {filterOptions.map(opt => (
-                  <button
-                    key={opt.key}
-                    onClick={() => setSwapFilter(opt.key)}
-                    className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
-                      swapFilter === opt.key
-                        ? 'bg-primary-accent text-white shadow-md shadow-primary-accent/20'
-                        : 'bg-bg-main text-text-muted border border-gray-200 hover:border-primary-accent/30'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
+                  {/* Filter Pills */}
+                  <div className="flex gap-2 pb-3 overflow-x-auto">
+                    {filterOptions.map(opt => (
+                      <button
+                        key={opt.key}
+                        onClick={() => setSwapFilter(opt.key)}
+                        className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
+                          swapFilter === opt.key
+                            ? 'bg-primary-accent text-white shadow-md shadow-primary-accent/20'
+                            : 'bg-bg-main text-text-muted border border-gray-200 hover:border-primary-accent/30'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Food Grid (Scrollable) */}
-            <div className="flex-1 overflow-y-auto max-h-[50vh] pr-2 mt-2 -mr-2">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {filteredFoods.map(food => (
-                  <button
-                    key={food.id}
-                    onClick={() => handleFoodSelect(food)}
-                    className="bg-bg-main hover:bg-primary-pale border border-gray-100 hover:border-primary-accent/30 rounded-2xl p-4 text-left transition-all duration-200 group"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-text-primary group-hover:text-primary-accent transition-colors">{food.name}</p>
-                        <p className="text-xs text-text-light mt-0.5">{food.arabicName}</p>
+            {!selectedFoodForGrams && (
+              <div className="flex-1 overflow-y-auto max-h-[50vh] pr-2 mt-2 -mr-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {filteredFoods.map(food => (
+                    <button
+                      key={food.id}
+                      onClick={() => setSelectedFoodForGrams(food)}
+                      className="bg-bg-main hover:bg-primary-pale border border-gray-100 hover:border-primary-accent/30 rounded-2xl p-4 text-left transition-all duration-200 group"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-text-primary group-hover:text-primary-accent transition-colors">{food.name}</p>
+                          <p className="text-xs text-text-light mt-0.5">{food.arabicName}</p>
+                        </div>
+                        <span className="text-xs font-bold bg-primary-pale text-primary-accent px-2.5 py-1 rounded-full flex-shrink-0 ml-2">
+                          {food.caloriesPer100g} / 100g
+                        </span>
                       </div>
-                      <span className="text-xs font-bold bg-primary-pale text-primary-accent px-2.5 py-1 rounded-full flex-shrink-0 ml-2">
-                        {food.calories} kcal
-                      </span>
-                    </div>
-                    <div className="flex gap-1.5 mt-2.5">
-                      <span className="text-[10px] font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">P {food.protein}g</span>
-                      <span className="text-[10px] font-bold bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full">C {food.carbs}g</span>
-                      <span className="text-[10px] font-bold bg-red-50 text-red-500 px-2 py-0.5 rounded-full">F {food.fat}g</span>
-                    </div>
-                    {food.tags.length > 0 && (
-                      <div className="flex gap-1 mt-2">
-                        {food.tags.map(tag => (
-                          <span key={tag} className="text-[9px] font-medium bg-gray-100 text-text-muted px-1.5 py-0.5 rounded-full capitalize">{tag}</span>
-                        ))}
+                      <div className="flex gap-1.5 mt-2.5">
+                        <span className="text-[10px] font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">P {food.proteinPer100g}g</span>
+                        <span className="text-[10px] font-bold bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full">C {food.carbsPer100g}g</span>
+                        <span className="text-[10px] font-bold bg-red-50 text-red-500 px-2 py-0.5 rounded-full">F {food.fatPer100g}g</span>
                       </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-              {filteredFoods.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-text-muted text-sm">No dishes found matching your search.</p>
+                    </button>
+                  ))}
                 </div>
-              )}
-            </div>
+                {filteredFoods.length === 0 && (
+                  <div className="text-center py-12">
+                    <p className="text-text-muted text-sm">No dishes found matching your search.</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

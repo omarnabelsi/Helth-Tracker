@@ -11,49 +11,45 @@ from services.exercise_db import EXERCISES
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 genai.configure(api_key=GEMINI_API_KEY)
-MODEL_NAME = "gemini-1.5-pro"
+MODEL_NAME = "gemini-flash-latest"
 
-# ── Full Lebanese Food Database with Macros for AI Precision ──
+# ── Full Lebanese Food Database with Macros for AI Precision (Per 100g) ──
 LEBANESE_FOODS_DB = [
-    {"name": "Baba Ghanouj", "arabic": "بابا غنوج", "cal": 180, "p": 4, "c": 12, "f": 14},
-    {"name": "Batata Mahchi", "arabic": "بطاطا محشي", "cal": 320, "p": 12, "c": 38, "f": 14},
-    {"name": "Borgul bi Banadoura", "arabic": "برغل بالبندورة", "cal": 260, "p": 8, "c": 48, "f": 5},
-    {"name": "Chichbarak", "arabic": "شيشبرك", "cal": 380, "p": 18, "c": 35, "f": 18},
-    {"name": "Falafel", "arabic": "فلافل", "cal": 340, "p": 14, "c": 32, "f": 18},
-    {"name": "Fatayer Sabanikh", "arabic": "فطاير سبانخ", "cal": 280, "p": 8, "c": 30, "f": 14},
-    {"name": "Fattat Hommos", "arabic": "فتّة حمّص", "cal": 420, "p": 16, "c": 42, "f": 22},
-    {"name": "Fattoush", "arabic": "فتّوش", "cal": 180, "p": 4, "c": 22, "f": 9},
-    {"name": "Foul Moudamas", "arabic": "فول مدمّس", "cal": 280, "p": 16, "c": 38, "f": 6},
-    {"name": "Hindbe bil Zet", "arabic": "هندبة بالزيت", "cal": 150, "p": 4, "c": 8, "f": 12},
-    {"name": "Hommos bi Tahini", "arabic": "حمّص بالطحينة", "cal": 350, "p": 12, "c": 32, "f": 20},
-    {"name": "Kafta wa Batata", "arabic": "كفتة وبطاطا", "cal": 450, "p": 24, "c": 30, "f": 26},
-    {"name": "Kebba bil Sayniya", "arabic": "كبّة بالصينية", "cal": 420, "p": 22, "c": 28, "f": 24},
-    {"name": "Koussa Mahchi", "arabic": "كوسا محشي", "cal": 310, "p": 14, "c": 28, "f": 16},
-    {"name": "Lahm bil Ajin", "arabic": "لحم بعجين", "cal": 380, "p": 18, "c": 38, "f": 16},
-    {"name": "Loubia bil Zet", "arabic": "لوبيا بالزيت", "cal": 220, "p": 8, "c": 28, "f": 10},
-    {"name": "Malfouf Mahchi", "arabic": "ملفوف محشي", "cal": 300, "p": 12, "c": 32, "f": 14},
-    {"name": "Moujadara", "arabic": "مجدّرة", "cal": 340, "p": 14, "c": 52, "f": 8},
-    {"name": "Moghrabia", "arabic": "مغربية", "cal": 450, "p": 22, "c": 50, "f": 18},
-    {"name": "Mousaka Batinjan", "arabic": "مسقعة باذنجان", "cal": 350, "p": 12, "c": 24, "f": 24},
-    {"name": "Riz a Dajaj", "arabic": "رز بالدجاج", "cal": 480, "p": 32, "c": 52, "f": 14},
-    {"name": "Riz bi Lahma", "arabic": "رز باللحمة", "cal": 520, "p": 28, "c": 55, "f": 20},
-    {"name": "Sayadia", "arabic": "صيادية", "cal": 440, "p": 30, "c": 45, "f": 14},
-    {"name": "Shawarma Dajaj", "arabic": "شاورما دجاج", "cal": 420, "p": 28, "c": 38, "f": 16},
-    {"name": "Shawarma Lahma", "arabic": "شاورما لحمة", "cal": 480, "p": 26, "c": 36, "f": 24},
-    {"name": "Tabboula", "arabic": "تبّولة", "cal": 120, "p": 3, "c": 16, "f": 5},
-    {"name": "Warak Enab", "arabic": "ورق عنب", "cal": 280, "p": 8, "c": 32, "f": 14},
-    {"name": "Yakhnat Bamia", "arabic": "يخنة بامية", "cal": 350, "p": 20, "c": 22, "f": 20},
-    {"name": "Yakhnat Fassoulia", "arabic": "يخنة فاصوليا", "cal": 380, "p": 22, "c": 30, "f": 18},
-    {"name": "Yakhnat Mouloukhia", "arabic": "يخنة ملوخية", "cal": 360, "p": 24, "c": 18, "f": 22},
-    {"name": "Beid bil Awarma (Eggs)", "arabic": "بيض بالقاورما", "cal": 350, "p": 22, "c": 4, "f": 28},
-    {"name": "Grilled Steak", "arabic": "ستيك مشوي", "cal": 450, "p": 52, "c": 0, "f": 24},
-    {"name": "Grilled Chicken", "arabic": "دجاج مشوي", "cal": 380, "p": 48, "c": 0, "f": 18},
-    {"name": "Labneh", "arabic": "لبنة", "cal": 120, "p": 8, "c": 6, "f": 8},
-    {"name": "Manoushe Zaatar", "arabic": "منقوشة زعتر", "cal": 320, "p": 8, "c": 42, "f": 14},
-    {"name": "Baklava Mixed", "arabic": "بقلاوة مشكّلة", "cal": 350, "p": 6, "c": 42, "f": 18},
-    {"name": "Halawa", "arabic": "حلاوة", "cal": 310, "p": 8, "c": 28, "f": 20},
-    {"name": "Mouhallabiya", "arabic": "مهلّبيّة", "cal": 200, "p": 6, "c": 30, "f": 6},
-    {"name": "Riz bil Halib", "arabic": "رز بالحليب", "cal": 220, "p": 6, "c": 36, "f": 6},
+    {"name": "Baba Ghanouj", "arabic": "بابا غنوج", "cal100": 90, "p100": 2, "c100": 6, "f100": 7},
+    {"name": "Batata Mahchi", "arabic": "بطاطا محشي", "cal100": 128, "p100": 4.8, "c100": 15.2, "f100": 5.6},
+    {"name": "Borgul bi Banadoura", "arabic": "برغل بالبندورة", "cal100": 130, "p100": 4, "c100": 24, "f100": 2.5},
+    {"name": "Chichbarak", "arabic": "شيشبرك", "cal100": 126, "p100": 6, "c100": 11.6, "f100": 6},
+    {"name": "Falafel", "arabic": "فلافل", "cal100": 226, "p100": 9.3, "c100": 21.3, "f100": 12},
+    {"name": "Fatayer Sabanikh", "arabic": "فطاير سبانخ", "cal100": 186, "p100": 5.3, "c100": 20, "f100": 9.3},
+    {"name": "Fattat Hommos", "arabic": "فتّة حمّص", "cal100": 120, "p100": 4.5, "c100": 12, "f100": 6.2},
+    {"name": "Fattoush", "arabic": "فتّوش", "cal100": 60, "p100": 1.3, "c100": 7.3, "f100": 3},
+    {"name": "Foul Moudamas", "arabic": "فول مدمّس", "cal100": 112, "p100": 6.4, "c100": 15.2, "f100": 2.4},
+    {"name": "Hindbe bil Zet", "arabic": "هندبة بالزيت", "cal100": 75, "p100": 2, "c100": 4, "f100": 6},
+    {"name": "Hommos bi Tahini", "arabic": "حمّص بالطحينة", "cal100": 175, "p100": 6, "c100": 16, "f100": 10},
+    {"name": "Kafta wa Batata", "arabic": "كفتة وبطاطا", "cal100": 128, "p100": 6.8, "c100": 8.5, "f100": 7.4},
+    {"name": "Kebba bil Sayniya", "arabic": "كبّة بالصينية", "cal100": 210, "p100": 11, "c100": 14, "f100": 12},
+    {"name": "Koussa Mahchi", "arabic": "كوسا محشي", "cal100": 124, "p100": 5.6, "c100": 11.2, "f100": 6.4},
+    {"name": "Lahm bil Ajin", "arabic": "لحم بعجين", "cal100": 211, "p100": 10, "c100": 21, "f100": 8.8},
+    {"name": "Loubia bil Zet", "arabic": "لوبيا بالزيت", "cal100": 88, "p100": 3.2, "c100": 11.2, "f100": 4},
+    {"name": "Malfouf Mahchi", "arabic": "ملفوف محشي", "cal100": 120, "p100": 4.8, "c100": 12.8, "f100": 5.6},
+    {"name": "Moujadara", "arabic": "مجدّرة", "cal100": 113, "p100": 4.6, "c100": 17.3, "f100": 2.6},
+    {"name": "Moghrabia", "arabic": "مغربية", "cal100": 112, "p100": 5.5, "c100": 12.5, "f100": 4.5},
+    {"name": "Mousaka Batinjan", "arabic": "مسقعة باذنجان", "cal100": 116, "p100": 4, "c100": 8, "f100": 8},
+    {"name": "Riz a Dajaj", "arabic": "رز بالدجاج", "cal100": 137, "p100": 9.1, "c100": 14.8, "f100": 4},
+    {"name": "Riz bi Lahma", "arabic": "رز باللحمة", "cal100": 148, "p100": 8, "c100": 15.7, "f100": 5.7},
+    {"name": "Sayadia", "arabic": "صيادية", "cal100": 125, "p100": 8.5, "c100": 12.8, "f100": 4},
+    {"name": "Shawarma Dajaj", "arabic": "شاورما دجاج", "cal100": 210, "p100": 14, "c100": 19, "f100": 8},
+    {"name": "Shawarma Lahma", "arabic": "شاورما لحمة", "cal100": 240, "p100": 13, "c100": 18, "f100": 12},
+    {"name": "Tabboula", "arabic": "تبّولة", "cal100": 60, "p100": 1.5, "c100": 8, "f100": 2.5},
+    {"name": "Warak Enab", "arabic": "ورق عنب", "cal100": 140, "p100": 4, "c100": 16, "f100": 7},
+    {"name": "Yakhnat Bamia", "arabic": "يخنة بامية", "cal100": 100, "p100": 5.7, "c100": 6.2, "f100": 5.7},
+    {"name": "Yakhnat Fassoulia", "arabic": "يخنة فاصوليا", "cal100": 108, "p100": 6.2, "c100": 8.5, "f100": 5.1},
+    {"name": "Yakhnat Mouloukhia", "arabic": "يخنة ملوخية", "cal100": 102, "p100": 6.8, "c100": 5.1, "f100": 6.2},
+    {"name": "Beid bil Awarma", "arabic": "بيض بالقاورما", "cal100": 233, "p100": 14.6, "c100": 2.6, "f100": 18.6},
+    {"name": "Grilled Steak", "arabic": "ستيك مشوي", "cal100": 225, "p100": 26, "c100": 0, "f100": 12},
+    {"name": "Grilled Chicken", "arabic": "دجاج مشوي", "cal100": 190, "p100": 24, "c100": 0, "f100": 9},
+    {"name": "Labneh", "arabic": "لبنة", "cal100": 120, "p100": 8, "c100": 6, "f100": 8},
+    {"name": "Manoushe Zaatar", "arabic": "منقوشة زعتر", "cal100": 213, "p100": 5.3, "c100": 28, "f100": 9.3},
 ]
 
 def generate_full_plan(
@@ -88,6 +84,9 @@ Use ONLY these Lebanese foods (with these EXACT nutritional values):
 Each day must have 4 meals: Breakfast (25%), Lunch (35%), Dinner (30%), Snack (10%).
 Total daily sum MUST equal {calorie_target} kcal (+/- 20 kcal).
 
+CRITICAL: For every dish you add, you MUST specify the "grams" required to reach that meal's target.
+Calculation: meal_calories = (grams / 100) * cal100.
+
 Workout Plan: gym_type {gym_type}, equipment: {equipment_str}, conditions: {medical_conditions}.
 Approved Exercises: {filtered_exercise_list}.
 
@@ -95,7 +94,7 @@ Return valid JSON:
 {{
   "weeklyMealPlan": {{
     "Monday": [
-      {{ "meal": "Breakfast", "dishes": [{{ "name": "...", "arabicName": "...", "calories": 0, "protein": 0, "carbs": 0, "fat": 0 }}] }},
+      {{ "meal": "Breakfast", "dishes": [{{ "name": "...", "arabicName": "...", "grams": 250, "calories": 0, "protein": 0, "carbs": 0, "fat": 0 }}] }},
       ...
     ],
     ...
@@ -105,7 +104,7 @@ Return valid JSON:
   "coachTip": "..."
 }}"""
 
-    models_to_try = [MODEL_NAME, "gemini-1.5-flash"]
+    models_to_try = [MODEL_NAME, "gemini-pro-latest", "gemini-2.5-flash-lite"]
     last_error = None
 
     for model_id in models_to_try:
