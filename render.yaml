@@ -3,7 +3,7 @@ services:
     name: vitalsense-backend
     runtime: python
     buildCommand: python -m pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    startCommand: python main.py
     rootDir: vitalsense-backend
     envVars:
       - key: SUPABASE_URL

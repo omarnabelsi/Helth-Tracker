@@ -92,3 +92,9 @@ app.include_router(analyze_progress_photo.router,prefix="/api/analyze-progress-p
 async def root():
     """Health-check / welcome endpoint."""
     return {"message": "VitalSense AI API is running 🚀"}
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 10000))
+    print(f"[SYSTEM] Starting uvicorn on port {port}...", flush=True)
+    uvicorn.run(app, host="0.0.0.0", port=port)
