@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+supabase
+python-jose[cryptography]
+passlib[bcrypt]
+python-dotenv
+google-generativeai
+clarifai-grpc
+python-multipart

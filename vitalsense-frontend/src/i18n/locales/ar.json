@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "الرئيسية", "nutrition": "التغذية", "workouts": "التمارين",
+    "progress": "التقدم", "insights": "الرؤى", "messages": "الرسائل",
+    "achievements": "الإنجازات", "settings": "الإعدادات"
+  },
+  "dashboard": {
+    "greeting_morning": "صباح الخير", "greeting_afternoon": "مساء الخير",
+    "greeting_evening": "مساء النور", "subtitle": "أنت على بعد خطوة من أفضل نسخة منك",
+    "on_track": "أنت على المسار الصحيح اليوم!", "keep_going": "استمر، ثباتك يظهر نتائج",
+    "streak": "يوم متتالي", "daily_goal": "الهدف اليومي",
+    "weekly_report": "تقريرك الأسبوعي", "health_advisory": "تنبيه صحي",
+    "coach_says": "يقول المدرب", "ask_coach": "اسأل المدرب",
+    "calories": "السعرات الحرارية", "protein": "البروتين",
+    "carbs": "الكربوهيدرات", "fat": "الدهون",
+    "today_workout": "تمرين اليوم", "exercises": "تمارين",
+    "body_progress": "تقدم الجسم", "see_all": "عرض الكل",
+    "weight": "الوزن", "sleep": "النوم", "good_quality": "جودة نوم جيدة"
+  },
+  "nutrition": {
+    "title": "خطة التغذية", "subtitle": "خطة وجباتك اللبنانية المخصصة",
+    "calories_remaining": "السعرات المتبقية", "consumed": "مستهلك",
+    "breakfast": "الفطور", "lunch": "الغداء", "dinner": "العشاء", "snack": "وجبة خفيفة",
+    "add_meal": "إضافة وجبة", "swap_dish": "تغيير الطبق", "log_photo": "تسجيل بالصورة",
+    "export_pdf": "تصدير PDF", "search_dishes": "البحث في الأطباق اللبنانية",
+    "calorie_warning": "تجاوزت هدفك اليومي من السعرات بـ", "kcal": "سعرة حرارية",
+    "goal_reached": "لقد وصلت إلى هدفك اليومي من السعرات!",
+    "approaching_limit": "أنت تقترب من حد السعرات اليومية - وصلت إلى 90%",
+    "view_nutrition": "عرض التغذية", "all": "الكل", "vegetarian": "نباتي",
+    "high_protein": "غني بالبروتين", "low_fat": "قليل الدهون", "desserts": "حلويات"
+  },
+  "workout": {
+    "title": "خطة التمارين", "subtitle": "برنامج تدريبي مُنشأ بالذكاء الاصطناعي ومُكيَّف لك",
+    "today_workout": "تمرين اليوم", "mark_complete": "تسجيل اكتمال التمرين",
+    "rest_day": "يوم راحة", "exercises": "تمارين", "sets": "مجموعات",
+    "reps": "تكرارات", "duration": "المدة", "equipment": "المعدات",
+    "add_exercise": "إضافة تمرين", "swap_exercise": "تغيير التمرين",
+    "gym_type": "نوع الصالة", "home": "المنزل", "small_gym": "صالة صغيرة",
+    "big_gym": "صالة كبيرة", "upper_body": "الجزء العلوي",
+    "lower_body": "الجزء السفلي", "full_body": "الجسم كامل", "cardio": "كارديو",
+    "completed": "مكتمل", "streak": "أيام متتالية"
+  },
+  "progress": {
+    "title": "متتبع التقدم", "subtitle": "تتبع تحولك مع مرور الوقت",
+    "upload_photo": "رفع صورة التقدم", "log_weight": "تسجيل الوزن",
+    "generate_report": "إنشاء تقرير التقدم بالذكاء الاصطناعي",
+    "two_weeks": "أسبوعان", "one_month": "شهر واحد", "three_months": "ثلاثة أشهر",
+    "total_lost": "إجمالي الفقدان", "avg_adherence": "متوسط الالتزام بالسعرات",
+    "projected_goal": "التاريخ المتوقع للوصول للهدف", "weight_log": "سجل الوزن",
+    "bmi": "مؤشر كتلة الجسم", "body_fat": "نسبة الدهون"
+  },
+  "chat": {
+    "title": "مدرب VitalSense", "online": "متصل", "knows_plan": "يعرف خطتك",
+    "placeholder": "اسأل مدربك الصحي...", "send": "إرسال",
+    "health_profile": "الملف الصحي", "todays_calories": "سعرات اليوم",
+    "todays_meals": "وجبات اليوم", "consumed": "مستهلك", "remaining": "متبقي",
+    "emergency_title": "🚨 تم اكتشاف حالة طارئة صحية",
+    "emergency_stop": "أوقف كل النشاط البدني فوراً",
+    "emergency_sit": "اجلس أو استلقِ في مكان آمن",
+    "emergency_call": "اتصل بالإسعاف: 140 (الصليب الأحمر اللبناني)",
+    "generate_summary": "إنشاء ملخص للطبيب", "call_140": "الاتصال بـ 140"
+  },
+  "settings": {
+    "title": "الإعدادات", "profile": "الملف الشخصي", "health_goals": "الصحة والأهداف",
+    "account": "الحساب", "notifications": "الإشعارات",
+    "save_changes": "حفظ التغييرات", "regenerate_plan": "إعادة إنشاء خطتي",
+    "change_password": "تغيير كلمة المرور", "sign_out": "تسجيل الخروج",
+    "language": "اللغة", "theme": "المظهر", "dark_mode": "الوضع المظلم",
+    "name": "الاسم", "age": "العمر", "gender": "الجنس", "weight": "الوزن",
+    "height": "الطول", "activity": "مستوى النشاط", "goal": "الهدف",
+    "conditions": "الحالات الطبية", "email": "البريد الإلكتروني"
+  },
+  "auth": {
+    "login": "تسجيل الدخول", "signup": "إنشاء حساب", "email": "البريد الإلكتروني",
+    "password": "كلمة المرور", "confirm_password": "تأكيد كلمة المرور",
+    "name": "الاسم الكامل", "have_account": "لديك حساب؟", "no_account": "ليس لديك حساب؟",
+    "forgot_password": "نسيت كلمة المرور؟"
+  },
+  "onboarding": {
+    "step1_title": "أدخل بياناتك", "step1_sub": "العمر، الوزن، الطول",
+    "step2_title": "اختر هدفك", "step2_sub": "إنقاص الدهون، بناء العضلات، الصحة",
+    "step3_title": "حالاتك الصحية", "step3_sub": "أي أمراض أو آلام",
+    "step4_title": "تحليل الذكاء الاصطناعي", "step4_sub": "3 نماذج تحللك",
+    "step5_title": "احصل على خطتك", "step5_sub": "النظام الغذائي + التمارين جاهزة",
+    "lose_fat": "إنقاص الدهون", "build_muscle": "بناء العضلات",
+    "improve_health": "تحسين الصحة", "weekly_loss": "الخسارة الأسبوعية المستهدفة",
+    "calorie_target": "هدفك اليومي من السعرات",
+    "gym_type_question": "أين تتمرن؟",
+    "home_workout": "تمرين في المنزل", "small_gym": "صالة رياضية صغيرة",
+    "big_gym": "صالة رياضية كبيرة (معدات كاملة)"
+  },
+  "common": {
+    "loading": "جاري التحميل...", "save": "حفظ", "cancel": "إلغاء",
+    "delete": "حذف", "edit": "تعديل", "close": "إغلاق", "next": "التالي",
+    "back": "رجوع", "confirm": "تأكيد", "today": "اليوم", "week": "الأسبوع",
+    "month": "الشهر", "kg": "كغ", "kcal": "سعرة", "min": "دقيقة",
+    "premium": "بريميوم", "free": "مجاني", "yes": "نعم", "no": "لا"
+  }
+}

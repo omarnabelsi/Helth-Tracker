@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "Home", "nutrition": "Nutrition", "workouts": "Workouts",
+    "progress": "Progress", "insights": "Insights", "messages": "Messages",
+    "achievements": "Achievements", "settings": "Settings"
+  },
+  "dashboard": {
+    "greeting_morning": "Good Morning", "greeting_afternoon": "Good Afternoon",
+    "greeting_evening": "Good Evening", "subtitle": "You are one step away from your best self",
+    "on_track": "You are on track today!", "keep_going": "Keep going, your consistency is showing results",
+    "streak": "Day Streak", "daily_goal": "Daily Goal",
+    "weekly_report": "Your Weekly Report", "health_advisory": "Health Advisory",
+    "coach_says": "Coach Says", "ask_coach": "Ask Coach",
+    "calories": "Calories", "protein": "Protein",
+    "carbs": "Carbs", "fat": "Fat",
+    "today_workout": "Today's Workout", "exercises": "Exercises",
+    "body_progress": "Body Progress", "see_all": "See All",
+    "weight": "Weight", "sleep": "Sleep", "good_quality": "Good Quality"
+  },
+  "nutrition": {
+    "title": "Nutrition Plan", "subtitle": "Your custom Lebanese meal plan",
+    "calories_remaining": "Calories Remaining", "consumed": "Consumed",
+    "breakfast": "Breakfast", "lunch": "Lunch", "dinner": "Dinner", "snack": "Snack",
+    "add_meal": "Add Meal", "swap_dish": "Swap Dish", "log_photo": "Log Photo",
+    "export_pdf": "Export PDF", "search_dishes": "Search Lebanese Dishes",
+    "calorie_warning": "You exceeded your daily calorie goal by", "kcal": "kcal",
+    "goal_reached": "You reached your daily calorie goal!",
+    "approaching_limit": "You are approaching your daily calorie limit - reached 90%",
+    "view_nutrition": "View Nutrition", "all": "All", "vegetarian": "Vegetarian",
+    "high_protein": "High Protein", "low_fat": "Low Fat", "desserts": "Desserts"
+  },
+  "workout": {
+    "title": "Workout Plan", "subtitle": "AI-generated training program adapted to you",
+    "today_workout": "Today's Workout", "mark_complete": "Mark Complete",
+    "rest_day": "Rest Day", "exercises": "Exercises", "sets": "Sets",
+    "reps": "Reps", "duration": "Duration", "equipment": "Equipment",
+    "add_exercise": "Add Exercise", "swap_exercise": "Swap Exercise",
+    "gym_type": "Gym Type", "home": "Home", "small_gym": "Small Gym",
+    "big_gym": "Big Gym", "upper_body": "Upper Body",
+    "lower_body": "Lower Body", "full_body": "Full Body", "cardio": "Cardio",
+    "completed": "Completed", "streak": "Day Streak"
+  },
+  "progress": {
+    "title": "Progress Tracker", "subtitle": "Track your transformation over time",
+    "upload_photo": "Upload Progress Photo", "log_weight": "Log Weight",
+    "generate_report": "Generate AI Progress Report",
+    "two_weeks": "Two Weeks", "one_month": "One Month", "three_months": "Three Months",
+    "total_lost": "Total Lost", "avg_adherence": "Avg Adherence",
+    "projected_goal": "Projected Goal Date", "weight_log": "Weight Log",
+    "bmi": "BMI", "body_fat": "Body Fat"
+  },
+  "chat": {
+    "title": "VitalSense Coach", "online": "Online", "knows_plan": "Knows your plan",
+    "placeholder": "Ask your health coach...", "send": "Send",
+    "health_profile": "Health Profile", "todays_calories": "Today's Calories",
+    "todays_meals": "Today's Meals", "consumed": "Consumed", "remaining": "Remaining",
+    "emergency_title": "🚨 Health Emergency Detected",
+    "emergency_stop": "Stop all physical activity immediately",
+    "emergency_sit": "Sit or lie down in a safe place",
+    "emergency_call": "Call ambulance: 140 (Lebanese Red Cross)",
+    "generate_summary": "Generate Doctor Summary", "call_140": "Call 140"
+  },
+  "settings": {
+    "title": "Settings", "profile": "Profile", "health_goals": "Health Goals",
+    "account": "Account", "notifications": "Notifications",
+    "save_changes": "Save Changes", "regenerate_plan": "Regenerate My Plan",
+    "change_password": "Change Password", "sign_out": "Sign Out",
+    "language": "Language", "theme": "Theme", "dark_mode": "Dark Mode",
+    "name": "Name", "age": "Age", "gender": "Gender", "weight": "Weight",
+    "height": "Height", "activity": "Activity Level", "goal": "Goal",
+    "conditions": "Medical Conditions", "email": "Email"
+  },
+  "auth": {
+    "login": "Login", "signup": "Sign Up", "email": "Email",
+    "password": "Password", "confirm_password": "Confirm Password",
+    "name": "Full Name", "have_account": "Have an account?", "no_account": "Don't have an account?",
+    "forgot_password": "Forgot Password?"
+  },
+  "onboarding": {
+    "step1_title": "Enter Your Details", "step1_sub": "Age, Weight, Height",
+    "step2_title": "Choose Your Goal", "step2_sub": "Lose Fat, Build Muscle, Health",
+    "step3_title": "Health Conditions", "step3_sub": "Any injuries or illnesses",
+    "step4_title": "AI Analysis", "step4_sub": "3 Models analyzing you",
+    "step5_title": "Get Your Plan", "step5_sub": "Diet + Workouts Ready",
+    "lose_fat": "Lose Fat", "build_muscle": "Build Muscle",
+    "improve_health": "Improve Health", "weekly_loss": "Target Weekly Loss",
+    "calorie_target": "Daily Calorie Target",
+    "gym_type_question": "Where do you workout?",
+    "home_workout": "Home Workout", "small_gym": "Small Gym",
+    "big_gym": "Big Gym (Full Equipment)"
+  },
+  "common": {
+    "loading": "Loading...", "save": "Save", "cancel": "Cancel",
+    "delete": "Delete", "edit": "Edit", "close": "Close", "next": "Next",
+    "back": "Back", "confirm": "Confirm", "today": "Today", "week": "Week",
+    "month": "Month", "kg": "kg", "kcal": "kcal", "min": "min",
+    "premium": "Premium", "free": "Free", "yes": "Yes", "no": "No"
+  }
+}
