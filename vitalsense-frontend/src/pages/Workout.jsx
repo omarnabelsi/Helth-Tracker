@@ -80,7 +80,7 @@ export default function Workout() {
     
     return {
       day: shortDays[i],
-      type: workout?.workoutType || 'Rest',
+      type: workout?.dayType || 'Rest',
       done: completedDates.has(dateStr),
       isToday: i === currentDay,
       date: dateStr
@@ -89,8 +89,8 @@ export default function Workout() {
 
   const completedCount = Object.values(exerciseChecks).filter(Boolean).length
   const totalExercises = exercises.length
-  const weekDone = weekPlan.filter(d => d.done && d.type !== 'Rest').length
-  const weekTotal = weekPlan.filter(d => d.type !== 'Rest').length
+  const weekDone = weekPlan.filter(d => d.done && !d.type?.toLowerCase().includes('rest')).length
+  const weekTotal = weekPlan.filter(d => !d.type?.toLowerCase().includes('rest')).length
 
   const toggleExercise = (idx) => {
     setExerciseChecks(prev => ({ ...prev, [idx]: !prev[idx] }))
@@ -106,7 +106,7 @@ export default function Workout() {
         .upsert({ 
           user_id: user.id, 
           date: todayStr, 
-          workout_name: todayWorkout.workoutType || 'Workout' 
+          workout_name: todayWorkout.workoutName || 'Workout' 
         }, { onConflict: 'user_id,date' })
       
       if (error) throw error
@@ -119,7 +119,7 @@ export default function Workout() {
         user_id: user.id,
         type: 'workout',
         title: '💪 Workout logged for today!',
-        message: `Excellent work on your ${todayWorkout.workoutType || 'session'}!`
+        message: `Excellent work on your ${todayWorkout.workoutName || 'session'}!`
       })
 
       // Update streak
@@ -131,7 +131,7 @@ export default function Workout() {
   }
 
   const displayExercises = exercises
-  const workoutTitle = todayWorkout?.workoutType || (isMockUser ? 'Push Day A — Upper Body' : 'Rest Day')
+  const workoutTitle = todayWorkout?.workoutName || (isMockUser ? 'Push Day A — Upper Body' : 'Rest Day')
 
   return (
     <div className="p-6 overflow-y-auto">

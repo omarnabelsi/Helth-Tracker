@@ -99,9 +99,9 @@ Return valid JSON:
     ],
     ...
   }},
-  "weeklyWorkoutPlan": [{{ "day": "Monday", "dayType": "...", "workoutName": "...", "exercises": [...] }}],
-  "healthWarnings": [],
-  "coachTip": "..."
+  "weeklyWorkoutPlan": [{"day": "Monday", "dayType": "Workout/Rest", "workoutName": "...", "exercises": [...] }],
+  "healthWarnings": ["Avoid high-impact...", "..."],
+  "coachTip": "Drink water and..."
 }}"""
 
     models_to_try = [MODEL_NAME, "gemini-pro-latest", "gemini-2.5-flash-lite"]
