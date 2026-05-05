@@ -25,7 +25,18 @@ function generateDefaultPlan(calorieTarget) {
   // Pick foods that roughly fit per meal slot
   const pickFood = (seed) => {
     const idx = Math.abs(seed) % mains.length
-    return mains[idx]
+    const food = mains[idx]
+    const g = 250 // Default 250g portion
+    const ratio = g / 100
+    return {
+      ...food,
+      id: food.id + '-' + seed,
+      calories: Math.round(food.caloriesPer100g * ratio),
+      protein: Math.round(food.proteinPer100g * ratio),
+      carbs: Math.round(food.carbsPer100g * ratio),
+      fat: Math.round(food.fatPer100g * ratio),
+      loggedGrams: g
+    }
   }
 
   const plan = {}
@@ -73,6 +84,12 @@ function convertAiPlan(planData, currentCalorieTarget) {
           }
           // Fallback if not in DB but has data
           return {
+            ...dish,
+            id: `custom-${shortDay}-${di}`,
+            loggedGrams: g,
+            calories: dish.calories || 0,
+            protein: dish.protein || 0,
+            carbs: dish.carbs || 0,
             fat: dish.fat || 0,
             serving: '1 serving',
             tags: [],
@@ -208,7 +225,6 @@ export default function Nutrition() {
     }
 
     const { day, mealSlot, mode, index } = swapModal
-    const nextMeals = { ...meals }
     const dayMeals = { ...nextMeals[day] }
 
     if (mode === 'swap') {
