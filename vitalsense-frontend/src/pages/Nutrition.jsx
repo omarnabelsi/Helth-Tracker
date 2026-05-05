@@ -554,6 +554,19 @@ export default function Nutrition() {
                 />
               </PieChart>
             </ResponsiveContainer>
+            <div className="space-y-2 mt-2">
+              {pieData.map((d, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }}></div>
+                    <span className="text-xs text-text-muted">{d.name}</span>
+                  </div>
+                  <span className="text-xs font-bold text-text-primary">
+                    {pieData.reduce((s, x) => s + x.value, 0) > 0
+                      ? Math.round(d.value / pieData.reduce((s, x) => s + x.value, 0) * 100)
+                      : 0}%
+                  </span>
+                </div>
               ))}
             </div>
             {/* Generate Diet Button */}
@@ -581,7 +594,23 @@ export default function Nutrition() {
       {/* Action Buttons Row */}
       <div className="flex flex-col sm:flex-row gap-3 animate-fade-in-up delay-300">
         <button
-          onClick={() => { const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'environment'; inp.onchange = (e) => { const f = e.target.files?.[0]; if (f) { setPhotoFile(f); const reader = new FileReader(); reader.onload = () => setPhotoPreview(reader.result); reader.readAsDataURL(f); setPhotoModal(true) } }; inp.click() }}
+          onClick={() => {
+            const inp = document.createElement('input');
+            inp.type = 'file';
+            inp.accept = 'image/*';
+            inp.capture = 'environment';
+            inp.onchange = (e) => {
+              const f = e.target.files?.[0];
+              if (f) {
+                setPhotoFile(f);
+                const reader = new FileReader();
+                reader.onload = () => setPhotoPreview(reader.result);
+                reader.readAsDataURL(f);
+                setPhotoModal(true);
+              }
+            };
+            inp.click();
+          }}
           className="flex-1 flex items-center justify-center gap-2 bg-primary-accent hover:bg-primary-accent/90 text-white font-semibold py-4 rounded-2xl transition-all duration-300 hover:shadow-lg hover:shadow-primary-accent/25"
         >
           <Camera size={20} />
@@ -589,24 +618,34 @@ export default function Nutrition() {
         </button>
         <button
           onClick={() => {
-            const doc = new jsPDF()
-            doc.setFontSize(20); doc.text('VitalSense AI \u2014 Weekly Meal Plan', 20, 20)
-            doc.setFontSize(12); doc.text(`Name: ${profile?.name || 'User'} | Goal: ${profile?.goal || '-'} | Target: ${calorieTarget} kcal/day`, 20, 35)
-            let y = 50
+            const doc = new jsPDF();
+            doc.setFontSize(20);
+            doc.text('VitalSense AI — Weekly Meal Plan', 20, 20);
+            doc.setFontSize(12);
+            doc.text(`Name: ${profile?.name || 'User'} | Goal: ${profile?.goal || '-'} | Target: ${calorieTarget} kcal/day`, 20, 35);
+            let y = 50;
             days.forEach(day => {
-              const dayMeals = meals[day] || {}
-              doc.setFontSize(14); doc.text(day, 20, y); y += 8
+              const dayMeals = meals[day] || {};
+              doc.setFontSize(14);
+              doc.text(day, 20, y);
+              y += 8;
               Object.entries(dayMeals).forEach(([slot, foods]) => {
-                if (Array.isArray(foods)) foods.forEach(f => { doc.setFontSize(10); doc.text(`  \u2022 ${f.name} \u2014 ${f.calories} kcal`, 20, y); y += 6 })
-              })
-              y += 4; if (y > 270) { doc.addPage(); y = 20 }
-            })
-            doc.save(`VitalSense_MealPlan_${profile?.name || 'User'}.pdf`)
+                if (Array.isArray(foods)) {
+                  foods.forEach(f => {
+                    doc.setFontSize(10);
+                    doc.text(`  • ${f.name} — ${f.calories} kcal`, 20, y);
+                    y += 6;
+                  });
+                }
+              });
+              y += 5;
+            });
+            doc.save('VitalSense_MealPlan.pdf');
           }}
-          className="flex items-center justify-center gap-2 bg-bg-card border border-gray-200 text-text-primary font-semibold py-4 px-6 rounded-2xl transition-all hover:shadow-md"
+          className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-200 text-text-primary font-semibold py-4 rounded-2xl transition-all duration-300 hover:border-primary-accent/30 hover:shadow-md"
         >
-          <FileText size={20} />
-          📄 Export PDF
+          <FileText size={20} className="text-primary-accent" />
+          📄 Export Plan PDF
         </button>
       </div>
 
