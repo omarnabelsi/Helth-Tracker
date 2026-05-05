@@ -32,29 +32,31 @@ export default function App() {
   }, [navigate])
 
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+    <>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
 
-      {/* NO protection for onboarding */}
-      <Route path="/onboarding" element={<Onboarding />} />
+        {/* NO protection for onboarding */}
+        <Route path="/onboarding" element={<Onboarding />} />
 
-      {/* Protected: dashboard pages */}
-      <Route element={
-        <ProtectedRoute>
-          <AppLayout />
-        </ProtectedRoute>
-      }>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/nutrition" element={<Nutrition />} />
-        <Route path="/workout" element={<Workout />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/progress" element={<Progress />} />
-        <Route path="/achievements" element={<Achievements />} />
-        <Route path="/settings" element={<Settings />} />
-      </Route>
+        {/* Protected: dashboard pages */}
+        <Route element={
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        }>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/nutrition" element={<Nutrition />} />
+          <Route path="/workout" element={<Workout />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/progress" element={<Progress />} />
+          <Route path="/achievements" element={<Achievements />} />
+          <Route path="/settings" element={<Settings />} />
+        </Route>
+      </Routes>
       <Toaster position="top-right" toastOptions={{
         style: {
           background: '#1a1a1a',
@@ -62,6 +64,6 @@ export default function App() {
           borderRadius: '12px',
         },
       }} />
-    </Routes>
+    </>
   )
 }

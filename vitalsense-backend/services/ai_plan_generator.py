@@ -59,6 +59,11 @@ def generate_full_plan(
     dinner_kcal = int(calorie_target * 0.30)
     snack_kcal = int(calorie_target * 0.10)
 
+    # Macro targets (30% P, 40% C, 30% F)
+    target_p = int((calorie_target * 0.3) / 4)
+    target_c = int((calorie_target * 0.4) / 4)
+    target_f = int((calorie_target * 0.3) / 9)
+
     prompt = f"""You are a certified nutritionist and personal trainer.
 Generate a personalized weekly health plan for this user:
 
@@ -67,18 +72,27 @@ Generate a personalized weekly health plan for this user:
 - Weight: {weight}kg
 - Height: {height}cm
 - Daily calorie target: EXACTLY {calorie_target} kcal
-- TDEE: {tdee} kcal
+- Target Macros: Protein: {target_p}g, Carbs: {target_c}g, Fat: {target_f}g
 - Goal: {goal}
-- Weekly loss target: {weekly_loss_target or 'N/A'}
 - Medical conditions: {medical_conditions or 'None reported'}
-- Activity level: {activity_level}
 
-CRITICAL NUTRITION RULE: The user's daily calorie target is EXACTLY {calorie_target} kcal. You MUST distribute ALL {calorie_target} kcal across exactly 4 meals. No more, no less. Use this distribution: Breakfast: 25% ({breakfast_kcal} kcal), Lunch: 35% ({lunch_kcal} kcal), Dinner: 30% ({dinner_kcal} kcal), Snack: 10% ({snack_kcal} kcal). Total must equal exactly {calorie_target} kcal. If a single dish doesn't fill the meal calorie slot, add multiple dishes to that meal until the total reaches the target. For example if lunch target is 810 kcal, combine: Shawarma Dajaj (500 kcal) + Fattoush (200 kcal) + Hommos bi tahini (110 kcal) = 810 kcal. NEVER leave calories unallocated. Return each meal as an array of dishes that together hit the meal's calorie target.
+CRITICAL NUTRITION RULE: The user's daily calorie target is EXACTLY {calorie_target} kcal. 
+The daily macro targets are Protein: {target_p}g, Carbs: {target_c}g, Fat: {target_f}g.
+You MUST distribute ALL calories and macros across exactly 4 meals. 
+The total of all meals for each day MUST reach 100% of the targets (error margin +/- 2%).
+NEVER leave calories or macros unallocated. Return each meal as an array of dishes that together hit the targets.
+
+Calorie distribution: Breakfast: 25% ({breakfast_kcal} kcal), Lunch: 35% ({lunch_kcal} kcal), Dinner: 30% ({dinner_kcal} kcal), Snack: 10% ({snack_kcal} kcal). 
 Use ONLY Lebanese dishes from this list: [{dishes_list}]
 
-Generate a weekly workout plan for: gym_type: {gym_type}, available equipment: {equipment_str}, medical conditions: {medical_conditions or 'None'}. STRICT RULES: 1) Only include exercises from this approved list for their gym type: [{filtered_exercise_list}]. 2) Never include exercises marked unsafe for their conditions. 3) Upper body days ONLY use: chest/back/shoulders/biceps/triceps exercises. 4) Lower body days ONLY use: legs/glutes exercises. 5) For home workouts use zero-equipment exercises only.
+Generate a weekly workout plan for: gym_type: {gym_type}, available equipment: {equipment_str}, medical conditions: {medical_conditions or 'None'}. 
+STRICT RULES: 
+1) Only include exercises from this approved list for their gym type: [{filtered_exercise_list}]. 
+2) Never include exercises marked unsafe for their conditions. 
+3) Upper body days ONLY use: chest/back/shoulders/biceps/triceps exercises. 
+4) Lower body days ONLY use: legs/glutes exercises. 
 
-Return a valid JSON object (no markdown fences, no explanation text) with exactly this structure:
+Return a valid JSON object with exactly this structure:
 {{
   "weeklyMealPlan": {{
     "Monday": [
@@ -92,25 +106,14 @@ Return a valid JSON object (no markdown fences, no explanation text) with exactl
       {{ "meal": "Dinner", "dishes": [...] }},
       {{ "meal": "Snack", "dishes": [...] }}
     ],
-    "Tuesday": [...], "Wednesday": [...], "Thursday": [...], "Friday": [...], "Saturday": [...], "Sunday": [...]
+    ...
   }},
-  "weeklyWorkoutPlan": [
-    {{
-      "day": "Monday",
-      "dayType": "upper_body",
-      "workoutName": "Upper Body Strength",
-      "exercises": [
-        {{ "name": "Exercise Name", "arabicName": "الاسم بالعربي", "sets": 3, "reps": "10-12", "muscleGroup": "chest", "equipment": "dumbbells", "notes": "Keep form strict" }}
-      ]
-    }}
-  ],
-  "healthWarnings": ["warning 1", "warning 2"],
-  "coachTip": "One personalized daily tip"
+  "weeklyWorkoutPlan": [...],
+  "healthWarnings": [...],
+  "coachTip": "..."
 }}
 
-IMPORTANT RULES:
-- Each day MUST have exactly 4 meals (Breakfast, Lunch, Dinner, Snack) under weeklyMealPlan -> Day -> list of meals.
-- Return ONLY valid JSON, no markdown code fences."""
+IMPORTANT: Ensure that for EVERY DAY, the sum of calories/macros in the 4 meals equals EXACTLY the target ({calorie_target} kcal, {target_p}g P, {target_c}g C, {target_f}g F)."""
 
     model = genai.GenerativeModel(
         model_name=MODEL_NAME,
