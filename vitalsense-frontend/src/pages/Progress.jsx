@@ -5,6 +5,7 @@ import html2canvas from 'html2canvas'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'react-hot-toast'
 
 const mockWeightData = [
   { date: 'Apr 10', weight: 76.2 },
@@ -88,7 +89,7 @@ export default function Progress() {
 
   const handleWeightLog = async () => {
     if (!newWeight || isNaN(parseFloat(newWeight))) {
-      alert('❌ Please enter a valid weight')
+      toast.error('Please enter a valid weight')
       return
     }
     if (!user) return
@@ -111,10 +112,10 @@ export default function Progress() {
       
       setWeightLogs(prev => [...prev, data[0]])
       setNewWeight('')
-      alert('Weight logged successfully ✅')
+      toast.success('Weight logged successfully')
     } catch (err) {
       console.error('Error logging weight:', err)
-      alert(`❌ Failed to log weight: ${err.message}`)
+      toast.error(`Failed to log weight: ${err.message}`)
     } finally {
       setIsLoggingWeight(false)
     }
@@ -177,10 +178,10 @@ export default function Progress() {
       if (dbError) throw new Error(`Database error: ${dbError.message}`)
       
       setProgressPhotos(prev => [data[0], ...prev])
-      alert('✅ Progress photo uploaded successfully!')
+      toast.success('Progress photo uploaded!')
     } catch (err) {
       console.error('Photo upload error:', err)
-      alert(`❌ ${err.message}`)
+      toast.error(err.message)
     } finally {
       setIsUploadingPhoto(false)
     }
@@ -208,7 +209,7 @@ export default function Progress() {
       setProgressPhotos(prev => prev.filter(p => p.id !== photoId))
     } catch (err) {
       console.error('Error deleting photo:', err)
-      alert('Failed to delete photo')
+      toast.error('Failed to delete photo')
     }
   }
 

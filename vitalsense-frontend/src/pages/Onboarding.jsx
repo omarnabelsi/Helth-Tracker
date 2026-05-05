@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-hot-toast'
 import { supabase } from '../lib/supabase'
 import { VitaBot } from '../components/VitaBot'
 import { SpeechBubble } from '../components/SpeechBubble'
@@ -91,7 +92,7 @@ const Onboarding = () => {
 
       if (error) {
         console.error('Onboarding save error:', error)
-        alert('Failed to save profile. Please check console.')
+        toast.error('Failed to save profile. Please check console.')
         setLoading(false)
         return
       }

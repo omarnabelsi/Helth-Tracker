@@ -9,6 +9,7 @@ import { updateStreak, unlockFirstMealLog } from '../utils/streaks'
 import { authFetch } from '../utils/authFetch'
 import jsPDF from 'jspdf'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'react-hot-toast'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -37,6 +38,51 @@ function generateDefaultPlan(calorieTarget) {
     }
   })
   return plan
+}
+
+// ── Convert AI plan format to our local meals state format ──
+function convertAiPlan(planData, currentCalorieTarget) {
+  if (!planData?.weeklyMealPlan) return null
+  
+  const converted = {}
+  const dayMap = { 'Monday': 'Mon', 'Tuesday': 'Tue', 'Wednesday': 'Wed', 'Thursday': 'Thu', 'Friday': 'Fri', 'Saturday': 'Sat', 'Sunday': 'Sun' }
+  
+  Object.entries(planData.weeklyMealPlan).forEach(([dayName, dayMealsArray]) => {
+    const shortDay = dayMap[dayName] || dayName
+    if (Array.isArray(dayMealsArray)) {
+      converted[shortDay] = {}
+      dayMealsArray.forEach((mealSlot) => {
+        const slotName = mealSlot.meal
+        const dishes = (mealSlot.dishes || []).map((dish, di) => {
+          const matched = lebaneseFoods.find(f => 
+            f.name.toLowerCase() === dish.name?.toLowerCase()
+          )
+          if (matched) return matched
+          
+          return {
+            id: `ai_${shortDay}_${slotName}_${di}`,
+            name: dish.name,
+            arabicName: dish.arabicName || '',
+            category: 'main',
+            calories: dish.calories || 0,
+            protein: dish.protein || 0,
+            carbs: dish.carbs || 0,
+            fat: dish.fat || 0,
+            serving: '1 serving',
+            tags: [],
+          }
+        })
+        converted[shortDay][slotName] = dishes
+      })
+    }
+  })
+  
+  // Fill any missing days with default
+  days.forEach(d => {
+    if (!converted[d]) converted[d] = generateDefaultPlan(currentCalorieTarget)[d]
+  })
+  
+  return converted
 }
 
 // ── Filter pills ──
@@ -100,39 +146,8 @@ export default function Nutrition() {
         const planData = plans[0].plan_data
         if (planData?.weeklyMealPlan) {
           setAiPlan(planData)
-          // Convert AI plan format to our state format
-          const converted = {}
-          const dayMap = { 'Monday': 'Mon', 'Tuesday': 'Tue', 'Wednesday': 'Wed', 'Thursday': 'Thu', 'Friday': 'Fri', 'Saturday': 'Sat', 'Sunday': 'Sun' }
-          Object.entries(planData.weeklyMealPlan).forEach(([dayName, dayMeals]) => {
-            const shortDay = dayMap[dayName] || dayName
-            if (Array.isArray(dayMeals)) {
-              const slotNames = ['Breakfast', 'Lunch', 'Dinner', 'Snack']
-              converted[shortDay] = {}
-              dayMeals.forEach((meal, i) => {
-                const slotName = slotNames[i] || `Meal${i}`
-                const matched = lebaneseFoods.find(f =>
-                  f.name.toLowerCase() === meal.name?.toLowerCase()
-                ) || {
-                  id: `ai_${shortDay}_${i}`,
-                  name: meal.name,
-                  arabicName: meal.arabicName || '',
-                  category: 'main',
-                  calories: meal.calories || 0,
-                  protein: meal.protein || 0,
-                  carbs: meal.carbs || 0,
-                  fat: meal.fat || 0,
-                  serving: '1 serving',
-                  tags: [],
-                }
-                converted[shortDay][slotName] = [matched]
-              })
-            }
-          })
-          // Fill any missing days
-          days.forEach(d => {
-            if (!converted[d]) converted[d] = generateDefaultPlan(prof?.calorie_target || 2000)[d]
-          })
-          setMeals(converted)
+          const converted = convertAiPlan(planData, prof?.calorie_target || 2000)
+          if (converted) setMeals(converted)
         }
       } else if (prof) {
         setMeals(generateDefaultPlan(prof.calorie_target || 2000))
@@ -248,43 +263,18 @@ export default function Nutrition() {
         const planData = data.plan_data
         if (planData?.weeklyMealPlan) {
           setAiPlan(planData)
-          // Convert & update meals state
-          const converted = {}
-          const dayMap = { 'Monday': 'Mon', 'Tuesday': 'Tue', 'Wednesday': 'Wed', 'Thursday': 'Thu', 'Friday': 'Fri', 'Saturday': 'Sat', 'Sunday': 'Sun' }
-          Object.entries(planData.weeklyMealPlan).forEach(([dayName, dayMeals]) => {
-            const shortDay = dayMap[dayName] || dayName
-            if (Array.isArray(dayMeals)) {
-              const slotNames = ['Breakfast', 'Lunch', 'Dinner', 'Snack']
-              converted[shortDay] = {}
-              dayMeals.forEach((meal, i) => {
-                const slotName = slotNames[i] || `Meal${i}`
-                const matched = lebaneseFoods.find(f =>
-                  f.name.toLowerCase() === meal.name?.toLowerCase()
-                ) || {
-                  id: `ai_${shortDay}_${i}`,
-                  name: meal.name,
-                  arabicName: meal.arabicName || '',
-                  category: 'main',
-                  calories: meal.calories || 0,
-                  protein: meal.protein || 0,
-                  carbs: meal.carbs || 0,
-                  fat: meal.fat || 0,
-                  serving: '1 serving',
-                  tags: [],
-                }
-                converted[shortDay][slotName] = [matched]
-              })
-            }
-          })
-          setMeals(converted)
-          alert('✅ Personalized diet plan generated successfully!')
+          const converted = convertAiPlan(planData, profile.calorie_target || 2000)
+          if (converted) {
+            setMeals(converted)
+            toast.success('Personalized diet plan generated!')
+          }
         }
       } else {
         throw new Error('Failed to generate diet plan')
       }
     } catch (err) {
       console.error('Diet generation error:', err)
-      alert('❌ Failed to generate diet. Please check your internet connection and try again.')
+      toast.error('Failed to generate diet. Please try again.')
     } finally {
       setIsGeneratingDiet(false)
     }

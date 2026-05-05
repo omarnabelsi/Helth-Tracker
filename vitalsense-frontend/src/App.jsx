@@ -13,6 +13,7 @@ import Progress from './pages/Progress'
 import Settings from './pages/Settings'
 import Achievements from './pages/Achievements'
 import AppLayout from './components/AppLayout'
+import { Toaster } from 'react-hot-toast'
 import ProtectedRoute from './components/ProtectedRoute'
 
 export default function App() {
@@ -54,6 +55,13 @@ export default function App() {
         <Route path="/achievements" element={<Achievements />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
+      <Toaster position="top-right" toastOptions={{
+        style: {
+          background: '#1a1a1a',
+          color: '#fff',
+          borderRadius: '12px',
+        },
+      }} />
     </Routes>
   )
 }
