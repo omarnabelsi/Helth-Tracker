@@ -63,7 +63,13 @@ async def generate_plan(body: GeneratePlanRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"AI plan generation failed: {str(e)}")
 
-    # Store in Supabase
+    # Ensure only 1 master plan exists per user: Delete old entries first
+    try:
+        supabase.table("plans").delete().eq("user_id", body.user_id).execute()
+    except:
+        pass # Ignore if none exist
+
+    # Store the new plan
     result = supabase.table("plans").insert({
         "user_id": body.user_id,
         "plan_data": plan_data,
