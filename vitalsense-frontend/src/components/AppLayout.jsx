@@ -22,6 +22,7 @@ const navItems = [
 export default function AppLayout() {
   const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { user } = useAuth()
   const [sidebarProfile, setSidebarProfile] = useState(null)
 
@@ -35,12 +36,20 @@ export default function AppLayout() {
   const initial = displayName[0]?.toUpperCase() || 'U'
 
   return (
-    <div className="flex h-screen overflow-hidden bg-bg-main">
+    <div className="flex h-screen overflow-hidden bg-bg-main relative">
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 md:hidden transition-opacity" 
+          onClick={() => setMobileMenuOpen(false)} 
+        />
+      )}
+
       {/* Sidebar */}
       <aside
-        className={`relative flex flex-col bg-primary-dark transition-all duration-300 ease-in-out ${
+        className={`absolute md:relative flex flex-col bg-primary-dark transition-all duration-300 ease-in-out z-40 h-full ${
           collapsed ? 'w-[72px]' : 'w-[200px]'
-        }`}
+        } ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
       >
         {/* Logo */}
         <div className="flex items-center gap-2.5 px-4 py-6 border-b border-white/10">
@@ -62,6 +71,7 @@ export default function AppLayout() {
             <NavLink
               key={i}
               to={item.to}
+              onClick={() => setMobileMenuOpen(false)}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
                   isActive
@@ -105,18 +115,18 @@ export default function AppLayout() {
           )}
         </div>
 
-        {/* Collapse Toggle */}
+        {/* Collapse Toggle - hidden on mobile */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-bg-card shadow-md border border-gray-200 flex items-center justify-center text-text-muted hover:text-primary-accent transition-colors z-10"
+          className="hidden md:flex absolute -right-3 top-20 w-6 h-6 rounded-full bg-bg-card shadow-md border border-gray-200 items-center justify-center text-text-muted hover:text-primary-accent transition-colors z-10"
         >
           {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
         </button>
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <TopBar />
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+        <TopBar onMenuClick={() => setMobileMenuOpen(true)} />
         <main className="flex-1 overflow-y-auto">
           <Outlet />
         </main>

@@ -303,7 +303,7 @@ export default function Nutrition() {
             />
           </div>
           {/* Macro Progress Bars */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               { label: 'Protein', current: totalP, target: proteinTarget, color: 'bg-blue-400', unit: 'g' },
               { label: 'Carbs', current: totalC, target: carbsTarget, color: 'bg-amber-400', unit: 'g' },
@@ -483,7 +483,7 @@ export default function Nutrition() {
       </div>
 
       {/* Action Buttons Row */}
-      <div className="flex gap-3 animate-fade-in-up delay-300">
+      <div className="flex flex-col sm:flex-row gap-3 animate-fade-in-up delay-300">
         <button
           onClick={() => { const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'environment'; inp.onchange = (e) => { const f = e.target.files?.[0]; if (f) { setPhotoFile(f); const reader = new FileReader(); reader.onload = () => setPhotoPreview(reader.result); reader.readAsDataURL(f); setPhotoModal(true) } }; inp.click() }}
           className="flex-1 flex items-center justify-center gap-2 bg-primary-accent hover:bg-primary-accent/90 text-white font-semibold py-4 rounded-2xl transition-all duration-300 hover:shadow-lg hover:shadow-primary-accent/25"

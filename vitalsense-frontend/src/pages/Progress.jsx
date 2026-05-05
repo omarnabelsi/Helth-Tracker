@@ -276,7 +276,7 @@ export default function Progress() {
           />
         </div>
         {displayPhotos.length > 0 ? (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {displayPhotos.map((photo, i) => (
               <div key={i} className="bg-bg-card rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
                 <div className="aspect-[3/4] bg-gradient-to-b from-gray-50 to-gray-100 relative flex items-center justify-center">
@@ -493,7 +493,7 @@ export default function Progress() {
               <h2 className="font-heading font-bold text-text-primary">Body Metrics Timeline</h2>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4 mb-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
             <div className="bg-bg-main rounded-xl p-4 text-center">
               <p className="text-xs text-text-muted font-semibold">{t('progress.total_lost')}</p>
               <p className="text-lg font-bold text-primary-accent">{weightLogs.length >= 2 ? (weightLogs[0].weight_kg - weightLogs[weightLogs.length-1].weight_kg).toFixed(1) : '0'} kg</p>

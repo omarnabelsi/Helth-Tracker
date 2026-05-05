@@ -187,8 +187,8 @@ export default function Dashboard() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary-accent/10 rounded-full blur-3xl -translate-y-1/4 translate-x-1/4"></div>
           <div className="absolute bottom-0 right-20 w-48 h-48 bg-primary-light/8 rounded-full blur-2xl"></div>
           
-          <div className="relative flex items-center justify-between">
-            <div className="flex items-center gap-8">
+          <div className="relative flex flex-col md:flex-row items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-6 md:gap-8">
               <ProgressRing
                 value={72}
                 max={100}

@@ -196,13 +196,13 @@ export default function Workout() {
         ))}
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col lg:flex-row gap-6">
         {/* Main Content */}
         <div className="flex-1 space-y-5">
           {/* Today's Workout Card */}
           <div className="bg-gradient-to-r from-primary-dark to-[#1a4a36] rounded-3xl p-6 text-white animate-fade-in-up">
-            <div className="flex items-center justify-between mb-4">
-              <div>
+            <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 mb-4">
+              <div className="text-center sm:text-left">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs font-bold bg-white/15 backdrop-blur px-3 py-1 rounded-full">{t('workout.today_workout')}</span>
                   {hasCondition && (
@@ -220,7 +220,7 @@ export default function Workout() {
                 bgColor="rgba(255,255,255,0.1)"
               />
             </div>
-            <div className="flex items-center gap-5 text-white/60 text-sm">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-5 text-white/60 text-sm">
               <span className="flex items-center gap-1.5"><Zap size={14} />{displayExercises.length} exercises</span>
               <span className="flex items-center gap-1.5"><Clock size={14} />~45 min</span>
               <span className="flex items-center gap-1.5"><Dumbbell size={14} />Equipment needed</span>

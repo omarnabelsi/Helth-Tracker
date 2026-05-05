@@ -471,7 +471,7 @@ function EmergencyCard({ symptom, profile, user, onGenerateSummary, onDownloadPD
             </li>
           ))}
         </ol>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={handleGenerate}
             disabled={generating || summary}
@@ -501,7 +501,7 @@ function EmergencyCard({ symptom, profile, user, onGenerateSummary, onDownloadPD
           <div className="bg-red-50 rounded-xl p-4 mb-4 border border-red-100">
             <p className="text-sm text-text-primary whitespace-pre-wrap leading-relaxed">{summary}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <button
               onClick={() => onCopy(summary, idx)}
               className="flex items-center gap-2 bg-red-500 text-white text-xs font-semibold px-4 py-2 rounded-xl hover:bg-red-600 transition-colors"
