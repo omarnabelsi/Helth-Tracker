@@ -9,6 +9,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 import traceback
+import sys
+
+# Force immediate log output
+print("[SYSTEM] Python process started. Loading dependencies...", flush=True)
 
 try:
     # Load environment variables
