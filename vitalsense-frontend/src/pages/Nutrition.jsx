@@ -414,6 +414,27 @@ export default function Nutrition() {
         ))}
       </div>
 
+      {/* Generate Diet Button - Mobile Only */}
+      <div className="lg:hidden animate-fade-in-up">
+        <button
+          onClick={handleGenerateDiet}
+          disabled={isGeneratingDiet}
+          className="w-full flex items-center justify-center gap-2 bg-primary-accent text-white font-bold py-4 rounded-2xl hover:bg-primary-accent/90 transition-all shadow-md shadow-primary-accent/15 disabled:opacity-50"
+        >
+          {isGeneratingDiet ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              Generating...
+            </>
+          ) : (
+            <>
+              <Sparkles size={18} />
+              Generate a diet for me
+            </>
+          )}
+        </button>
+      </div>
+
       {/* Day Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-1 animate-fade-in-up delay-100">
         {days.map(day => (
