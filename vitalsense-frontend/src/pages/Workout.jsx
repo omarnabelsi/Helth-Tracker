@@ -253,13 +253,17 @@ export default function Workout() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className={`text-sm font-semibold ${isDone ? 'line-through text-text-muted' : 'text-text-primary'}`}>
-                            {ex.name}
+                            {ex.name || ex.exercise || ex.exercise_name || 'Exercise'}
                           </span>
                         </div>
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xs text-text-muted">{ex.sets} × {ex.reps} reps</span>
-                          {ex.notes && (
-                            <span className="text-[10px] font-medium bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{ex.notes}</span>
+                          <span className="text-xs text-text-muted">
+                            {ex.sets || 3} × {ex.reps || '12'} reps
+                          </span>
+                          {(ex.notes || ex.instruction) && (
+                            <span className="text-[10px] font-medium bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
+                              {ex.notes || ex.instruction}
+                            </span>
                           )}
                         </div>
                       </div>

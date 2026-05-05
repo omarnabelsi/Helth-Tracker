@@ -99,7 +99,7 @@ Return valid JSON:
     ],
     ...
   }},
-  "weeklyWorkoutPlan": [{"day": "Monday", "dayType": "Workout/Rest", "workoutName": "...", "exercises": [...] }],
+  "weeklyWorkoutPlan": [{"day": "Monday", "dayType": "Workout/Rest", "workoutName": "...", "exercises": [{"name": "Push-ups", "sets": 3, "reps": 12, "notes": "Form focus"}] }],
   "healthWarnings": ["Avoid high-impact...", "..."],
   "coachTip": "Drink water and..."
 }}"""
