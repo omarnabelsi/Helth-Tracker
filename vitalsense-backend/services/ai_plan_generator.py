@@ -105,15 +105,32 @@ Return valid JSON:
   "coachTip": "..."
 }}"""
 
-    model = genai.GenerativeModel(
-        model_name=MODEL_NAME,
-        generation_config={"temperature": 0.4, "response_mime_type": "application/json"},
-    )
-    response = model.generate_content(prompt)
-    raw = response.text.strip()
-    
-    # Simple clean up
-    if "```json" in raw: raw = raw.split("```json")[1].split("```")[0]
-    elif "```" in raw: raw = raw.split("```")[1].split("```")[0]
-    
-    return json.loads(raw.strip())
+    models_to_try = [MODEL_NAME, "gemini-1.5-flash"]
+    last_error = None
+
+    for model_id in models_to_try:
+        try:
+            model = genai.GenerativeModel(
+                model_name=model_id,
+                generation_config={"temperature": 0.4, "response_mime_type": "application/json"},
+            )
+            response = model.generate_content(prompt)
+            raw = response.text.strip()
+            
+            # More robust JSON extraction
+            if "```json" in raw:
+                raw = raw.split("```json")[1].split("```")[0]
+            elif "```" in raw:
+                raw = raw.split("```")[1].split("```")[0]
+            
+            raw = raw.strip()
+            # If empty, skip
+            if not raw: continue
+            
+            return json.loads(raw)
+        except Exception as e:
+            print(f"Error with model {model_id}: {str(e)}")
+            last_error = e
+            continue
+
+    raise last_error or ValueError("Failed to generate diet after multiple attempts.")
