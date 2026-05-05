@@ -128,6 +128,7 @@ export default function Nutrition() {
 
   // Daily meal selections (state)
   const [meals, setMeals] = useState(() => generateDefaultPlan(2000))
+  const [activePlanId, setActivePlanId] = useState(null)
 
   // Swap/Add modal state
   const [swapModal, setSwapModal] = useState({ open: false, day: null, mealSlot: null, mode: 'swap', index: null })
@@ -160,22 +161,48 @@ export default function Nutrition() {
         setCalorieTarget(prof.calorie_target || 2000)
       }
 
-      // Get AI-generated plan
-      const { data: plans } = await supabase
-        .from('plans')
-        .select('*')
+      // 1. Try to load today's log first (it has the most recent modifications)
+      const today = new Date().toISOString().split('T')[0]
+      const { data: log } = await supabase
+        .from('daily_logs')
+        .select('meal_data')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-      if (plans && plans.length > 0) {
-        const planData = plans[0].plan_data
-        if (planData?.weeklyMealPlan) {
-          setAiPlan(planData)
-          const converted = convertAiPlan(planData, prof?.calorie_target || 2000)
-          if (converted) setMeals(converted)
+        .eq('log_date', today)
+        .single()
+
+      if (log?.meal_data) {
+        setMeals(log.meal_data)
+        // Also get plan for reference if needed
+        const { data: plans } = await supabase
+          .from('plans')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+        if (plans?.length) {
+          setAiPlan(plans[0].plan_data)
+          setActivePlanId(plans[0].id)
         }
-      } else if (prof) {
-        setMeals(generateDefaultPlan(prof.calorie_target || 2000))
+      } else {
+        // 2. Fallback to latest AI plan
+        const { data: plans } = await supabase
+          .from('plans')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+        
+        if (plans && plans.length > 0) {
+          setActivePlanId(plans[0].id)
+          const planData = plans[0].plan_data
+          if (planData?.weeklyMealPlan) {
+            setAiPlan(planData)
+            const converted = convertAiPlan(planData, prof?.calorie_target || 2000)
+            if (converted) setMeals(converted)
+          }
+        } else if (prof) {
+          setMeals(generateDefaultPlan(prof.calorie_target || 2000))
+        }
       }
     })()
   }, [user])
@@ -200,11 +227,32 @@ export default function Nutrition() {
     setMeals(newMeals)
     if (user) {
       const today = new Date().toISOString().split('T')[0]
+      // Sync to daily log
       supabase.from('daily_logs').upsert({
         user_id: user.id,
         log_date: today,
         meal_data: newMeals,
       }, { onConflict: 'user_id,log_date' }).then(() => {})
+
+      // Sync to master plan if we have one
+      if (activePlanId) {
+        // We construct a simple version of the AI format to keep things compatible
+        const dayMapRev = { 'Mon': 'Monday', 'Tue': 'Tuesday', 'Wed': 'Wednesday', 'Thu': 'Thursday', 'Fri': 'Friday', 'Sat': 'Saturday', 'Sun': 'Sunday' }
+        const weeklyMealPlan = {}
+        Object.entries(newMeals).forEach(([shortDay, slotData]) => {
+          const fullDay = dayMapRev[shortDay] || shortDay
+          weeklyMealPlan[fullDay] = Object.entries(slotData).map(([meal, dishes]) => ({
+            meal,
+            dishes: dishes || []
+          }))
+        })
+
+        supabase.from('plans').update({
+          plan_data: { ...aiPlan, weeklyMealPlan }
+        }).eq('id', activePlanId).then(() => {
+          setAiPlan(prev => ({ ...prev, weeklyMealPlan }))
+        })
+      }
     }
   }
 
@@ -304,6 +352,7 @@ export default function Nutrition() {
         const planData = data.plan_data
         if (planData?.weeklyMealPlan) {
           setAiPlan(planData)
+          setActivePlanId(data.id) // Use the ID from the server response
           const converted = convertAiPlan(planData, profile.calorie_target || 2000)
           if (converted) {
             setMeals(converted)
