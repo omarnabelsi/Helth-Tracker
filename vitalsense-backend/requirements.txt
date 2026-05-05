@@ -7,3 +7,4 @@ python-dotenv
 google-generativeai
 clarifai-grpc
 python-multipart
+bcrypt==4.0.1

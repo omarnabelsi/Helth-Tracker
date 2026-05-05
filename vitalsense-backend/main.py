@@ -8,34 +8,48 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-# Load environment variables before anything else
-load_dotenv()
+import traceback
 
-# ── Startup env check ──
-_required_env = ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY', 'GEMINI_API_KEY']
-for _key in _required_env:
-    if not os.getenv(_key):
-        print(f"[ERROR] Missing env var: {_key}")
-    else:
-        print(f"[OK] {_key} loaded")
+try:
+    # Load environment variables
+    load_dotenv()
 
-from routers import (
-    auth,
-    body_profile,
-    health_conditions,
-    goals,
-    diet_plans,
-    workout_plans,
-    meal_logs,
-    progress_snapshots,
-    chat,
-    generate_plan,
-    progress_report,
-    meal_photo,
-    doctor_summary,
-    weekly_report,
-    analyze_progress_photo,
-)
+    # ── Startup env check ──
+    _required_env = ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY', 'GEMINI_API_KEY']
+    for _key in _required_env:
+        if not os.getenv(_key):
+            print(f"[ERROR] Missing env var: {_key}")
+        else:
+            # Mask the value for security in logs
+            val = os.getenv(_key)
+            masked = val[:5] + "..." + val[-5:] if val else "None"
+            print(f"[OK] {_key} loaded: {masked}")
+
+    print("[DEBUG] Importing routers...")
+    from routers import (
+        auth,
+        body_profile,
+        health_conditions,
+        goals,
+        diet_plans,
+        workout_plans,
+        meal_logs,
+        progress_snapshots,
+        chat,
+        generate_plan,
+        progress_report,
+        meal_photo,
+        doctor_summary,
+        weekly_report,
+        analyze_progress_photo,
+    )
+    print("[DEBUG] Routers imported successfully.")
+except Exception as e:
+    print("[CRITICAL] Failed to start backend:")
+    traceback.print_exc()
+    # Still exit with 1 so Render knows it failed
+    import sys
+    sys.exit(1)
 
 app = FastAPI(
     title="VitalSense AI",
