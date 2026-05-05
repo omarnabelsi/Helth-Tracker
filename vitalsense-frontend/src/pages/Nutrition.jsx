@@ -443,7 +443,7 @@ export default function Nutrition() {
       </div>
 
       {/* Meals + Macro Ring */}
-      <div className="flex gap-6 animate-fade-in-up delay-200">
+      <div className="flex flex-col lg:flex-row gap-6 animate-fade-in-up delay-200">
         {/* Meal Sections */}
         <div className="flex-1 space-y-4">
           {Object.entries(todayMeals).map(([mealSlot, food]) => {

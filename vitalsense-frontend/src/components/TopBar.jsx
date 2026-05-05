@@ -112,8 +112,8 @@ export default function TopBar({ onMenuClick }) {
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
-        {/* Search */}
-        <div className="relative flex-1 md:w-80">
+        {/* Search - hidden on small mobile to prevent overlap */}
+        <div className="relative flex-1 md:w-80 hidden sm:block">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input
             type="text"
@@ -124,15 +124,15 @@ export default function TopBar({ onMenuClick }) {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-3 relative">
-        {/* Language Toggle */}
+      <div className="flex items-center gap-2 md:gap-3 relative">
+        {/* Language Toggle - only icon on mobile */}
         <button
           onClick={toggleLanguage}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-bg-main text-text-muted hover:text-primary-accent hover:bg-primary-pale transition-all text-xs font-bold"
+          className="flex items-center gap-1.5 px-2 md:px-3 py-2 rounded-xl bg-bg-main text-text-muted hover:text-primary-accent hover:bg-primary-pale transition-all text-xs font-bold"
           title="Toggle language"
         >
           <Globe size={14} />
-          {i18n.language === 'en' ? 'عربي' : 'EN'}
+          <span className="hidden xs:inline">{i18n.language === 'en' ? 'عربي' : 'EN'}</span>
         </button>
 
         {/* Theme Toggle */}
@@ -212,10 +212,10 @@ export default function TopBar({ onMenuClick }) {
         )}
         <div className="w-px h-8 bg-gray-200"></div>
         <div className="flex items-center gap-2 cursor-pointer">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-accent to-primary-light flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-accent to-primary-light flex items-center justify-center flex-shrink-0">
             <span className="text-white text-xs font-bold">{initial}</span>
           </div>
-          <span className="text-sm font-medium text-text-primary">{displayName.split(' ')[0]}</span>
+          <span className="text-sm font-medium text-text-primary hidden sm:inline truncate max-w-[80px]">{displayName.split(' ')[0]}</span>
         </div>
       </div>
     </header>
