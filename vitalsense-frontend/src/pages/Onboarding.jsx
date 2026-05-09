@@ -4,8 +4,10 @@ import { toast } from 'react-hot-toast'
 import { supabase } from '../lib/supabase'
 import { VitaBot } from '../components/VitaBot'
 import { SpeechBubble } from '../components/SpeechBubble'
+import { useTranslation } from 'react-i18next'
 
 const Onboarding = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [animKey, setAnimKey] = useState(0)
@@ -123,15 +125,15 @@ const Onboarding = () => {
   }
 
   const steps = [
-    { prog: 0, bubble: "Hi! I'm VitaBot — your AI health coach. I'll build your perfect plan in 60 seconds!" },
-    { prog: 15, bubble: "First things first — what should I call you?" },
-    { prog: 30, bubble: "Let me learn about your body to calculate your exact calorie needs!" },
-    { prog: 45, bubble: "What's your main goal? I'll build everything around this!" },
-    { prog: 60, bubble: "Any health conditions or injuries? This keeps your plan safe!" },
-    { prog: 75, bubble: "Where do you train? This shapes your entire workout program!" },
-    { prog: 78, bubble: form.gym === 'small_gym' ? "What equipment do you have access to? I'll only give you exercises you can actually do!" : "Your gym sounds well-equipped! Check everything available so I can build the perfect program!" },
-    { prog: 88, bubble: "Running my AI engines... building your perfect personalized plan!" },
-    { prog: 100, bubble: `Plan ready${form.name ? ', ' + form.name : ''}! Let's crush those goals! 🤖💪` }
+    { prog: 0, bubble: t('onboarding.bubble_0') },
+    { prog: 15, bubble: t('onboarding.bubble_1') },
+    { prog: 30, bubble: t('onboarding.bubble_2') },
+    { prog: 45, bubble: t('onboarding.bubble_3') },
+    { prog: 60, bubble: t('onboarding.bubble_4') },
+    { prog: 75, bubble: t('onboarding.bubble_5') },
+    { prog: 78, bubble: form.gym === 'small_gym' ? t('onboarding.bubble_6_small') : t('onboarding.bubble_6_big') },
+    { prog: 88, bubble: t('onboarding.bubble_7') },
+    { prog: 100, bubble: t('onboarding.bubble_8', { name: form.name ? `, ${form.name}` : '' }) }
   ]
 
   return (
@@ -154,15 +156,15 @@ const Onboarding = () => {
 
         {/* Step content */}
         <div key={`step-${step}`} style={{ animation: 'cardIn 0.45s cubic-bezier(0.34, 1.2, 0.64, 1) forwards' }}>
-          {step === 0 && <WelcomeStep onNext={nextStep}/>}
-          {step === 1 && <NameStep form={form} update={update} onNext={nextStep}/>}
-          {step === 2 && <StatsStep form={form} update={update} onNext={nextStep}/>}
-          {step === 3 && <GoalStep form={form} update={update} onNext={nextStep}/>}
-          {step === 4 && <ConditionsStep form={form} update={update} onNext={nextStep}/>}
-          {step === 5 && <GymStep form={form} update={update} onNext={nextStep}/>}
-          {step === 6 && form.gym !== 'home' && <EquipmentStep form={form} update={update} onNext={nextStep}/>}
-          {step === 7 && <AnalyzingStep onDone={nextStep}/>}
-          {step === 8 && <SuccessStep form={form} onDone={completeOnboarding} loading={loading}/>}
+          {step === 0 && <WelcomeStep t={t} onNext={nextStep}/>}
+          {step === 1 && <NameStep t={t} form={form} update={update} onNext={nextStep}/>}
+          {step === 2 && <StatsStep t={t} form={form} update={update} onNext={nextStep}/>}
+          {step === 3 && <GoalStep t={t} form={form} update={update} onNext={nextStep}/>}
+          {step === 4 && <ConditionsStep t={t} form={form} update={update} onNext={nextStep}/>}
+          {step === 5 && <GymStep t={t} form={form} update={update} onNext={nextStep}/>}
+          {step === 6 && form.gym !== 'home' && <EquipmentStep t={t} form={form} update={update} onNext={nextStep}/>}
+          {step === 7 && <AnalyzingStep t={t} onDone={nextStep}/>}
+          {step === 8 && <SuccessStep t={t} form={form} onDone={completeOnboarding} loading={loading}/>}
         </div>
       </div>
 
@@ -648,61 +650,61 @@ const Onboarding = () => {
   )
 }
 
-const WelcomeStep = ({onNext}) => (
+const WelcomeStep = ({t, onNext}) => (
   <div className="onboarding-card">
     <div style={{textAlign:'center',padding:'8px 0'}}>
-      <div style={{color:'#4CAF7D',fontSize:'12px',fontWeight:'600',letterSpacing:'1px',marginBottom:'8px'}}>VITALSENSE AI</div>
-      <h2 className="card-title">Your AI Health Coach<br/>Built for Lebanon 🇱🇧</h2>
-      <p className="card-subtitle" style={{marginBottom:'24px', lineHeight: '1.6'}}>I'll ask you a few quick questions and build a fully personalized nutrition and workout plan — powered by AI.</p>
-      <button className="btn-primary" onClick={onNext}>SOUNDS GOOD! 🤖</button>
+      <div style={{color:'#4CAF7D',fontSize:'12px',fontWeight:'600',letterSpacing:'1px',marginBottom:'8px'}}>{t('onboarding.welcome_tag')}</div>
+      <h2 className="card-title" dangerouslySetInnerHTML={{ __html: t('onboarding.welcome_title').replace('Lebanon', 'Lebanon 🇱🇧') }}></h2>
+      <p className="card-subtitle" style={{marginBottom:'24px', lineHeight: '1.6'}}>{t('onboarding.welcome_subtitle')}</p>
+      <button className="btn-primary" onClick={onNext}>{t('onboarding.sounds_good')}</button>
     </div>
   </div>
 )
 
-const NameStep = ({form,update,onNext}) => (
+const NameStep = ({t, form,update,onNext}) => (
   <div className="onboarding-card">
-    <h3 className="card-title">What's your name?</h3>
-    <p className="card-subtitle">You can change this later in settings</p>
-    <input className="onboarding-input" placeholder="Enter your name" value={form.name} onChange={e=>update('name',e.target.value)} style={{marginBottom:'16px'}}/>
-    <button className="btn-primary" onClick={onNext} disabled={!form.name.trim()}>Continue →</button>
-    <button className="btn-secondary" onClick={()=>{update('name','User');onNext()}}>Skip for now</button>
+    <h3 className="card-title">{t('onboarding.whats_your_name')}</h3>
+    <p className="card-subtitle">{t('onboarding.name_subtitle')}</p>
+    <input className="onboarding-input" placeholder={t('onboarding.name_placeholder')} value={form.name} onChange={e=>update('name',e.target.value)} style={{marginBottom:'16px'}}/>
+    <button className="btn-primary" onClick={onNext} disabled={!form.name.trim()}>{t('onboarding.continue')} →</button>
+    <button className="btn-secondary" onClick={()=>{update('name','User');onNext()}}>{t('onboarding.skip')}</button>
   </div>
 )
 
-const StatsStep = ({form,update,onNext}) => (
+const StatsStep = ({t, form,update,onNext}) => (
   <div className="onboarding-card">
-    <h3 className="card-title" style={{marginBottom:'16px'}}>Basic Stats</h3>
+    <h3 className="card-title" style={{marginBottom:'16px'}}>{t('onboarding.basic_stats')}</h3>
     <div className="pill-row">
       {['male','female'].map(g=>
         <div key={g} onClick={()=>update('gender',g)} className={`pill ${form.gender===g?'selected':''}`}>
-          {g==='male'?'👨 Male':'👩 Female'}
+          {g==='male'? `👨 ${t('onboarding.gender_male')}` : `👩 ${t('onboarding.gender_female')}`}
         </div>
       )}
     </div>
     <div className="number-grid">
-      {[{f:'age',l:'Age',p:'25'},{f:'weight',l:'Weight (kg)',p:'75'},{f:'height',l:'Height (cm)',p:'175'}].map(({f,l,p})=>(
+      {[{f:'age',l:t('onboarding.age'),p:'25'},{f:'weight',l:t('onboarding.weight_kg'),p:'75'},{f:'height',l:t('onboarding.height_cm'),p:'175'}].map(({f,l,p})=>(
         <div key={f} className="number-field">
           <div className="number-label">{l}</div>
           <input type="number" className="number-input" placeholder={p} value={form[f]} onChange={e=>update(f,e.target.value)} />
         </div>
       ))}
     </div>
-    <div className="number-label" style={{marginBottom:'8px'}}>Activity Level</div>
+    <div className="number-label" style={{marginBottom:'8px'}}>{t('onboarding.activity_level')}</div>
     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px',marginBottom:'16px'}}>
-      {['Sedentary','Light','Moderate','Active'].map(a=>
+      {['sedentary','light','moderate','active'].map(a=>
         <div key={a} onClick={()=>update('activity',a)} className={`pill ${form.activity===a?'selected':''}`} style={{padding:'10px'}}>
-          {a}
+          {t(`onboarding.${a}`)}
         </div>
       )}
     </div>
-    <button className="btn-primary" onClick={onNext} disabled={!form.gender||!form.age||!form.weight||!form.height||!form.activity}>Continue →</button>
+    <button className="btn-primary" onClick={onNext} disabled={!form.gender||!form.age||!form.weight||!form.height||!form.activity}>{t('onboarding.continue')} →</button>
   </div>
 )
 
-const GoalStep = ({form,update,onNext}) => (
+const GoalStep = ({t, form,update,onNext}) => (
   <div className="onboarding-card">
-    <h3 className="card-title" style={{marginBottom:'16px'}}>Choose Your Goal</h3>
-    {[{id:'lose_fat',icon:'🔥',t:'Lose Fat',d:'Burn calories, reduce body fat'},{id:'build_muscle',icon:'💪',t:'Build Muscle',d:'Gain strength and mass'},{id:'improve_health',icon:'❤️',t:'Improve Health',d:'General wellness and fitness'}].map(g=>(
+    <h3 className="card-title" style={{marginBottom:'16px'}}>{t('onboarding.choose_goal')}</h3>
+    {[{id:'lose_fat',icon:'🔥',t:t('onboarding.lose_fat'),d:t('onboarding.lose_fat_desc')},{id:'build_muscle',icon:'💪',t:t('onboarding.build_muscle'),d:t('onboarding.build_muscle_desc')},{id:'improve_health',icon:'❤️',t:t('onboarding.improve_health'),d:t('onboarding.improve_health_desc')}].map(g=>(
       <div key={g.id} onClick={()=>update('goal',g.id)} className={`option-card ${form.goal===g.id?'selected':''}`}>
         <div className="option-icon">{g.icon}</div>
         <div style={{flex:1}}>
@@ -714,9 +716,9 @@ const GoalStep = ({form,update,onNext}) => (
     ))}
     {form.goal==='lose_fat'&&(
       <div className="loss-selector">
-        <div className="loss-label">Weekly loss target:</div>
+        <div className="loss-label">{t('onboarding.weekly_loss')}:</div>
         <div className="loss-options">
-          {[{v:'0.25kg',k:'-275 kcal'},{v:'0.5kg',k:'-550 kcal'},{v:'1kg',k:'-1100 kcal'}].map(w=>(
+          {[{v:'0.25kg',k:`-275 ${t('common.kcal')}`},{v:'0.5kg',k:`-550 ${t('common.kcal')}`},{v:'1kg',k:`-1100 ${t('common.kcal')}`}].map(w=>(
             <div key={w.v} onClick={()=>update('weeklyLoss',w.v)} className={`loss-opt ${form.weeklyLoss===w.v?'selected':''}`}>
               <div className="loss-opt-val">{w.v}</div>
               <div className="loss-opt-kcal">{w.k}</div>
@@ -725,31 +727,31 @@ const GoalStep = ({form,update,onNext}) => (
         </div>
       </div>
     )}
-    <button className="btn-primary" onClick={onNext} disabled={!form.goal}>Continue →</button>
+    <button className="btn-primary" onClick={onNext} disabled={!form.goal}>{t('onboarding.continue')} →</button>
   </div>
 )
 
-const ConditionsStep = ({form,update,onNext}) => (
+const ConditionsStep = ({t, form,update,onNext}) => (
   <div className="onboarding-card">
-    <h3 className="card-title">Health Conditions</h3>
-    <p className="card-subtitle">Type any illnesses, injuries, or medications</p>
-    <textarea className="onboarding-textarea" value={form.conditions} onChange={e=>update('conditions',e.target.value)} placeholder="E.g. knee injury, Type 2 diabetes, high blood pressure..." rows={3} style={{marginBottom:'12px'}}/>
+    <h3 className="card-title">{t('onboarding.health_conditions')}</h3>
+    <p className="card-subtitle">{t('onboarding.conditions_subtitle')}</p>
+    <textarea className="onboarding-textarea" value={form.conditions} onChange={e=>update('conditions',e.target.value)} placeholder={t('onboarding.conditions_placeholder')} rows={3} style={{marginBottom:'12px'}}/>
     <div className="chips-wrap">
       {['No conditions','Heart disease','Diabetes','Joint pain','Back pain','High blood pressure','Asthma','Knee injury'].map(c=>(
         <div key={c} onClick={()=>update('conditions',c==='No conditions'?'None':(form.conditions?form.conditions+', '+c:c))} className="chip">
-          {c}
+          {t(`onboarding.${c.toLowerCase().replace(/ /g, '_')}`)}
         </div>
       ))}
     </div>
-    <button className="btn-primary" onClick={onNext}>Continue →</button>
-    <button className="btn-secondary" onClick={()=>{update('conditions','None');onNext()}}>Skip — No conditions</button>
+    <button className="btn-primary" onClick={onNext}>{t('onboarding.continue')} →</button>
+    <button className="btn-secondary" onClick={()=>{update('conditions','None');onNext()}}>{t('onboarding.skip_no_conditions')}</button>
   </div>
 )
 
-const GymStep = ({form,update,onNext}) => (
+const GymStep = ({t, form,update,onNext}) => (
   <div className="onboarding-card">
-    <h3 className="card-title" style={{marginBottom:'16px'}}>Where do you train?</h3>
-    {[{id:'home',icon:'🏠',t:'At Home',d:'Bodyweight or minimal equipment'},{id:'small_gym',icon:'🏋️',t:'Small Gym',d:'Dumbbells, basic machines'},{id:'big_gym',icon:'💪',t:'Full Gym',d:'All machines, cables, full equipment'}].map(g=>(
+    <h3 className="card-title" style={{marginBottom:'16px'}}>{t('onboarding.where_train')}</h3>
+    {[{id:'home',icon:'🏠',t:t('onboarding.home'),d:t('onboarding.home_desc')},{id:'small_gym',icon:'🏋️',t:t('onboarding.small_gym'),d:t('onboarding.small_gym_desc')},{id:'big_gym',icon:'💪',t:t('onboarding.full_gym'),d:t('onboarding.full_gym_desc')}].map(g=>(
       <div key={g.id} onClick={()=>update('gym',g.id)} className={`option-card ${form.gym===g.id?'selected':''}`}>
         <div className="option-icon">{g.icon}</div>
         <div style={{flex:1}}>
@@ -759,35 +761,35 @@ const GymStep = ({form,update,onNext}) => (
         {form.gym===g.id&&<div className="option-check">✓</div>}
       </div>
     ))}
-    <button className="btn-primary" onClick={onNext} disabled={!form.gym} style={{marginTop:'6px'}}>Continue →</button>
+    <button className="btn-primary" onClick={onNext} disabled={!form.gym} style={{marginTop:'6px'}}>{t('onboarding.continue')} →</button>
   </div>
 )
 
-const EquipmentStep = ({ form, update, onNext }) => {
+const EquipmentStep = ({ t, form, update, onNext }) => {
   const allEquipment = {
     small_gym: [
-      { id: 'dumbbells', label: 'Dumbbells', icon: '🏋️' },
-      { id: 'barbell', label: 'Barbell + Plates', icon: '⚖️' },
-      { id: 'bench', label: 'Bench', icon: '🛏️' },
-      { id: 'pull_up_bar', label: 'Pull-up Bar', icon: '🔝' },
-      { id: 'resistance_bands', label: 'Resistance Bands', icon: '🔁' },
-      { id: 'treadmill', label: 'Treadmill', icon: '🏃' },
-      { id: 'stationary_bike', label: 'Stationary Bike', icon: '🚴' },
-      { id: 'kettlebell', label: 'Kettlebells', icon: '🔔' },
+      { id: 'dumbbells', label: t('workout.dumbbells'), icon: '🏋️' },
+      { id: 'barbell', label: t('workout.barbell'), icon: '⚖️' },
+      { id: 'bench', label: t('workout.bench'), icon: '🛏️' },
+      { id: 'pull_up_bar', label: t('workout.pull_up_bar'), icon: '🔝' },
+      { id: 'resistance_bands', label: t('workout.resistance_bands'), icon: '🔁' },
+      { id: 'treadmill', label: t('workout.treadmill'), icon: '🏃' },
+      { id: 'stationary_bike', label: t('workout.stationary_bike'), icon: '🚴' },
+      { id: 'kettlebell', label: t('workout.kettlebells'), icon: '🔔' },
     ],
     big_gym: [
-      { id: 'dumbbells', label: 'Dumbbells', icon: '🏋️' },
-      { id: 'barbell', label: 'Barbell + Rack', icon: '⚖️' },
-      { id: 'bench', label: 'Bench Press', icon: '🛏️' },
-      { id: 'cables', label: 'Cable Machine', icon: '🔗' },
-      { id: 'lat_pulldown', label: 'Lat Pulldown', icon: '⬇️' },
-      { id: 'leg_press', label: 'Leg Press', icon: '🦵' },
-      { id: 'smith_machine', label: 'Smith Machine', icon: '🏗️' },
-      { id: 'treadmill', label: 'Treadmill', icon: '🏃' },
-      { id: 'rowing_machine', label: 'Rowing Machine', icon: '🚣' },
-      { id: 'stairmaster', label: 'StairMaster', icon: '🪜' },
-      { id: 'pull_up_bar', label: 'Pull-up Bar', icon: '🔝' },
-      { id: 'resistance_bands', label: 'Resistance Bands', icon: '🔁' },
+      { id: 'dumbbells', label: t('workout.dumbbells'), icon: '🏋️' },
+      { id: 'barbell', label: t('workout.barbell'), icon: '⚖️' },
+      { id: 'bench', label: t('workout.bench'), icon: '🛏️' },
+      { id: 'cables', label: t('workout.cables'), icon: '🔗' },
+      { id: 'lat_pulldown', label: t('workout.lat_pulldown'), icon: '⬇️' },
+      { id: 'leg_press', label: t('workout.leg_press'), icon: '🦵' },
+      { id: 'smith_machine', label: t('workout.smith_machine'), icon: '🏗️' },
+      { id: 'treadmill', label: t('workout.treadmill'), icon: '🏃' },
+      { id: 'rowing_machine', label: t('workout.rowing_machine'), icon: '🚣' },
+      { id: 'stairmaster', label: t('workout.stairmaster'), icon: '🪜' },
+      { id: 'pull_up_bar', label: t('workout.pull_up_bar'), icon: '🔝' },
+      { id: 'resistance_bands', label: t('workout.resistance_bands'), icon: '🔁' },
     ]
   }
 
@@ -806,16 +808,16 @@ const EquipmentStep = ({ form, update, onNext }) => {
 
   return (
     <div className="onboarding-card">
-      <h2 className="card-title">What equipment do you have?</h2>
-      <p className="card-subtitle">Select everything available to you — your workouts will be built around these</p>
+      <h2 className="card-title">{t('onboarding.equipment_title')}</h2>
+      <p className="card-subtitle">{t('onboarding.equipment_subtitle')}</p>
 
       {/* Select all shortcut */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
         <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>
-          {selected.length} of {equipment.length} selected
+          {selected.length} {t('onboarding.selected_of')} {equipment.length} {t('onboarding.selected_label')}
         </span>
         <button onClick={selectAll} style={{ background: 'none', border: '1px solid rgba(76,175,125,0.3)', borderRadius: '8px', padding: '5px 12px', color: '#4CAF7D', fontSize: '12px', cursor: 'pointer' }}>
-          Select All
+          {t('onboarding.select_all')}
         </button>
       </div>
 
@@ -843,20 +845,20 @@ const EquipmentStep = ({ form, update, onNext }) => {
       >
         <div className="equipment-checkbox">{selected.length === 0 && '✓'}</div>
         <span style={{ fontSize: '16px' }}>🤷</span>
-        <span className="equipment-label">Not sure / Basic only</span>
+        <span className="equipment-label">{t('onboarding.skip_equipment')}</span>
       </div>
 
       <button className="btn-primary" onClick={onNext} disabled={selected.length === 0}>
-        Continue →
+        {t('onboarding.continue')} →
       </button>
       <button className="btn-secondary" onClick={() => { update('equipment', []); onNext(); }}>
-        Skip — I'll train with what's available
+        {t('onboarding.skip_equipment')}
       </button>
     </div>
   )
 }
 
-const AnalyzingStep = ({onDone}) => {
+const AnalyzingStep = ({t, onDone}) => {
   useEffect(()=>{
     const t1=setTimeout(()=>document.getElementById('b1')?.style&&(document.getElementById('b1').style.width='100%'),300)
     const t2=setTimeout(()=>document.getElementById('b2')?.style&&(document.getElementById('b2').style.width='100%'),1000)
@@ -867,10 +869,10 @@ const AnalyzingStep = ({onDone}) => {
   return (
     <div className="onboarding-card">
       <div style={{textAlign:'center',marginBottom:'20px'}}>
-        <div className="card-title" style={{fontSize:'18px'}}>Analyzing your profile...</div>
-        <div className="card-subtitle" style={{marginTop:'4px', marginBottom: 0}}>3 AI models working for you</div>
+        <div className="card-title" style={{fontSize:'18px'}}>{t('onboarding.analyzing_title')}</div>
+        <div className="card-subtitle" style={{marginTop:'4px', marginBottom: 0}}>{t('onboarding.analyzing_subtitle')}</div>
       </div>
-      {[{id:'b1',l:'📊 Calculating your TDEE & macros'},{id:'b2',l:'🍽️ Building your Lebanese meal plan'},{id:'b3',l:'💪 Creating your workout program'}].map(b=>(
+      {[{id:'b1',l:t('onboarding.analyzing_1')},{id:'b2',l:t('onboarding.analyzing_2')},{id:'b3',l:t('onboarding.analyzing_3')}].map(b=>(
         <div key={b.id} style={{marginBottom:'16px'}}>
           <div className="option-desc" style={{marginBottom:'8px'}}>{b.l}</div>
           <div className="analyze-bar-wrap">
@@ -882,20 +884,20 @@ const AnalyzingStep = ({onDone}) => {
   )
 }
 
-const SuccessStep = ({form,onDone,loading}) => (
+const SuccessStep = ({t, form,onDone,loading}) => (
   <div className="onboarding-card" style={{textAlign:'center'}}>
     <div style={{fontSize:'48px',marginBottom:'12px'}}>🎉</div>
-    <h3 className="card-title" style={{fontSize:'20px'}}>Your Plan is Ready{form.name&&form.name!=='User'?`, ${form.name}`:''}!</h3>
-    <p className="card-subtitle" style={{lineHeight:1.6}}>VitaBot has built your fully personalized plan. Time to crush those goals!</p>
+    <h3 className="card-title" style={{fontSize:'20px'}}>{t('onboarding.plan_ready')}</h3>
+    <p className="card-subtitle" style={{lineHeight:1.6}}>{t('onboarding.plan_ready_desc')}</p>
     <div className="success-stats">
-      {[{v:'7',l:'Day meal plan'},{v:'6',l:'Workouts/week'},{v:'AI',l:'Personalized'}].map(s=>(
+      {[{v:'7',l:t('onboarding.day_meal_plan')},{v:'6',l:t('onboarding.workouts_week')},{v:'AI',l:t('onboarding.personalized')}].map(s=>(
         <div key={s.l} className="success-stat">
           <div className="success-stat-val">{s.v}</div>
           <div className="success-stat-lbl">{s.l}</div>
         </div>
       ))}
     </div>
-    <button className="btn-primary" onClick={onDone} disabled={loading}>{loading?'Setting up...':'Go to Dashboard →'}</button>
+    <button className="btn-primary" onClick={onDone} disabled={loading}>{loading?t('onboarding.setting_up'):t('onboarding.go_to_dashboard') + ' →'}</button>
   </div>
 )
 

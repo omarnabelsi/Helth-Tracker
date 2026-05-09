@@ -6,7 +6,7 @@ and a /test-gemini endpoint for debugging.
 """
 import os
 import traceback
-from datetime import date
+from datetime import date, datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List
@@ -32,33 +32,54 @@ class SimpleChatResponse(BaseModel):
 
 
 def _build_system_prompt(user: dict, profile: dict | None, conditions: list,
-                         goal: dict | None, diet: dict | None, today_meals: list) -> str:
+                         goal: dict | None, plan: dict | None, today_meals: list) -> str:
     """Construct the Gemini system prompt with the user's full context."""
     parts = [
-        "You are VitalSense AI, a knowledgeable and supportive personal health coach.",
+        "You are VitalSense AI, a knowledgeable and supportive personal health coach for a Lebanese health platform.",
         "Be concise, evidence-based, and encouraging. Always remind the user to consult a doctor for medical issues.",
         f"\nUser: {user.get('full_name', 'User')}",
     ]
     if profile:
         parts.append(
-            f"Body: {profile.get('weight_kg')} kg, {profile.get('height_cm')} cm, "
-            f"age {profile.get('age')}, sex {profile.get('sex')}, "
-            f"body type {profile.get('body_type', 'unknown')}, "
-            f"body fat {profile.get('body_fat_pct', '?')}%"
+            f"Body Stats: {profile.get('weight')} kg, {profile.get('height')} cm, "
+            f"age {profile.get('age')}, sex {profile.get('gender')}, "
+            f"goal {profile.get('goal', 'unknown')}, "
+            f"target calories: {profile.get('calorie_target')} kcal"
         )
-    if conditions:
-        parts.append(f"Health conditions: {', '.join(c['condition_name'] for c in conditions)}")
-    if goal:
-        parts.append(f"Current goal: {goal.get('goal_type')} (target {goal.get('target_weight_kg', '—')} kg)")
-    if diet:
-        parts.append(
-            f"Diet plan: {diet.get('daily_calories')} kcal/day, "
-            f"P {diet.get('protein_g')}g / C {diet.get('carbs_g')}g / F {diet.get('fat_g')}g"
-        )
+        if profile.get('medical_conditions'):
+            parts.append(f"Medical history / conditions: {profile.get('medical_conditions')}")
+    
+    if plan:
+        parts.append("\nYour current weekly AI plan includes Lebanese dishes tailored to your needs.")
+        
     if today_meals:
         total_cal = sum(m.get("calories", 0) or 0 for m in today_meals)
-        parts.append(f"Today's intake so far: {total_cal} kcal from {len(today_meals)} meals")
+        parts.append(f"\nToday's ACTUAL intake so far: {total_cal} kcal from {len(today_meals)} meals.")
+        if profile and profile.get("calorie_target"):
+            remaining = profile.get("calorie_target") - total_cal
+            parts.append(f"Remaining calorie budget for today: {remaining} kcal.")
 
+    # Meal Time Context
+    current_hour = datetime.now().hour
+    meal_context = (
+        "breakfast time (6am-10am)" if 6 <= current_hour < 10 else
+        "lunch time (12pm-3pm)" if 12 <= current_hour < 15 else
+        "dinner time (6pm-9pm)" if 18 <= current_hour < 21 else
+        "snack time"
+    )
+
+    meal_rules_for_chat = f"""
+Current time context: it is {meal_context}.
+When suggesting foods or answering meal questions:
+- At breakfast time: suggest breakfast-appropriate foods only (eggs, labneh, manakish, oats, fruits, foul, yogurt). Never suggest pizza, heavy stews, or shawarma plates for breakfast.
+- At lunch time: suggest balanced full meals.
+- At dinner time: suggest lighter protein-focused meals.
+- At snack time: suggest small light options under 300 kcal. Never suggest full meal portions as snacks.
+If user asks about a food that is wrong for the time (e.g. 'Can I have baba ghanouj for breakfast?') explain why it is not ideal and suggest better alternatives.
+"""
+    parts.append(meal_rules_for_chat)
+
+    parts.append("\nOnly recommend Lebanese dishes. If the user asks about a specific food, tell them if it fits their remaining budget.")
     return "\n".join(parts)
 
 
@@ -87,7 +108,8 @@ async def simple_chat(body: SimpleChatRequest):
             "You are VitalSense AI, a personal health coach for a Lebanese health platform.\n"
             "Be concise, evidence-based, and encouraging.\n"
             "Only recommend Lebanese dishes when discussing food.\n"
-            "Always remind users to consult a doctor for medical issues."
+            "Always remind users to consult a doctor for medical issues.\n"
+            f"Current context: it is {datetime.now().strftime('%H:%M')}. Sugggest foods appropriate for this time."
         )
 
         if body.user_id:
@@ -136,17 +158,15 @@ async def send_message(body: ChatMessageIn, current_user: dict = Depends(get_cur
     user_id = current_user["id"]
 
     # ── Gather user context ──
-    bp = supabase.table("body_profiles").select("*").eq("user_id", user_id).order("scanned_at", desc=True).limit(1).execute()
-    profile = bp.data[0] if bp.data else None
+    prof_res = supabase.table("profiles").select("*").eq("user_id", user_id).limit(1).execute()
+    profile = prof_res.data[0] if prof_res.data else None
 
     conds = supabase.table("health_conditions").select("*").eq("user_id", user_id).execute()
     conditions = conds.data or []
 
-    gl = supabase.table("goals").select("*").eq("user_id", user_id).order("set_at", desc=True).limit(1).execute()
-    goal = gl.data[0] if gl.data else None
-
-    dp = supabase.table("diet_plans").select("*").eq("user_id", user_id).order("generated_at", desc=True).limit(1).execute()
-    diet = dp.data[0] if dp.data else None
+    pl_res = supabase.table("plans").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+    plan = pl_res.data[0] if pl_res.data else None
+    plan_data = plan.get("plan_data", {}) if plan else {}
 
     today_str = date.today().isoformat()
     ml = (
@@ -156,17 +176,31 @@ async def send_message(body: ChatMessageIn, current_user: dict = Depends(get_cur
         .lte("logged_at", f"{today_str}T23:59:59")
         .execute()
     )
-    today_meals = ml.data or []
+    today_meals_logged = ml.data or []
 
+    # Calculate actual calories consumed today
+    consumed_cal = sum(m.get("calories", 0) or 0 for m in today_meals_logged)
+    
+    # Build System Prompt
     if body.injected_context:
-        system_prompt = body.injected_context
+        # Incorporate real-time data into the injected context
+        target = profile.get("calorie_target") if profile else 2000
+        stats_addon = (
+            f"\n\nACTUAL REAL-TIME DATA:\n"
+            f"Today's actual consumed calories (from logs): {consumed_cal} kcal.\n"
+            f"Daily target: {target} kcal. Remaining: {target - consumed_cal} kcal."
+        )
+        system_prompt = body.injected_context + stats_addon
     else:
-        system_prompt = _build_system_prompt(current_user, profile, conditions, goal, diet, today_meals)
+        system_prompt = _build_system_prompt(current_user, profile, conditions, None, plan_data, today_meals_logged)
 
-    # ── Fetch conversation history ──
+    # ── Fetch conversation history (Last 24h only) ──
+    cutoff = (datetime.now() - timedelta(hours=24)).isoformat()
+    
     history_res = (
         supabase.table("chat_messages").select("*")
         .eq("user_id", user_id)
+        .gte("sent_at", cutoff)
         .order("sent_at", desc=False).execute()
     )
     history = []
@@ -181,7 +215,7 @@ async def send_message(body: ChatMessageIn, current_user: dict = Depends(get_cur
         print(f"[chat] Gemini error: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"AI service error: {str(e)}")
 
-    # ── Save both messages (optional, don't crash if DB fails) ──
+    # ── Save both messages ──
     try:
         supabase.table("chat_messages").insert({"user_id": user_id, "role": "user", "content": body.message}).execute()
         supabase.table("chat_messages").insert({"user_id": user_id, "role": "assistant", "content": reply}).execute()
@@ -201,10 +235,12 @@ async def send_message(body: ChatMessageIn, current_user: dict = Depends(get_cur
 
 @router.get("/history", response_model=List[ChatMessageOut])
 async def get_history(current_user: dict = Depends(get_current_user)):
-    """Return the full conversation history for the user."""
+    """Return the conversation history for the user from the last 24 hours."""
+    cutoff = (datetime.now() - timedelta(hours=24)).isoformat()
     result = (
         supabase.table("chat_messages").select("*")
         .eq("user_id", current_user["id"])
+        .gte("sent_at", cutoff)
         .order("sent_at", desc=False).execute()
     )
     return result.data or []

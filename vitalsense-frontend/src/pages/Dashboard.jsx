@@ -13,6 +13,7 @@ import { supabase } from '../lib/supabase'
 import { unlockFirstLogin } from '../utils/streaks'
 import { authFetch } from '../utils/authFetch'
 import { useTranslation } from 'react-i18next'
+import { PPL_SCHEDULE, getPPLDay } from '../data/pplSplit'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -21,7 +22,7 @@ const fullDayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'F
 const today = new Date()
 
 export default function Dashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth()
   const navigate = useNavigate()
   const [calendarMonth] = useState(today.getMonth())
@@ -44,8 +45,8 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user) return
     
-    // Load dismissed from session storage
-    const saved = sessionStorage.getItem(`dismissed_advisories_${user.id}`)
+    // Load dismissed from local storage (persistent across sessions)
+    const saved = localStorage.getItem(`dismissed_advisories_${user.id}`)
     if (saved) setDismissedAdvisories(JSON.parse(saved))
 
     ;(async () => {
@@ -73,8 +74,8 @@ export default function Dashboard() {
         const { data: wLogs } = await supabase.from('workout_logs').select('date').eq('user_id', user.id)
         if (wLogs) setWorkoutLogs(wLogs.map(l => l.date))
         
-        const { data: mLogs } = await supabase.from('daily_logs').select('log_date').eq('user_id', user.id)
-        if (mLogs) setMealLogs(mLogs.map(l => l.log_date))
+        const { data: mLogs } = await supabase.from('meal_logs').select('logged_at').eq('user_id', user.id)
+        if (mLogs) setMealLogs(mLogs.map(l => l.logged_at.split('T')[0]))
 
         // Fetch streak
         const { data: streakData } = await supabase.from('streaks').select('*').eq('user_id', user.id).single()
@@ -116,7 +117,7 @@ export default function Dashboard() {
   const dismissAdvisory = (text) => {
     const next = [...dismissedAdvisories, text]
     setDismissedAdvisories(next)
-    sessionStorage.setItem(`dismissed_advisories_${user.id}`, JSON.stringify(next))
+    localStorage.setItem(`dismissed_advisories_${user.id}`, JSON.stringify(next))
   }
 
   const isMockUser = user?.email === 'omarnabelsi12@gmail.com'
@@ -124,22 +125,39 @@ export default function Dashboard() {
   // Extract today's data from plan
   const todayDayName = fullDayNames[today.getDay()]
   const todayMeals = plan?.weeklyMealPlan?.[todayDayName] || []
-  const todayWorkout = plan?.weeklyWorkoutPlan?.find(w => w.day === todayDayName)
+  const todayWorkout = plan?.weeklyWorkoutPlan?.find(w => w.day === todayDayName || w.dayName === todayDayName)
   const healthWarnings = (plan?.healthWarnings || []).filter(w => !dismissedAdvisories.includes(w))
-  const coachTip = plan?.coachTip || (isMockUser ? "Great progress! Keep following your personalized plan and stay consistent with your meals and workouts." : null)
+  const coachTip = plan?.coachTip || (isMockUser ? t('dashboard.mock_tip') || "Great progress! Keep following your personalized plan and stay consistent with your meals and workouts." : null)
 
   // Calculate today's nutrition from AI plan
-  const totalCal = todayMeals.reduce((s, m) => s + (m?.calories || 0), 0)
-  const totalP = todayMeals.reduce((s, m) => s + (m?.protein || 0), 0)
-  const totalC = todayMeals.reduce((s, m) => s + (m?.carbs || 0), 0)
-  const totalF = todayMeals.reduce((s, m) => s + (m?.fat || 0), 0)
-  const calorieTarget = profile?.calorie_target || 2000
+  let totalCal = 0, totalP = 0, totalC = 0, totalF = 0;
+  todayMeals.forEach(meal => {
+    if (Array.isArray(meal.dishes)) {
+      meal.dishes.forEach(d => {
+        totalCal += (d.calories || 0);
+        totalP += (d.protein || 0);
+        totalC += (d.carbs || 0);
+        totalF += (d.fat || 0);
+      });
+    } else {
+      // Fallback for flat structure
+      totalCal += (meal.calories || 0);
+      totalP += (meal.protein || 0);
+      totalC += (meal.carbs || 0);
+      totalF += (meal.fat || 0);
+    }
+  });
+  totalCal = Math.round(totalCal);
+  totalP = Math.round(totalP);
+  totalC = Math.round(totalC);
+  totalF = Math.round(totalF);
+  const calorieTarget = Math.round(profile?.calorie_target || 2000)
 
   const userName = profile?.name || user?.user_metadata?.full_name || 'User'
 
   // Determine greeting based on time
   const hour = today.getHours()
-  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
+  const greeting = hour < 12 ? t('dashboard.greeting_morning') : hour < 18 ? t('dashboard.greeting_afternoon') : t('dashboard.greeting_evening')
 
   return (
     <div className="flex gap-0 h-full">
@@ -151,7 +169,7 @@ export default function Dashboard() {
             {greeting}, {userName.split(' ')[0]} 👋
           </h1>
           <p className="text-text-muted text-sm mt-1">
-            {loading ? 'Loading your personalized plan...' : "Your AI-powered health plan is ready. Let's make today count!"}
+            {loading ? t('common.loading') : t('dashboard.subtitle')}
           </p>
         </div>
 
@@ -160,21 +178,25 @@ export default function Dashboard() {
 
         {/* ── Health Warnings (from AI plan) ── */}
         {healthWarnings.length > 0 && (
-          <div className="space-y-2 animate-fade-in">
+          <div className="space-y-3 animate-fade-in">
             {healthWarnings.map((warning, i) => (
-              <div key={i} className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3 relative group">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-                  <AlertTriangle size={18} className="text-amber-600" />
+              <div key={i} className="bg-amber-50/10 dark:bg-amber-900/20 border border-amber-500/20 dark:border-amber-500/30 rounded-2xl p-4 flex items-start gap-4 relative group transition-all hover:border-amber-500/40">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle size={18} className="text-amber-600 dark:text-amber-400" />
                 </div>
-                <div className="flex-1 pr-8">
-                  <p className="text-sm font-semibold text-amber-800">⚠️ Health Advisory</p>
-                  <p className="text-xs text-amber-600 mt-0.5">{warning}</p>
+                <div className="flex-1 ltr:pr-8 rtl:pl-8">
+                  <p className="text-sm font-bold text-amber-900 dark:text-amber-100 flex items-center gap-2">
+                    <Sparkles size={14} className="text-amber-500 animate-pulse" />
+                    {t('dashboard.health_advisory')}
+                  </p>
+                  <p className="text-xs text-amber-800/80 dark:text-amber-200/70 mt-1 leading-relaxed">{warning}</p>
                 </div>
                 <button 
                   onClick={() => dismissAdvisory(warning)}
-                  className="absolute top-4 right-4 w-6 h-6 rounded-full bg-gray-200/50 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-all opacity-0 group-hover:opacity-100"
+                  className="absolute top-4 ltr:right-4 rtl:left-4 w-7 h-7 rounded-full bg-amber-500/10 dark:bg-white/5 flex items-center justify-center text-amber-900/40 dark:text-white/30 hover:bg-amber-500/20 dark:hover:bg-white/10 hover:text-amber-900 dark:hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                  title="Dismiss advisory"
                 >
-                  <X size={12} />
+                  <X size={14} />
                 </button>
               </div>
             ))}
@@ -190,7 +212,7 @@ export default function Dashboard() {
           <div className="relative flex flex-col md:flex-row items-center justify-between">
             <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-6 md:gap-8">
               <ProgressRing
-                value={72}
+                value={Math.min(100, Math.round((totalCal / calorieTarget) * 100))}
                 max={100}
                 size={140}
                 strokeWidth={12}
@@ -199,13 +221,13 @@ export default function Dashboard() {
                 className="flex-shrink-0"
               />
               <div>
-                <h2 className="font-heading text-xl font-bold mb-1">Daily Goal Progress</h2>
+                <h2 className="font-heading text-xl font-bold mb-1">{t('dashboard.daily_goal')}</h2>
                 <p className="text-white/60 text-sm mb-4 max-w-sm">
-                  {plan ? `Your AI plan targets ${calorieTarget} kcal today with ${todayMeals.length} Lebanese meals.` : "You've completed 72% of your daily goals. Stay consistent!"}
+                  {plan ? `${t('dashboard.todays_plan')} ${calorieTarget} ${t('common.kcal')} ${t('dashboard.today')}` : t('dashboard.no_plan')}
                 </p>
                 <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur px-4 py-2 rounded-xl">
                   <Flame size={16} className="text-orange-400" />
-                  <span className="text-sm font-semibold">🔥 {streak?.current_streak || 0} day streak</span>
+                  <span className="text-sm font-semibold">🔥 {streak?.current_streak || 0} {t('dashboard.streak_days')}</span>
                 </div>
               </div>
             </div>
@@ -249,85 +271,101 @@ export default function Dashboard() {
             {todayMeals.length > 0 ? (
               <>
                 <div className="mb-3 space-y-1.5">
-                  {todayMeals.slice(0, 3).map((meal, i) => (
-                    <div key={i} className="flex justify-between items-center text-xs">
-                      <span className="text-text-primary font-medium truncate mr-2">{meal.name}</span>
-                      <span className="text-text-muted flex-shrink-0">{meal.calories} kcal</span>
-                    </div>
-                  ))}
+                  {todayMeals.slice(0, 3).map((meal, i) => {
+                    const mealNameStr = meal.meal ? (i18n.language === 'ar' ? t(`nutrition.${meal.meal.toLowerCase()}`) || meal.meal : meal.meal) : meal.name;
+                    return (
+                      <div key={i} className="flex justify-between items-center text-xs">
+                        <span className="text-text-primary font-medium truncate ltr:mr-2 rtl:ml-2">{mealNameStr}</span>
+                        <span className="text-text-muted flex-shrink-0">{Math.round(meal.dishes ? meal.dishes.reduce((a, b) => a + (b.calories || 0), 0) : meal.calories)} {t('common.kcal')}</span>
+                      </div>
+                    )
+                  })}
                   {todayMeals.length > 3 && (
-                    <p className="text-[10px] text-text-light">+{todayMeals.length - 3} more meals</p>
+                    <p className="text-[10px] text-text-light">+{todayMeals.length - 3} {t('dashboard.more_meals') || 'more'}</p>
                   )}
                 </div>
                 <div className="mb-4">
                   <div className="flex items-end gap-1 mb-1">
                     <span className="text-3xl font-bold text-text-primary font-heading">{totalCal}</span>
-                    <span className="text-sm text-text-muted mb-1">/ {calorieTarget} kcal</span>
+                    <span className="text-sm text-text-muted mb-1">/ {calorieTarget} {t('common.kcal')}</span>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <MacroBar label="Protein" current={totalP} target={Math.round(calorieTarget * 0.3 / 4)} color="#3B82F6" />
-                  <MacroBar label="Carbs" current={totalC} target={Math.round(calorieTarget * 0.4 / 4)} color="#F59E0B" />
-                  <MacroBar label="Fat" current={totalF} target={Math.round(calorieTarget * 0.3 / 9)} color="#EF4444" />
+                  <MacroBar label={t('nutrition.protein')} current={totalP} target={Math.round(calorieTarget * 0.3 / 4)} color="#3B82F6" />
+                  <MacroBar label={t('nutrition.carbs')} current={totalC} target={Math.round(calorieTarget * 0.4 / 4)} color="#F59E0B" />
+                  <MacroBar label={t('nutrition.fat')} current={totalF} target={Math.round(calorieTarget * 0.3 / 9)} color="#EF4444" />
                 </div>
               </>
             ) : (
               <div className="flex flex-col items-center justify-center text-center py-4">
-                <p className="text-sm text-text-muted mb-4">No meal plan found. Generate your AI plan to get started.</p>
-                <button onClick={() => navigate('/settings')} className="bg-[#2E7D52] text-white text-sm font-semibold px-4 py-2 rounded-xl">Generate My Plan</button>
+                <p className="text-sm text-text-muted mb-4">{t('dashboard.no_plan')}</p>
+                <button onClick={() => navigate('/settings')} className="bg-[#2E7D52] text-white text-sm font-semibold px-4 py-2 rounded-xl">{t('dashboard.generate_plan')}</button>
               </div>
             )}
           </div>
 
           {/* Workout Card — from AI plan */}
           <div
-            className="bg-bg-card rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer"
+            className="bg-bg-card rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden"
             onClick={() => navigate('/workout')}
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
-                  <Dumbbell size={16} className="text-blue-600" />
-                </div>
-                <h3 className="font-heading font-bold text-text-primary">Workout</h3>
-              </div>
-              <span className="text-xs text-blue-600 font-semibold bg-blue-50 px-2.5 py-1 rounded-full">
-                {todayWorkout?.workoutType || 'Upper Body'}
-              </span>
-            </div>
-            {todayWorkout ? (
-              <>
-                <div className="flex items-center gap-5 mb-4">
-                  <ProgressRing value={0} max={todayWorkout.exercises?.length || 6} size={80} strokeWidth={8} color="#3B82F6" bgColor="#EFF6FF" />
-                  <div>
-                    <h4 className="font-semibold text-text-primary">{todayWorkout.workoutType}</h4>
-                    <div className="flex items-center gap-3 mt-1.5 text-xs text-text-muted">
-                      <span className="flex items-center gap-1"><Zap size={12} />{todayWorkout.exercises?.length || 0} exercises</span>
-                      <span className="flex items-center gap-1"><Clock size={12} />~45 min</span>
+            {(() => {
+              const pplDayNum = getPPLDay()
+              const pplInfo = PPL_SCHEDULE[pplDayNum]
+              const pplColors = { push: '#E53935', pull: '#1E88E5', legs: '#43A047', rest: '#757575' }
+              const isAr = i18n.language === 'ar'
+              
+              return (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${pplColors[pplInfo.type]}15` }}>
+                        <Dumbbell size={16} style={{ color: pplColors[pplInfo.type] }} />
+                      </div>
+                      <h3 className="font-heading font-bold text-text-primary">{t('dashboard.workout_card')}</h3>
+                    </div>
+                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider" style={{ background: `${pplColors[pplInfo.type]}15`, color: pplColors[pplInfo.type] }}>
+                      {isAr ? pplInfo.nameAr : pplInfo.name}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-5 mb-4">
+                    <div className="text-4xl">{pplInfo.emoji}</div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-text-primary text-sm uppercase tracking-tight truncate" style={{ color: pplColors[pplInfo.type] }}>
+                        {isAr ? pplInfo.nameAr : pplInfo.name}
+                      </h4>
+                      <p className="text-[11px] text-text-muted truncate">{isAr ? pplInfo.descAr : pplInfo.desc}</p>
                     </div>
                   </div>
-                </div>
-                {/* Show first 3 exercises */}
-                <div className="space-y-1.5 mb-3">
-                  {todayWorkout.exercises?.slice(0, 3).map((ex, i) => (
-                    <div key={i} className="flex justify-between items-center text-xs">
-                      <span className="text-text-primary font-medium">{ex.name}</span>
-                      <span className="text-text-muted">{ex.sets}×{ex.reps}</span>
+
+                  {todayWorkout ? (
+                    <div className="space-y-1.5 mb-4">
+                      {todayWorkout.exercises?.slice(0, 2).map((ex, i) => (
+                        <div key={i} className="flex justify-between items-center text-xs">
+                          <span className="text-text-primary font-medium truncate mr-2">{isAr ? ex.nameAr : ex.name}</span>
+                          <span className="text-text-muted flex-shrink-0">{ex.sets}×{ex.reps}</span>
+                        </div>
+                      ))}
+                      {(todayWorkout.exercises?.length || 0) > 2 && (
+                        <p className="text-[10px] text-text-light">+{todayWorkout.exercises.length - 2} {t('workout.exercises')}</p>
+                      )}
                     </div>
-                  ))}
-                  {(todayWorkout.exercises?.length || 0) > 3 && (
-                    <p className="text-[10px] text-text-light">+{todayWorkout.exercises.length - 3} more exercises</p>
+                  ) : (
+                    <div className="py-4 text-center">
+                      <p className="text-xs text-text-muted mb-2">{t('dashboard.no_plan')}</p>
+                    </div>
                   )}
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center text-center py-4 mb-4">
-                <p className="text-sm text-text-muted">No workout plan found.</p>
-              </div>
-            )}
-            <button className="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 text-sm font-semibold py-2.5 rounded-xl transition-colors">
-              {todayWorkout ? 'Start Workout →' : 'View Plan →'}
-            </button>
+
+                  <button 
+                    className="w-full text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2"
+                    style={{ background: `${pplColors[pplInfo.type]}15`, color: pplColors[pplInfo.type] }}
+                  >
+                    {todayWorkout ? `${t('common.today')} →` : `${t('dashboard.generate_plan')} →`}
+                  </button>
+                </>
+              )
+            })()}
           </div>
 
           {/* Body Progress Card */}
@@ -350,12 +388,12 @@ export default function Dashboard() {
                 </div>
               )) : (
                 <div className="col-span-3 text-center py-4">
-                  <p className="text-xs text-text-muted">No progress snapshots yet.</p>
+                  <p className="text-xs text-text-muted">{t('progress.no_photos')}</p>
                 </div>
               )}
             </div>
             <button className="w-full bg-purple-50 hover:bg-purple-100 text-purple-600 text-sm font-semibold py-2.5 rounded-xl transition-colors">
-              View Timeline →
+              {t('dashboard.see_all_progress')} →
             </button>
           </div>
         </div>
@@ -374,7 +412,7 @@ export default function Dashboard() {
                 </span>
               </div>
               <p className="text-sm text-text-muted leading-relaxed">
-                {coachTip || (isMockUser ? "Great progress! Keep following your personalized plan and stay consistent with your meals and workouts." : "Generate a plan to get personalized AI coaching tips.")}
+                {coachTip || (isMockUser ? "Great progress! Keep following your personalized plan and stay consistent with your meals and workouts." : t('dashboard.no_plan'))}
               </p>
               <button
                 onClick={() => navigate('/chat')}
@@ -391,9 +429,9 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Trophy size={16} className="text-yellow-500" />
-                <h3 className="font-heading font-bold text-text-primary text-sm">Recent Badges</h3>
+                <h3 className="font-heading font-bold text-text-primary text-sm">{t('achievements.recent')}</h3>
               </div>
-              <button onClick={() => navigate('/achievements')} className="text-xs font-bold text-primary-accent hover:text-primary-light">View All →</button>
+              <button onClick={() => navigate('/achievements')} className="text-xs font-bold text-primary-accent hover:text-primary-light">{t('dashboard.view_all')} →</button>
             </div>
             <div className="flex gap-3">
               {recentBadges.map((b, i) => {
@@ -401,7 +439,7 @@ export default function Dashboard() {
                 return (
                   <div key={i} className="flex items-center gap-2 bg-bg-main rounded-xl px-3 py-2">
                     <span className="text-xl">{badgeDef[b.badge_id] || '🏅'}</span>
-                    <span className="text-xs font-semibold text-text-primary">{b.badge_id.replace(/_/g, ' ')}</span>
+                    <span className="text-xs font-semibold text-text-primary">{t(`badges.${b.badge_id}.title`)}</span>
                   </div>
                 )
               })}
@@ -416,8 +454,8 @@ export default function Dashboard() {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary-accent flex items-center justify-center"><Sparkles size={18} className="text-white" /></div>
                 <div className="text-left">
-                  <h3 className="font-heading font-bold text-text-primary text-sm">📊 Your Weekly Report — {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h3>
-                  <p className="text-xs text-text-muted">AI-generated insights from your past week</p>
+                  <h3 className="font-heading font-bold text-text-primary text-sm">📊 {t('dashboard.weekly_report')} — {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h3>
+                  <p className="text-xs text-text-muted">{t('dashboard.keep_going')}</p>
                 </div>
               </div>
               {reportExpanded ? <ChevronUp size={18} className="text-text-muted" /> : <ChevronDown size={18} className="text-text-muted" />}
@@ -425,7 +463,7 @@ export default function Dashboard() {
             {reportExpanded && (
               <div className="px-5 pb-5">
                 <p className="text-sm text-text-primary whitespace-pre-wrap leading-relaxed">{weeklyReport.report_text}</p>
-                <button onClick={async () => { const r = await authFetch(`${API_BASE}/api/weekly-report/`, { method: 'POST', body: JSON.stringify({ user_id: user.id }) }); if (r.ok) { const d = await r.json(); setWeeklyReport(d) } }} className="mt-3 flex items-center gap-2 text-xs font-bold text-primary-accent hover:text-primary-light"><RefreshCw size={12} /> Regenerate</button>
+                <button onClick={async () => { const r = await authFetch(`${API_BASE}/api/weekly-report/`, { method: 'POST', body: JSON.stringify({ user_id: user.id }) }); if (r.ok) { const d = await r.json(); setWeeklyReport(d) } }} className="mt-3 flex items-center gap-2 text-xs font-bold text-primary-accent hover:text-primary-light"><RefreshCw size={12} /> {t('dashboard.regenerate')}</button>
               </div>
             )}
           </div>
@@ -439,8 +477,8 @@ export default function Dashboard() {
               <p className="text-sm font-semibold text-primary-accent">It's been 2 weeks! Time to recalibrate your plan based on your progress.</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => navigate('/settings')} className="bg-primary-accent text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-primary-accent/90">Recalibrate Now</button>
-              <button onClick={() => setShowRecalibrate(false)} className="text-xs font-bold text-text-muted hover:text-text-primary">Later</button>
+              <button onClick={() => navigate('/settings')} className="bg-primary-accent text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-primary-accent/90">{t('progress.recalibrate_now')}</button>
+              <button onClick={() => setShowRecalibrate(false)} className="text-xs font-bold text-text-muted hover:text-text-primary">{t('progress.remind_later')}</button>
             </div>
           </div>
         )}
@@ -492,50 +530,23 @@ export default function Dashboard() {
               </linearGradient>
             </defs>
           </svg>
-          <p className="text-[10px] text-text-muted mt-1">{isMockUser ? 'vs last week: -0.5 kg' : 'Log weight to track progress'}</p>
+          <p className="text-[10px] text-text-muted mt-1">{isMockUser ? `${t('dashboard.vs_last_week')}: -0.5 kg` : t('progress.log_first_weight')}</p>
         </div>
 
-        {/* Sleep Widget */}
-        <div className="bg-bg-main rounded-2xl p-4 animate-slide-right delay-300">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Moon size={14} className="text-indigo-500" />
-              <h3 className="text-sm font-bold text-text-primary">{t('dashboard.sleep')}</h3>
-            </div>
-            <span className="text-xs text-text-muted">Last night</span>
-          </div>
-          <div className="mb-3">
-            <span className="text-2xl font-bold text-text-primary font-heading">{isMockUser ? '7.5' : '--'}</span>
-            <span className="text-sm text-text-muted ml-1">hours</span>
-          </div>
-          {/* Sleep bar chart */}
-          <div className="flex items-end gap-1.5 h-12">
-            {(isMockUser ? [65, 80, 70, 90, 75, 85, 78] : [0, 0, 0, 0, 0, 0, 0]).map((h, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div
-                  className={`w-full rounded-t transition-all ${
-                    i === 6 ? 'bg-indigo-500' : 'bg-indigo-200'
-                  }`}
-                  style={{ height: `${h * 0.5}px` }}
-                />
-                <span className="text-[8px] text-text-light">{weekDays[i][0]}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   )
 }
 // ── Custom Calendar Component (Fix 5) ──
 function Calendar({ workoutLogs, mealLogs, isMockUser }) {
+  const { i18n } = useTranslation();
   const [viewDate, setViewDate] = useState(new Date())
   const today = new Date()
   
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
   
-  const monthName = viewDate.toLocaleString('default', { month: 'long' })
+  const monthName = viewDate.toLocaleString(i18n.language === 'ar' ? 'ar' : 'en-US', { month: 'long' })
   const firstDay = new Date(year, month, 1).getDay() // 0 = Sun
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   
@@ -564,7 +575,7 @@ function Calendar({ workoutLogs, mealLogs, isMockUser }) {
       </div>
       
       <div className="grid grid-cols-7 gap-1 text-center">
-        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
+        {(i18n.language === 'ar' ? ['ن','ث','ر','خ','ج','س','ح'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S']).map((d, i) => (
           <span key={`day-${i}-${d}`} className="text-[10px] text-text-muted font-bold py-1">{d}</span>
         ))}
         
@@ -603,14 +614,15 @@ function Calendar({ workoutLogs, mealLogs, isMockUser }) {
 
 // ── Smart Meal Reminders ──
 function MealReminders({ dismissed, setDismissed, navigate }) {
+  const { t } = useTranslation()
   const hour = new Date().getHours()
   const reminders = []
   if (hour >= 8 && hour < 10 && !dismissed.includes('breakfast'))
-    reminders.push({ id: 'breakfast', text: '🌅 Good morning! Don\'t forget to log your breakfast.', color: 'bg-amber-50 border-amber-200 text-amber-800' })
+    reminders.push({ id: 'breakfast', text: t('dashboard.reminder_breakfast'), color: 'bg-amber-50 border-amber-200 text-amber-800' })
   if (hour >= 12 && hour < 14 && !dismissed.includes('lunch'))
-    reminders.push({ id: 'lunch', text: '☀️ It\'s lunchtime! Have you logged your midday meal?', color: 'bg-blue-50 border-blue-200 text-blue-800' })
+    reminders.push({ id: 'lunch', text: t('dashboard.reminder_lunch'), color: 'bg-blue-50 border-blue-200 text-blue-800' })
   if (hour >= 18 && hour < 20 && !dismissed.includes('dinner'))
-    reminders.push({ id: 'dinner', text: '🌙 Evening check-in — log your dinner to stay on track.', color: 'bg-indigo-50 border-indigo-200 text-indigo-800' })
+    reminders.push({ id: 'dinner', text: t('dashboard.reminder_dinner'), color: 'bg-indigo-50 border-indigo-200 text-indigo-800' })
 
   if (!reminders.length) return null
 
@@ -626,7 +638,7 @@ function MealReminders({ dismissed, setDismissed, navigate }) {
         <div key={r.id} className={`${r.color} border rounded-2xl p-4 flex items-center justify-between`}>
           <p className="text-sm font-semibold">{r.text}</p>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button onClick={() => navigate('/nutrition')} className="text-xs font-bold bg-white/80 px-3 py-1.5 rounded-lg hover:bg-white transition-colors">Log Now →</button>
+            <button onClick={() => navigate('/nutrition')} className="text-xs font-bold bg-white/80 px-3 py-1.5 rounded-lg hover:bg-white transition-colors">{t('dashboard.log_now')} →</button>
             <button onClick={() => dismiss(r.id)} className="text-current opacity-50 hover:opacity-100"><span className="text-lg">×</span></button>
           </div>
         </div>

@@ -23,7 +23,7 @@ export default function Login() {
       if (error) throw error
       navigate('/dashboard')
     } catch (err) {
-      setError(err.message || 'Failed to sign in')
+      setError(err.message || t('auth.error_invalid'))
     } finally {
       setLoading(false)
     }
@@ -45,8 +45,8 @@ export default function Login() {
               <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="white"/>
             </svg>
           </div>
-          <h1 className="font-heading text-3xl font-bold text-white mb-1">Welcome Back</h1>
-          <p className="text-white/50 text-sm">Sign in to your VitalSense AI account</p>
+          <h1 className="font-heading text-3xl font-bold text-white mb-1">{t('auth.login_title')}</h1>
+          <p className="text-white/50 text-sm">{t('auth.login_subtitle')}</p>
         </div>
 
         {/* Card */}
@@ -79,12 +79,12 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full px-4 py-3 bg-white/[0.06] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:border-primary-accent focus:ring-2 focus:ring-primary-accent/20 outline-none transition-all pr-12"
+                  className="w-full px-4 py-3 bg-white/[0.06] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:border-primary-accent focus:ring-2 focus:ring-primary-accent/20 outline-none transition-all ltr:pr-12 rtl:pl-12"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                  className="absolute ltr:right-3 rtl:left-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -100,7 +100,7 @@ export default function Login() {
                 <Loader2 size={20} className="animate-spin" />
               ) : (
                 <>
-                  Sign In
+                  {t('auth.sign_in')}
                   <ArrowRight size={18} />
                 </>
               )}
@@ -109,9 +109,9 @@ export default function Login() {
 
           <div className="mt-6 text-center">
             <p className="text-white/40 text-sm">
-              Don't have an account?{' '}
+              {t('auth.no_account')}{' '}
               <Link to="/signup" className="text-primary-light hover:text-primary-lighter font-semibold transition-colors">
-                Create one
+                {t('auth.sign_up')}
               </Link>
             </p>
           </div>

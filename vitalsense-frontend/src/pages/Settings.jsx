@@ -5,6 +5,8 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { authFetch } from '../utils/authFetch'
 import { useTranslation } from 'react-i18next'
+import { LanguageToggle } from '../components/LanguageToggle'
+import ThemePicker from '../components/ThemePicker'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -51,8 +53,8 @@ export default function Settings() {
           height: data.height || '',
           activity_level: data.activity_level || 'moderate',
           medical_conditions: data.medical_conditions || '',
-          goal: data.goal || 'Improve Health',
-          loss_target: data.loss_target || '0.5'
+          goal: data.goal || 'improve_health',
+          loss_target: data.weekly_loss_target || '0.5'
         })
       }
       setIsLoading(false)
@@ -68,8 +70,8 @@ export default function Settings() {
     setTimeout(() => setToast(null), 3000)
   }
 
-  // Calculate calories based on Mifflin-St Jeor
-  const calculateTarget = (data) => {
+  // Calculate TDEE and Target calories
+  const calculateMacros = (data) => {
     const w = parseFloat(data.weight) || 70
     const h = parseFloat(data.height) || 170
     const a = parseInt(data.age) || 30
@@ -78,24 +80,21 @@ export default function Settings() {
     bmr += data.gender === 'male' ? 5 : -161
 
     const multipliers = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725 }
-    let tdee = bmr * (multipliers[data.activity_level] || 1.55)
+    const tdee = bmr * (multipliers[data.activity_level] || 1.55)
     
-    if (data.goal === 'Lose Fat') {
+    let target = tdee
+    if (data.goal === 'lose_fat') {
       const loss = parseFloat(data.loss_target) || 0.5
-      tdee -= (loss * 1100) // approx 1100 kcal deficit per 0.1kg loss? Wait, 1kg = 7700 kcal. 0.5kg/week = 3850 kcal/week = 550 kcal/day. 
-      // Loss is in kg/week. 
-      // 0.25kg = 275 deficit. 0.5kg = 550 deficit. 1.0kg = 1100 deficit.
-      tdee -= (loss * 1100) 
-    } else if (data.goal === 'Build Muscle') {
-      tdee += 300
+      target -= (loss * 1100) 
+    } else if (data.goal === 'build_muscle') {
+      target += 300
     }
     
-    return Math.round(tdee)
+    return { tdee: Math.round(tdee), target: Math.round(target) }
   }
 
   const handleProfileSave = async () => {
-    setIsSavingProfile(true)
-    const target = calculateTarget(formData)
+    const { tdee, target } = calculateMacros(formData)
     
     const { error } = await supabase.from('profiles').update({
       name: formData.name,
@@ -106,7 +105,7 @@ export default function Settings() {
       activity_level: formData.activity_level,
       medical_conditions: formData.medical_conditions,
       goal: formData.goal,
-      loss_target: formData.goal === 'Lose Fat' ? formData.loss_target : null,
+      weekly_loss_target: formData.goal === 'lose_fat' ? parseFloat(formData.loss_target) : null,
       calorie_target: target
     }).eq('user_id', user.id)
 
@@ -125,7 +124,8 @@ export default function Settings() {
     await handleProfileSave()
 
     try {
-      const res = await authFetch(`${API_BASE}/api/generate-plan/`, {
+      const { tdee, target } = calculateMacros(formData)
+      const res = await authFetch(`${API_BASE}/api/generate-plan`, {
         method: 'POST',
         body: JSON.stringify({
           user_id: user.id,
@@ -133,10 +133,14 @@ export default function Settings() {
           gender: formData.gender || 'male',
           weight: parseFloat(formData.weight) || 70,
           height: parseFloat(formData.height) || 170,
-          tdee: calculateTarget(formData) + 500,
-          calorie_target: calculateTarget(formData),
-          goal: formData.goal === 'Lose Fat' ? 'lose_fat' : formData.goal === 'Build Muscle' ? 'build_muscle' : 'improve_health',
+          tdee: tdee,
+          calorie_target: target,
+          goal: formData.goal,
+          weekly_loss_target: formData.goal === 'lose_fat' ? formData.loss_target : null,
+          medical_conditions: formData.medical_conditions,
           activity_level: formData.activity_level || 'moderate',
+          gym_type: profile?.gym_type || 'home',
+          equipment_list: profile?.equipment_list || []
         }),
       })
       if (!res.ok) {
@@ -186,7 +190,7 @@ export default function Settings() {
 
       <div className="animate-fade-in">
         <h1 className="font-heading text-2xl font-bold text-text-primary">{t('settings.title')}</h1>
-        <p className="text-text-muted text-sm mt-1">Manage your profile, goals, and account preferences.</p>
+        <p className="text-text-muted text-sm mt-1">{t('settings.profile_section')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up">
@@ -195,7 +199,7 @@ export default function Settings() {
           <div className="bg-bg-card border border-gray-100 rounded-2xl p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-4 pb-4 border-b border-gray-100">
               <User size={18} className="text-primary-accent" />
-              <h2 className="font-heading font-bold text-text-primary">Profile Settings</h2>
+              <h2 className="font-heading font-bold text-text-primary">{t('settings.profile_section')}</h2>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
@@ -210,33 +214,33 @@ export default function Settings() {
               <div>
                 <label className="text-xs font-semibold text-text-muted mb-1 block">{t('settings.gender')}</label>
                 <select value={formData.gender} onChange={e => setFormData({...formData, gender: e.target.value})} className="w-full px-4 py-2.5 bg-bg-main rounded-xl text-sm border border-transparent focus:border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all">
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
+                  <option value="male">{t('settings.male')}</option>
+                  <option value="female">{t('settings.female')}</option>
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-text-muted mb-1 block">Weight (kg)</label>
+                <label className="text-xs font-semibold text-text-muted mb-1 block">{t('settings.weight')}</label>
                 <input type="number" value={formData.weight} onChange={e => setFormData({...formData, weight: e.target.value})} className="w-full px-4 py-2.5 bg-bg-main rounded-xl text-sm border border-transparent focus:border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-text-muted mb-1 block">Height (cm)</label>
+                <label className="text-xs font-semibold text-text-muted mb-1 block">{t('settings.height')}</label>
                 <input type="number" value={formData.height} onChange={e => setFormData({...formData, height: e.target.value})} className="w-full px-4 py-2.5 bg-bg-main rounded-xl text-sm border border-transparent focus:border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all" />
               </div>
               <div className="col-span-2">
                 <label className="text-xs font-semibold text-text-muted mb-1 block">{t('settings.activity')}</label>
                 <select value={formData.activity_level} onChange={e => setFormData({...formData, activity_level: e.target.value})} className="w-full px-4 py-2.5 bg-bg-main rounded-xl text-sm border border-transparent focus:border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all">
-                  <option value="sedentary">Sedentary (Office job, no exercise)</option>
-                  <option value="light">Lightly Active (1-3 days/week)</option>
-                  <option value="moderate">Moderately Active (3-5 days/week)</option>
-                  <option value="active">Very Active (6-7 days/week)</option>
+                  <option value="sedentary">{t('settings.sedentary')}</option>
+                  <option value="light">{t('settings.light')}</option>
+                  <option value="moderate">{t('settings.moderate')}</option>
+                  <option value="active">{t('settings.active')}</option>
                 </select>
               </div>
             </div>
             
             <div className="mt-6 flex justify-end">
-              <button onClick={handleProfileSave} disabled={isSavingProfile} className="flex items-center gap-2 bg-[#2E7D52] hover:bg-[#236040] text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-50">
+              <button onClick={handleProfileSave} disabled={isSavingProfile} className="btn-primary flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-primary-accent/10 hover:shadow-primary-accent/20 active:scale-[0.98] disabled:opacity-50">
                 {isSavingProfile ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                Save Changes
+                {t('settings.save_changes')}
               </button>
             </div>
           </div>
@@ -245,28 +249,28 @@ export default function Settings() {
           <div className="bg-bg-card border border-gray-100 rounded-2xl p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-4 pb-4 border-b border-gray-100">
               <Target size={18} className="text-primary-accent" />
-              <h2 className="font-heading font-bold text-text-primary">Health & Goals</h2>
+              <h2 className="font-heading font-bold text-text-primary">{t('settings.health_section')}</h2>
             </div>
             
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-text-muted mb-1 block">Medical Conditions (Optional)</label>
-                <input type="text" placeholder="e.g. Hypertension, Celiac..." value={formData.medical_conditions} onChange={e => setFormData({...formData, medical_conditions: e.target.value})} className="w-full px-4 py-2.5 bg-bg-main rounded-xl text-sm border border-transparent focus:border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all" />
+                <label className="text-xs font-semibold text-text-muted mb-1 block">{t('settings.conditions')}</label>
+                <input type="text" placeholder={t('onboarding.conditions_placeholder')} value={formData.medical_conditions} onChange={e => setFormData({...formData, medical_conditions: e.target.value})} className="w-full px-4 py-2.5 bg-bg-main rounded-xl text-sm border border-transparent focus:border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all" />
               </div>
               
               <div>
-                <label className="text-xs font-semibold text-text-muted mb-1 block">Primary Goal</label>
+                <label className="text-xs font-semibold text-text-muted mb-1 block">{t('settings.goal')}</label>
                 <select value={formData.goal} onChange={e => setFormData({...formData, goal: e.target.value})} className="w-full px-4 py-2.5 bg-bg-main rounded-xl text-sm border border-transparent focus:border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all">
-                  <option value="Lose Fat">{t('onboarding.lose_fat')}</option>
-                  <option value="Build Muscle">{t('onboarding.build_muscle')}</option>
-                  <option value="Improve Health">{t('onboarding.improve_health')}</option>
+                  <option value="lose_fat">{t('onboarding.lose_fat')}</option>
+                  <option value="build_muscle">{t('onboarding.build_muscle')}</option>
+                  <option value="improve_health">{t('onboarding.improve_health')}</option>
                 </select>
               </div>
 
-              {formData.goal === 'Lose Fat' && (
+              {formData.goal === 'lose_fat' && (
                 <div className="p-4 bg-primary-pale rounded-xl border border-primary-light/30">
                   <label className="text-xs font-semibold text-text-muted mb-1 block">Weekly Loss Target</label>
-                  <select value={formData.loss_target} onChange={e => setFormData({...formData, loss_target: e.target.value})} className="w-full px-4 py-2 bg-white rounded-lg text-sm border border-transparent focus:border-primary-accent outline-none">
+                  <select value={formData.loss_target} onChange={e => setFormData({...formData, loss_target: e.target.value})} className="w-full px-4 py-2 bg-bg-card rounded-lg text-sm border border-border-color focus:border-primary-accent outline-none">
                     <option value="0.25">0.25 kg / week (Moderate)</option>
                     <option value="0.5">0.5 kg / week (Recommended)</option>
                     <option value="1">1.0 kg / week (Aggressive)</option>
@@ -277,12 +281,12 @@ export default function Settings() {
 
             <div className="mt-6 flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-4 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
               <div>
-                <p className="text-sm font-semibold text-text-primary">Recalculate AI Plan</p>
-                <p className="text-xs text-text-muted">Generate a new meal and workout plan based on your latest stats.</p>
+                <p className="text-sm font-semibold text-text-primary">{t('settings.regenerate_plan')}</p>
+                <p className="text-xs text-text-muted">{t('onboarding.analyzing_subtitle')}</p>
               </div>
-              <button onClick={handleRegeneratePlan} disabled={isGeneratingPlan} className="flex items-center gap-2 bg-[#2E7D52] hover:bg-[#236040] text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap disabled:opacity-50">
+              <button onClick={handleRegeneratePlan} disabled={isGeneratingPlan} className="btn-primary flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap shadow-lg shadow-primary-accent/10 hover:shadow-primary-accent/20 active:scale-[0.98] disabled:opacity-50">
                 {isGeneratingPlan ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                Regenerate My Plan
+                {t('settings.regenerate_plan')}
               </button>
             </div>
           </div>
@@ -298,22 +302,34 @@ export default function Settings() {
             
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-text-muted mb-1 block">Email Address</label>
+                <label className="text-xs font-semibold text-text-muted mb-1 block">{t('settings.email')}</label>
                 <input type="email" value={user?.email || ''} disabled className="w-full px-4 py-2.5 bg-gray-50 text-text-muted rounded-xl text-sm border border-gray-200 outline-none cursor-not-allowed" />
               </div>
               
               <div>
                 <label className="text-xs font-semibold text-text-muted mb-1 block">{t('settings.change_password')}</label>
                 <div className="flex gap-2">
-                  <input type="password" placeholder="New password" value={password} onChange={e => setPassword(e.target.value)} className="flex-1 px-4 py-2.5 bg-bg-main rounded-xl text-sm border border-transparent focus:border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all" />
-                  <button onClick={handlePasswordChange} className="bg-gray-100 hover:bg-gray-200 text-text-primary px-3 rounded-xl font-semibold text-sm transition-all">Update</button>
+                  <input type="password" placeholder={t('settings.new_password')} value={password} onChange={e => setPassword(e.target.value)} className="flex-1 px-4 py-2.5 bg-bg-main rounded-xl text-sm border border-transparent focus:border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all" />
+                  <button onClick={handlePasswordChange} className="btn-primary px-4 rounded-xl font-semibold text-sm transition-all shadow-md shadow-primary-accent/10 active:scale-[0.95]">
+                    {t('common.save')}
+                  </button>
                 </div>
               </div>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-gray-100">
-              <button onClick={handleSignOut} className="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all">
-                <LogOut size={16} />{t('settings.sign_out')}</button>
+            <div className="mt-6 pt-6 border-t border-gray-100 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-text-primary font-medium">{t('settings.language')}</span>
+                <LanguageToggle userId={user?.id} />
+              </div>
+              <div className="pt-4 border-t border-gray-100">
+                <span className="text-sm text-text-primary font-medium block mb-2">{t('settings.theme', 'App Theme')}</span>
+                <ThemePicker />
+              </div>
+              <button onClick={handleSignOut} className="btn-danger w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-sm transition-all mt-4 active:scale-[0.98]">
+                <LogOut size={16} />
+                {t('settings.sign_out')}
+              </button>
             </div>
           </div>
 
@@ -325,15 +341,15 @@ export default function Settings() {
             
             <div className="space-y-4">
               {[
-                { key: 'dailyMeal', label: 'Daily meal reminder' },
-                { key: 'workoutReminder', label: 'Workout reminder' },
-                { key: 'weeklyProgress', label: 'Weekly progress report' }
+                { key: 'dailyMeal', label: t('settings.notif_meals') },
+                { key: 'workoutReminder', label: t('settings.notif_workout') },
+                { key: 'weeklyProgress', label: t('settings.notif_weekly') }
               ].map((item) => (
                 <div key={item.key} className="flex items-center justify-between">
                   <span className="text-sm text-text-primary font-medium">{item.label}</span>
                   <button 
                     onClick={() => setNotifications({...notifications, [item.key]: !notifications[item.key]})}
-                    className={`relative w-11 h-6 rounded-full transition-colors ${notifications[item.key] ? 'bg-primary-accent' : 'bg-gray-200'}`}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${notifications[item.key] ? 'bg-primary-accent' : 'bg-gray-400'}`}
                   >
                     <div className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${notifications[item.key] ? 'translate-x-5' : 'translate-x-0'}`} />
                   </button>
@@ -342,8 +358,8 @@ export default function Settings() {
             </div>
           </div>
 
-          <div className="bg-bg-card border border-gray-100 rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-4 pb-4 border-b border-gray-100">
+          <div className="bg-bg-card border border-border-color rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border-color">
               <Flame size={18} className="text-orange-500" />
               <h2 className="font-heading font-bold text-text-primary">Your Streaks</h2>
             </div>

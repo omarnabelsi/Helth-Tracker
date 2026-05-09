@@ -32,14 +32,14 @@ export default function Achievements() {
       {/* Header */}
       <div className="animate-fade-in">
         <h1 className="font-heading text-2xl font-bold text-text-primary">{t('nav.achievements')}</h1>
-        <p className="text-text-muted text-sm mt-1">Unlock badges by staying consistent</p>
+        <p className="text-text-muted text-sm mt-1">{t('achievements.subtitle')}</p>
       </div>
 
       {/* Progress Bar */}
       <div className="bg-bg-card rounded-2xl p-6 border border-gray-100 shadow-sm animate-fade-in-up">
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-semibold text-text-primary">
-            {unlockedCount} / {totalCount} achievements unlocked
+            {unlockedCount} / {totalCount} {t('achievements.unlocked_count')}
           </span>
           <span className="text-xs font-bold text-primary-accent">
             {Math.round((unlockedCount / totalCount) * 100)}%
@@ -88,12 +88,12 @@ export default function Achievements() {
                 {badge.icon}
               </div>
               <h3 className="font-heading font-bold text-text-primary text-sm mb-1">
-                {badge.title}
+                {t(`badges.${badge.id}.title`)}
               </h3>
-              <p className="text-[11px] text-text-muted mb-2">{badge.desc}</p>
+              <p className="text-[11px] text-text-muted mb-2">{t(`badges.${badge.id}.desc`)}</p>
               {isUnlocked && unlockDate && (
                 <span className="text-[10px] font-semibold text-primary-accent bg-primary-pale px-2.5 py-1 rounded-full">
-                  Unlocked {unlockDate}
+                  {t('achievements.unlocked')} {unlockDate}
                 </span>
               )}
             </div>

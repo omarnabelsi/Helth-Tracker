@@ -249,7 +249,7 @@ export default function Progress() {
       {/* Header */}
       <div className="animate-fade-in">
         <h1 className="font-heading text-2xl font-bold text-text-primary">{t('progress.title')}</h1>
-        <p className="text-text-muted text-sm mt-1">Track your body transformation over time</p>
+        <p className="text-text-muted text-sm mt-1">{t('progress.subtitle')}</p>
       </div>
 
       {/* Progress Photos */}
@@ -259,12 +259,12 @@ export default function Progress() {
           <button 
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploadingPhoto}
-            className="flex items-center gap-2 bg-primary-accent hover:bg-primary-accent/90 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all hover:shadow-lg hover:shadow-primary-accent/25 disabled:opacity-50"
+            className="btn-primary flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-md shadow-primary-accent/10 active:scale-[0.98] disabled:opacity-50"
           >
-            {isUploadingPhoto ? 'Uploading...' : (
+            {isUploadingPhoto ? <Loader2 size={16} className="animate-spin" /> : (
               <>
                 <Upload size={16} />
-                Upload New Photo
+                {t('progress.upload_photo')}
               </>
             )}
           </button>
@@ -311,7 +311,7 @@ export default function Progress() {
                   <p className="text-xs text-text-muted mt-0.5">Body Fat Est: {photo.bodyFat}</p>
                   <p className="text-[10px] text-primary-accent font-medium mt-1 flex items-center gap-1">
                     <Bot size={10} />
-                    AI Analysis Available
+                    {t('chat.knows_plan')}
                   </p>
                 </div>
               </div>
@@ -320,12 +320,12 @@ export default function Progress() {
         ) : (
           <div className="bg-bg-card rounded-2xl border border-gray-100 p-8 text-center animate-fade-in-up">
             <Camera size={32} className="text-text-light mx-auto mb-3" />
-            <p className="text-sm text-text-muted mb-4">No progress photos yet. Upload your first photo to start tracking.</p>
+            <p className="text-sm text-text-muted mb-4">{t('progress.no_photos')}</p>
             <button 
               onClick={() => fileInputRef.current?.click()}
               className="bg-primary-accent hover:bg-primary-accent/90 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all shadow-md shadow-primary-accent/15"
             >
-              Upload Your First Photo
+              {t('progress.upload_first')}
             </button>
           </div>
         )}
@@ -334,9 +334,9 @@ export default function Progress() {
       {/* Time Range Tabs */}
       <div className="flex gap-2 animate-fade-in-up delay-100">
         {[
-          { key: '2weeks', label: '2 Weeks' },
-          { key: '1month', label: '1 Month' },
-          { key: '3months', label: '3 Months' },
+          { key: '2weeks', label: t('progress.two_weeks') },
+          { key: '1month', label: t('progress.one_month') },
+          { key: '3months', label: t('progress.three_months') },
         ].map(t => (
           <button
             key={t.key}
@@ -355,7 +355,7 @@ export default function Progress() {
       {/* Weight Chart */}
       <div className="bg-bg-card rounded-2xl p-6 border border-gray-100 shadow-sm animate-fade-in-up delay-200">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="font-heading font-bold text-text-primary">Weight Over Time</h3>
+          <h3 className="font-heading font-bold text-text-primary">{t('progress.weight_chart')}</h3>
           {isMockUser && (
             <div className="flex items-center gap-1.5 text-xs font-semibold text-green-600 bg-green-50 px-3 py-1.5 rounded-full">
               <TrendingDown size={12} />
@@ -376,7 +376,7 @@ export default function Progress() {
               <YAxis domain={['dataMin - 0.5', 'dataMax + 0.5']} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} width={40} />
               <Tooltip
                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', padding: '8px 12px' }}
-                formatter={(val) => [`${val} kg`, 'Weight']}
+                formatter={(val) => [`${val} ${t('common.kg')}`, t('settings.weight')]}
               />
               <Area type="monotone" dataKey="weight" stroke="#4CAF7D" strokeWidth={3} fill="url(#colorWeight)" dot={{ fill: '#4CAF7D', strokeWidth: 2, stroke: '#fff', r: 5 }} activeDot={{ fill: '#2E7D52', stroke: '#fff', strokeWidth: 2, r: 7 }} />
             </AreaChart>
@@ -384,7 +384,7 @@ export default function Progress() {
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in">
             <Scale size={32} className="text-text-light mb-3" />
-            <p className="text-sm text-text-muted mb-4">No weight entries yet. Log your first weight to see your trend.</p>
+            <p className="text-sm text-text-muted mb-4">{t('progress.no_weight_logs')}</p>
             <div className="flex items-center gap-2 bg-bg-main p-1.5 rounded-2xl border border-gray-100">
               <input 
                 type="number" 
@@ -397,9 +397,9 @@ export default function Progress() {
               <button 
                 onClick={handleWeightLog}
                 disabled={isLoggingWeight}
-                className="bg-primary-accent hover:bg-primary-accent/90 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-all shadow-md shadow-primary-accent/15 disabled:opacity-50"
+                className="btn-primary text-sm font-semibold px-5 py-2 rounded-xl transition-all shadow-md shadow-primary-accent/10 active:scale-[0.95] disabled:opacity-50"
               >
-                {isLoggingWeight ? 'Saving...' : 'Log Weight'}
+                {isLoggingWeight ? <Loader2 size={14} className="animate-spin" /> : t('progress.save_weight')}
               </button>
             </div>
           </div>
@@ -409,13 +409,13 @@ export default function Progress() {
       {/* Stat Change Cards */}
       <div className="grid md:grid-cols-3 gap-4 animate-fade-in-up delay-300">
         {(isMockUser ? [
-          { label: 'Weight Lost', value: '-1.2 kg', icon: TrendingDown, color: 'green' },
-          { label: 'Body Fat Change', value: '-2.1%', icon: TrendingDown, color: 'green' },
-          { label: 'Streak', value: '18 days', icon: Flame, color: 'orange' },
+          { label: t('progress.total_lost'), value: '-1.2 kg', icon: TrendingDown, color: 'green' },
+          { label: t('progress.body_fat'), value: '-2.1%', icon: TrendingDown, color: 'green' },
+          { label: t('dashboard.streak_days'), value: `18 ${t('dashboard.streak_days')}`, icon: Flame, color: 'orange' },
         ] : [
-          { label: 'Weight Lost', value: '--', icon: TrendingDown, color: 'green' },
-          { label: 'Body Fat Change', value: '--', icon: TrendingDown, color: 'green' },
-          { label: 'Streak', value: '0 days', icon: Flame, color: 'orange' },
+          { label: t('progress.total_lost'), value: '--', icon: TrendingDown, color: 'green' },
+          { label: t('progress.body_fat'), value: '--', icon: TrendingDown, color: 'green' },
+          { label: t('dashboard.streak_days'), value: `0 ${t('dashboard.streak_days')}`, icon: Flame, color: 'orange' },
         ]).map((stat, i) => (
           <div key={i} className="bg-bg-card rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
             <div className={`w-12 h-12 rounded-xl ${
@@ -441,8 +441,8 @@ export default function Progress() {
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-heading font-bold text-text-primary">AI Progress Report</h3>
-                  <span className="text-[10px] bg-primary-pale text-primary-accent font-semibold px-2 py-0.5 rounded-full">Auto-generated</span>
+                  <h3 className="font-heading font-bold text-text-primary">{t('progress.ai_report')}</h3>
+                  <span className="text-[10px] bg-primary-pale text-primary-accent font-semibold px-2 py-0.5 rounded-full uppercase">{t('dashboard.completed')}</span>
                 </div>
                 {!aiReport && (
                   <button 
@@ -450,7 +450,7 @@ export default function Progress() {
                     disabled={isGeneratingReport}
                     className="text-xs font-bold text-primary-accent hover:text-primary-light transition-colors disabled:opacity-50"
                   >
-                    {isGeneratingReport ? 'Generating...' : 'Generate Report'}
+                    {isGeneratingReport ? t('common.loading') : t('progress.generate_report')}
                   </button>
                 )}
               </div>
@@ -491,7 +491,7 @@ export default function Progress() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <TrendingUp size={18} className="text-primary-accent" />
-              <h2 className="font-heading font-bold text-text-primary">Body Metrics Timeline</h2>
+              <h2 className="font-heading font-bold text-text-primary">{t('progress.body_metrics')}</h2>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
@@ -504,7 +504,7 @@ export default function Progress() {
               <p className="text-lg font-bold text-info">{weightLogs.length > 0 && profile?.height ? (weightLogs[weightLogs.length-1].weight_kg / ((profile.height/100)**2)).toFixed(1) : '—'}</p>
             </div>
             <div className="bg-bg-main rounded-xl p-4 text-center">
-              <p className="text-xs text-text-muted font-semibold">Entries</p>
+              <p className="text-xs text-text-muted font-semibold">{t('dashboard.streak_days')}</p>
               <p className="text-lg font-bold text-warning">{weightLogs.length}</p>
             </div>
           </div>
@@ -535,10 +535,10 @@ export default function Progress() {
               link.click()
             }
           }}
-          className="flex items-center justify-center gap-2 w-full bg-primary-accent text-white font-semibold py-3 rounded-xl hover:bg-primary-accent/90 transition-colors"
+          className="btn-primary flex items-center justify-center gap-2 w-full font-bold py-3.5 rounded-xl transition-all shadow-xl shadow-primary-accent/15 active:scale-[0.99]"
         >
           <Share2 size={18} />
-          📤 Share Progress as Image
+          {t('progress.share_progress')}
         </button>
       </div>
     </div>

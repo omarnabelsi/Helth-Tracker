@@ -11,7 +11,7 @@ from services.exercise_db import EXERCISES
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 genai.configure(api_key=GEMINI_API_KEY)
-MODEL_NAME = "gemini-flash-latest"
+# Using a fallback chain defined in generate_full_plan
 
 # ── Full Lebanese Food Database with Macros for AI Precision (Per 100g) ──
 LEBANESE_FOODS_DB = [
@@ -48,8 +48,20 @@ LEBANESE_FOODS_DB = [
     {"name": "Beid bil Awarma", "arabic": "بيض بالقاورما", "cal100": 233, "p100": 14.6, "c100": 2.6, "f100": 18.6},
     {"name": "Grilled Steak", "arabic": "ستيك مشوي", "cal100": 225, "p100": 26, "c100": 0, "f100": 12},
     {"name": "Grilled Chicken", "arabic": "دجاج مشوي", "cal100": 190, "p100": 24, "c100": 0, "f100": 9},
-    {"name": "Labneh", "arabic": "لبنة", "cal100": 120, "p100": 8, "c100": 6, "f100": 8},
-    {"name": "Manoushe Zaatar", "arabic": "منقوشة زعتر", "cal100": 213, "p100": 5.3, "c100": 28, "f100": 9.3},
+    {"name": "Manoushe Zaatar", "arabic": "منقوشة زعتر", "cal100": 226, "p100": 5, "c100": 27, "f100": 10},
+    {"name": "Labneh", "arabic": "لبنة", "cal100": 120, "p100": 8, "c100": 6, "f100": 7},
+    {"name": "Halloumi", "arabic": "حلوم", "cal100": 280, "p100": 20, "c100": 2, "f100": 22},
+    {"name": "Mixed Nuts", "arabic": "مكسرات مشكلة", "cal100": 600, "p100": 20, "c100": 20, "f100": 50},
+    {"name": "Apple", "arabic": "تفاحة", "cal100": 52, "p100": 0.3, "c100": 14, "f100": 0.2},
+    {"name": "Banana", "arabic": "موزة", "cal100": 89, "p100": 1.1, "c100": 23, "f100": 0.3},
+    {"name": "Dates", "arabic": "تمر", "cal100": 282, "p100": 2.5, "c100": 75, "f100": 0.4},
+    {"name": "Yogurt", "arabic": "لبن", "cal100": 61, "p100": 3.5, "c100": 4.7, "f100": 3.3},
+    {"name": "Cucumber and Tomato", "arabic": "خيار وبندورة", "cal100": 20, "p100": 1, "c100": 4, "f100": 0.2},
+    {"name": "Kachta bi Assal", "arabic": "قشطة بالعسل", "cal100": 250, "p100": 3, "c100": 30, "f100": 14},
+    {"name": "Manoushe Jebne", "arabic": "منقوشة جبنة", "cal100": 280, "p100": 12, "c100": 30, "f100": 14},
+    {"name": "Shakshouka", "arabic": "شكشوكة", "cal100": 110, "p100": 6, "c100": 8, "f100": 7},
+    {"name": "Oats with Milk", "arabic": "شوفان بالحليب", "cal100": 105, "p100": 4, "c100": 18, "f100": 2},
+    {"name": "Boiled Eggs", "arabic": "بيض مسلوق", "cal100": 155, "p100": 13, "c100": 1.1, "f100": 11},
 ]
 
 def generate_full_plan(
@@ -74,12 +86,50 @@ def generate_full_plan(
 User Profile: Age {age}, {gender}, {weight}kg, {height}cm. 
 DAILY TARGETS: {calorie_target} kcal, Protein: {target_p}g, Carbs: {target_c}g, Fat: {target_f}g.
 
-CRITICAL INSTRUCTION: You MUST fill EXACTLY 100% of the daily targets. 
+CRITICAL INSTRUCTION: VARIETY IS MANDATORY. 
+- DO NOT repeat the same snack more than 2 times in a whole week.
+- DO NOT use "Dates" (تمر) as a filler for every snack or meal. If you use it once, do not use it again for at least 2 days.
+- Each day MUST feel different. Rotate through the database: one day use Riz dishes, the next use Yakhnat, then Kafta, etc.
+- A user should NOT see the same food in every single day's plan.
+- You MUST fill EXACTLY 100% of the daily targets. 
 NEVER leave calories or macros "remaining". If one dish isn't enough, you MUST add 2, 3, or 4 dishes to a single meal until the total hits the target.
 For example, if a meal needs 800 kcal, combine several dishes from the list below.
 
 Use ONLY these Lebanese foods (with these EXACT nutritional values):
 {food_db_json}
+
+STRICT MEAL TIME RULES — NEVER VIOLATE THESE:
+
+BREAKFAST rules:
+- Must be energizing and easy to digest (25% of daily calories).
+- ONLY assign these categories as breakfast: Eggs (Beid, Shakshouka), Dairy (Labneh, Halloumi), Grains/Bread (Manoushe, Oats), Legumes (Foul Moudamas).
+- NEVER assign: Heavy dinner stews (Yakhnat), Rice dishes (Riz bi Lahma, Sayadia), Fish, or excessive sweets for breakfast.
+- A typical breakfast should be something like "Labneh + Bread" or "Eggs + Vegetables".
+- NEVER assign: pizza, burger, shawarma plate, steak, baba ghanouj, warak enab, malfouf mahchi, koussa mahchi, yakhnat dishes, heavy rice dishes, fried heavy meals, desserts of any kind
+
+LUNCH rules:
+- Biggest meal of the day (35% of daily calories)
+- ALLOWED: almost any Lebanese or world dish is fine for lunch
+- Include a mix of protein + carbs + vegetables
+- Can include: shawarma, riz dishes, kafta, grilled meats, fish, pasta, salads, soups, yakhnat dishes
+
+DINNER rules:
+- Medium meal (30% of daily calories)
+- FOCUS on: lean protein + vegetables, moderate carbs
+- ALLOWED: grilled chicken, fish, salads, soups, lighter rice, fattoush, tabbouleh, sayadia, loubia, yakhnat dishes
+- AVOID: very heavy fried foods, excessive carbs only meals
+
+SNACK rules:
+- Must be SMALL and LIGHT (max 10% of daily calories, ideally 150-250 kcal).
+- ONLY assign these items as snacks: Mixed Nuts, Apple, Banana, Dates, Yogurt, Cucumber and Tomato, small portion of Fatayer Sabanikh (max 100g), or a small piece of fruit.
+- NEVER assign full meals (Kafta, Borgul, Shawarma, Riz, Yakhnat, Lahm bil Ajin) as a snack.
+- A snack should be a single light item, not a full dish.
+- Desserts like Kachta bi Assal or Baklava can be a snack but only in small portions (max 50g).
+
+DESSERTS:
+- Baklava, knafeh, maamoul, halawa, mouhallabiya etc.
+- ONLY assign as: after-lunch treat OR snack (small portion)
+- NEVER assign desserts as breakfast or as main dinner
 
 Each day must have 4 meals: Breakfast (25%), Lunch (35%), Dinner (30%), Snack (10%).
 Total daily sum MUST equal {calorie_target} kcal (+/- 20 kcal).
@@ -87,8 +137,39 @@ Total daily sum MUST equal {calorie_target} kcal (+/- 20 kcal).
 CRITICAL: For every dish you add, you MUST specify the "grams" required to reach that meal's target.
 Calculation: meal_calories = (grams / 100) * cal100.
 
-Workout Plan: gym_type {gym_type}, equipment: {equipment_str}, conditions: {medical_conditions}.
-Approved Exercises: {filtered_exercise_list}.
+STRICT PPL WORKOUT RULES (4-Day Cycle Repeat):
+1. PUSH — chest, shoulders, triceps
+2. PULL — back, biceps, rear delts
+3. LEGS — quads, hamstrings, glutes, calves
+4. REST — recovery, walking
+(Repeat cycle: if Day 5 is reached, it starts again with PUSH, etc.)
+Plan sequence for 7 days (Example starting on Day 1):
+Day 1: PUSH, Day 2: PULL, Day 3: LEGS, Day 4: REST, Day 5: PUSH, Day 6: PULL, Day 7: LEGS.
+
+Available Equipment: {equipment_str}.
+Medical conditions: {medical_conditions}.
+Approved Exercises for this user's gym ({gym_type}): {filtered_exercise_list}.
+If user has medical conditions, remove unsafe exercises and add a safety note.
+For every exercise, provide "sets", "reps", "muscleGroup", and "notes".
+Return valid JSON:
+{{
+  "weeklyMealPlan": {{ ... }},
+  "weeklyWorkoutPlan": [
+    {{
+      "day": 1,
+      "dayName": "Monday",
+      "type": "push",
+      "workoutName": "Push Day",
+      "targetMuscles": ["chest", "shoulders", "triceps"],
+      "duration": 60,
+      "healthNote": "...",
+      "exercises": [
+        {{ "name": "...", "nameAr": "...", "sets": 4, "reps": "8-10", "muscleGroup": "chest", "notes": "..." }}
+      ]
+    }},
+    ... (total 7 days)
+  ]
+}}
 
 Return valid JSON:
 {{
@@ -104,14 +185,24 @@ Return valid JSON:
   "coachTip": "Drink water and..."
 }}"""
 
-    models_to_try = [MODEL_NAME, "gemini-pro-latest", "gemini-2.5-flash-lite"]
+    models_to_try = [
+        "models/gemini-2.0-flash",
+        "models/gemini-1.5-flash",
+        "models/gemini-flash-latest",
+        "models/gemini-1.5-pro",
+    ]
     last_error = None
 
     for model_id in models_to_try:
         try:
+            print(f"[AI PLAN] Trying {model_id}...")
+            config = {"temperature": 0.4}
+            if "1.5" in model_id:
+                config["response_mime_type"] = "application/json"
+                
             model = genai.GenerativeModel(
                 model_name=model_id,
-                generation_config={"temperature": 0.4, "response_mime_type": "application/json"},
+                generation_config=config,
             )
             response = model.generate_content(prompt)
             raw = response.text.strip()

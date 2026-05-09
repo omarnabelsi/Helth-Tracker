@@ -43,6 +43,16 @@ const lebaneseFoods = [
   { id: "m33", name: "Grilled Chicken", arabicName: "دجاج مشوي", category: "main", caloriesPer100g: 190, proteinPer100g: 24, carbsPer100g: 0, fatPer100g: 9, serving: "200g", tags: ["high-protein"] },
   { id: "m34", name: "Labneh", arabicName: "لبنة", category: "main", caloriesPer100g: 120, proteinPer100g: 8, carbsPer100g: 6, fatPer100g: 8, serving: "100g", tags: ["vegetarian", "high-protein"] },
   { id: "m35", name: "Manoushe Zaatar", arabicName: "منقوشة زعتر", category: "main", caloriesPer100g: 213, proteinPer100g: 5.3, carbsPer100g: 28, fatPer100g: 9.3, serving: "1 piece (150g)", tags: ["vegetarian"] },
+  { id: "m36", name: "Manoushe Jebne", arabicName: "منقوشة جبنة", category: "main", caloriesPer100g: 280, proteinPer100g: 12, carbsPer100g: 30, fatPer100g: 14, serving: "1 piece (150g)", tags: ["vegetarian"] },
+  { id: "m37", name: "Shakshouka", arabicName: "شكشوكة", category: "main", caloriesPer100g: 110, proteinPer100g: 6, carbsPer100g: 8, fatPer100g: 7, serving: "1 bowl (200g)", tags: ["vegetarian", "high-protein"] },
+  { id: "m38", name: "Oats with Milk", arabicName: "شوفان بالحليب", category: "main", caloriesPer100g: 105, proteinPer100g: 4, carbsPer100g: 18, fatPer100g: 2, serving: "1 bowl (250g)", tags: ["vegetarian"] },
+  { id: "m39", name: "Boiled Eggs", arabicName: "بيض مسلوق", category: "main", caloriesPer100g: 155, proteinPer100g: 13, carbsPer100g: 1.1, fatPer100g: 11, serving: "2 eggs (100g)", tags: ["vegetarian", "high-protein"] },
+  { id: "m40", name: "Mixed Nuts", arabicName: "مكسرات مشكلة", category: "main", caloriesPer100g: 600, proteinPer100g: 20, carbsPer100g: 20, fatPer100g: 50, serving: "1 handful (30g)", tags: ["vegetarian", "high-protein"] },
+  { id: "s01", name: "Apple", arabicName: "تفاحة", category: "main", caloriesPer100g: 52, proteinPer100g: 0.3, carbsPer100g: 14, fatPer100g: 0.2, serving: "1 medium (180g)", tags: ["vegetarian", "low-fat"] },
+  { id: "s02", name: "Banana", arabicName: "موزة", category: "main", caloriesPer100g: 89, proteinPer100g: 1.1, carbsPer100g: 23, fatPer100g: 0.3, serving: "1 medium (120g)", tags: ["vegetarian", "low-fat"] },
+  { id: "s03", name: "Dates", arabicName: "تمر", category: "main", caloriesPer100g: 282, proteinPer100g: 2.5, carbsPer100g: 75, fatPer100g: 0.4, serving: "3 pieces (25g)", tags: ["vegetarian", "low-fat"] },
+  { id: "s04", name: "Yogurt", arabicName: "لبن", category: "main", caloriesPer100g: 61, proteinPer100g: 3.5, carbsPer100g: 4.7, fatPer100g: 3.3, serving: "1 cup (200g)", tags: ["vegetarian"] },
+  { id: "s05", name: "Cucumber and Tomato", arabicName: "خيار وبندورة", category: "main", caloriesPer100g: 20, proteinPer100g: 1, carbsPer100g: 4, fatPer100g: 0.2, serving: "1 bowl (200g)", tags: ["vegetarian", "low-fat"] },
 
   // ═══════════════════════════════════════════
   //  DESSERTS

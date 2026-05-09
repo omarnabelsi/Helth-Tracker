@@ -39,13 +39,15 @@ class GeneratePlanResponse(BaseModel):
     created_at: Optional[str] = None
 
 
-@router.post("/", response_model=GeneratePlanResponse, status_code=201)
+@router.post("", response_model=GeneratePlanResponse, status_code=201)
 async def generate_plan(body: GeneratePlanRequest):
     """
     Generate a personalized weekly meal + workout plan using Gemini AI.
     Stores the result in the 'plans' table.
     """
+    import traceback
     try:
+        print(f"[DEBUG] Starting plan generation for user {body.user_id}...")
         plan_data = generate_full_plan(
             age=body.age,
             gender=body.gender,
@@ -60,20 +62,27 @@ async def generate_plan(body: GeneratePlanRequest):
             gym_type=body.gym_type,
             equipment_list=body.equipment_list,
         )
+        print(f"[DEBUG] AI generation successful.")
     except Exception as e:
+        print(f"[ERROR] AI generation failed:")
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"AI plan generation failed: {str(e)}")
 
     # Ensure only 1 master plan exists per user: Delete old entries first
     try:
         supabase.table("plans").delete().eq("user_id", body.user_id).execute()
-    except:
+    except Exception as e:
+        print(f"[WARNING] Failed to delete old plans: {e}")
         pass # Ignore if none exist
 
     # Store the new plan
-    result = supabase.table("plans").insert({
+    payload = {
         "user_id": body.user_id,
         "plan_data": plan_data,
-        "user_profile": {
+    }
+    
+    try:
+        payload["user_profile"] = {
             "age": body.age,
             "gender": body.gender,
             "weight": body.weight,
@@ -86,12 +95,22 @@ async def generate_plan(body: GeneratePlanRequest):
             "activity_level": body.activity_level,
             "gym_type": body.gym_type,
             "equipment_list": body.equipment_list,
-        },
-    }).execute()
+        }
+        print(f"[DEBUG] Attempting to save plan to DB...")
+        result = supabase.table("plans").insert(payload).execute()
+        print(f"[DEBUG] DB save result: {result.data is not None}")
+    except Exception as e:
+        print(f"[WARNING] Failed to save with user_profile: {e}")
+        # Fallback if user_profile column is missing
+        if "user_profile" in payload:
+            del payload["user_profile"]
+        result = supabase.table("plans").insert(payload).execute()
 
     if not result.data:
+        print(f"[ERROR] Final DB insert failed - result.data is empty")
         raise HTTPException(status_code=500, detail="Failed to save plan to database")
 
+    print(f"[DEBUG] Plan generation complete.")
     return result.data[0]
 
 

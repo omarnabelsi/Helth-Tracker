@@ -9,37 +9,38 @@ import {
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
 
-const foods = [
-  { name: 'Manakish', cal: '350 kcal', desc: 'Zaatar flatbread', emoji: '🫓' },
-  { name: 'Fattoush', cal: '180 kcal', desc: 'Fresh herb salad', emoji: '🥗' },
-  { name: 'Hummus', cal: '220 kcal', desc: 'Chickpea dip', emoji: '🫘' },
-  { name: 'Shawarma', cal: '480 kcal', desc: 'Grilled chicken wrap', emoji: '🌯' },
-  { name: 'Labneh', cal: '150 kcal', desc: 'Strained yogurt', emoji: '🥛' },
-  { name: 'Tabbouleh', cal: '120 kcal', desc: 'Parsley & bulgur', emoji: '🥬' },
-]
-
 const steps = [
-  { icon: BarChart3, title: 'Enter Stats', desc: 'Age, weight, height' },
-  { icon: Target, title: 'Choose Goal', desc: 'Fat loss, muscle, health' },
-  { icon: Brain, title: 'AI Analysis', desc: '3 models analyze you' },
-  { icon: Sparkles, title: 'Get Your Plan', desc: 'Diet + workout ready' },
+  { icon: BarChart3, title: 'step_1_title', desc: 'step_1_desc' },
+  { icon: Target, title: 'step_2_title', desc: 'step_2_desc' },
+  { icon: Brain, title: 'step_3_title', desc: 'step_3_desc' },
+  { icon: Sparkles, title: 'step_4_title', desc: 'step_4_desc' },
 ]
 
 const features = [
-  { icon: Utensils, title: 'Smart Meal Plans', desc: 'Lebanese food-aware AI generates weekly meal plans tailored to your culture and macros.' },
-  { icon: Dumbbell, title: 'Adaptive Workouts', desc: 'Exercises adjusted for your medical conditions and fitness level in real-time.' },
-  { icon: TrendingUp, title: 'Progress Tracking', desc: 'AI-powered body analysis tracks your transformation with visual progress reports.' },
-  { icon: MessageCircle, title: 'Health Chat', desc: 'Ask anything — from meal swaps to symptom checks — your AI coach is always available.' },
+  { icon: Utensils, title: 'meal_plans_title', desc: 'meal_plans_desc' },
+  { icon: Dumbbell, title: 'adaptive_workouts_title', desc: 'adaptive_workouts_desc' },
+  { icon: TrendingUp, title: 'progress_tracking_title', desc: 'progress_tracking_desc' },
+  { icon: MessageCircle, title: 'health_chat_title', desc: 'health_chat_desc' },
 ]
 
 const aiModels = [
-  { icon: Eye, title: 'Vision AI', desc: 'Analyzes your selfie to estimate body composition, posture, and physical metrics using computer vision.', color: 'from-blue-500 to-cyan-400' },
-  { icon: Zap, title: 'Recommendation Engine', desc: 'Creates personalized diet and workout plans by cross-referencing your data with 10,000+ nutritional profiles.', color: 'from-primary-accent to-primary-light' },
-  { icon: MessageCircle, title: 'Chat Assistant', desc: 'Natural language health coach powered by Gemini AI — understands context, medical history, and Lebanese cuisine.', color: 'from-purple-500 to-pink-400' },
+  { icon: Eye, title: 'vision_title', desc: 'vision_desc', color: 'from-blue-500 to-cyan-400' },
+  { icon: Zap, title: 'recommendation_title', desc: 'recommendation_desc', color: 'from-primary-accent to-primary-light' },
+  { icon: MessageCircle, title: 'chat_assistant_title', desc: 'chat_assistant_desc', color: 'from-purple-500 to-pink-400' },
 ]
 
 export default function Landing() {
   const { t } = useTranslation();
+  
+  const foods = [
+    { name: t('lebanese_foods.manakish'), cal: `350 ${t('common.kcal')}`, desc: t('lebanese_foods.manakish_desc'), emoji: '🫓' },
+    { name: t('lebanese_foods.fattoush'), cal: `180 ${t('common.kcal')}`, desc: t('lebanese_foods.fattoush_desc'), emoji: '🥗' },
+    { name: t('lebanese_foods.hummus'), cal: `220 ${t('common.kcal')}`, desc: t('lebanese_foods.hummus_desc'), emoji: '🫘' },
+    { name: t('lebanese_foods.shawarma'), cal: `480 ${t('common.kcal')}`, desc: t('lebanese_foods.shawarma_desc'), emoji: '🌯' },
+    { name: t('lebanese_foods.labneh'), cal: `150 ${t('common.kcal')}`, desc: t('lebanese_foods.labneh_desc'), emoji: '🥛' },
+    { name: t('lebanese_foods.tabbouleh'), cal: `120 ${t('common.kcal')}`, desc: t('lebanese_foods.tabbouleh_desc'), emoji: '🥬' },
+  ]
+
   const { user } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrollY, setScrollY] = useState(0)
@@ -66,9 +67,9 @@ export default function Landing() {
             <span className="font-heading font-bold text-white text-lg">VitalSense AI</span>
           </div>
           <div className="hidden md:flex items-center gap-8">
-            <a href="#how" className="text-white/70 hover:text-white text-sm transition-colors">How it Works</a>
-            <a href="#features" className="text-white/70 hover:text-white text-sm transition-colors">Features</a>
-            <a href="#foods" className="text-white/70 hover:text-white text-sm transition-colors">Lebanese Foods</a>
+            <a href="#how" className="text-white/70 hover:text-white text-sm transition-colors">{t('landing.nav_how')}</a>
+            <a href="#features" className="text-white/70 hover:text-white text-sm transition-colors">{t('landing.nav_features')}</a>
+            <a href="#foods" className="text-white/70 hover:text-white text-sm transition-colors">{t('landing.nav_foods')}</a>
             {!user && (
               <Link to="/login" className="text-white/70 hover:text-white text-sm transition-colors">{t('auth.login')}</Link>
             )}
@@ -76,7 +77,7 @@ export default function Landing() {
               to={user ? "/dashboard" : "/onboarding"} 
               className="bg-primary-accent hover:bg-primary-accent/90 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-all hover:shadow-lg hover:shadow-primary-accent/25"
             >
-              {user ? "Go to Dashboard" : "Get Started"}
+              {user ? t('landing.go_to_dashboard') : t('landing.get_started')}
             </Link>
           </div>
           <button className="md:hidden text-white" onClick={() => setMenuOpen(!menuOpen)}>
@@ -92,7 +93,7 @@ export default function Landing() {
               to={user ? "/dashboard" : "/onboarding"} 
               className="block bg-primary-accent text-white text-sm font-semibold px-5 py-2.5 rounded-xl text-center mt-2"
             >
-              {user ? "Dashboard" : "Get Started"}
+              {user ? t('landing.go_to_dashboard') : t('landing.get_started')}
             </Link>
             {!user && (
               <Link to="/login" className="block text-white/70 text-sm py-2 text-center">{t('auth.login')}</Link>
@@ -119,35 +120,35 @@ export default function Landing() {
           <div className="animate-fade-in-up">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur px-4 py-1.5 rounded-full mb-6">
               <Sparkles size={14} className="text-primary-light" />
-              <span className="text-primary-light text-xs font-semibold">Powered by 3 AI Models</span>
+              <span className="text-primary-light text-xs font-semibold">{t('landing.hero_tag')}</span>
             </div>
             <h1 className="font-heading text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white leading-tight mb-6">
-              Your Personal
+              {t('landing.hero_title').split('AI')[0]}
               <br />
               <span className="bg-gradient-to-r from-primary-light to-primary-lighter bg-clip-text text-transparent">
-                AI Health Coach
+                AI {t('landing.hero_title').split('AI')[1]}
               </span>
               <br />
               <span className="text-3xl lg:text-4xl font-bold text-white/70">
-                — Built for Lebanon
+                — {t('landing.hero_subtitle')}
               </span>
             </h1>
             <p className="text-white/60 text-lg leading-relaxed max-w-lg mb-8">
-              Smart nutrition tracking with Lebanese food recognition, AI-powered workouts adapted for your medical conditions, and a personal health assistant that speaks your language.
+              {t('landing.hero_desc')}
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
                 to={user ? "/dashboard" : "/onboarding"}
                 className="group bg-primary-accent hover:bg-primary-light text-white font-semibold px-8 py-3.5 rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-primary-accent/30 flex items-center gap-2"
               >
-                {user ? "Go to Dashboard" : "Get Started Free"}
+                {user ? t('landing.go_to_dashboard') : t('landing.get_started_free')}
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </Link>
               <a
                 href="#how"
                 className="border border-white/20 hover:border-white/40 text-white/80 hover:text-white font-semibold px-8 py-3.5 rounded-2xl transition-all duration-300 backdrop-blur"
               >
-                See How It Works
+                {t('landing.see_how')}
               </a>
             </div>
             <div className="flex items-center gap-6 mt-10">
@@ -164,7 +165,7 @@ export default function Landing() {
                     <Star key={i} size={12} className="text-yellow-400 fill-yellow-400" />
                   ))}
                 </div>
-                <p className="text-white/50 text-xs">Trusted by 2,000+ users in Lebanon</p>
+                <p className="text-white/50 text-xs">{t('landing.trusted_by')}</p>
               </div>
             </div>
           </div>
@@ -177,7 +178,7 @@ export default function Landing() {
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 w-20 h-1.5 bg-white/10 rounded-full"></div>
                 <div className="p-6 pt-10">
                   <div className="bg-white/10 rounded-2xl p-4 mb-4 backdrop-blur">
-                    <div className="text-white/50 text-[10px] mb-1">Daily Progress</div>
+                    <div className="text-white/50 text-[10px] mb-1">{t('landing.daily_progress')}</div>
                     <div className="text-white text-xl font-bold font-heading">78%</div>
                     <div className="h-2 bg-white/10 rounded-full mt-2 overflow-hidden">
                       <div className="h-full w-[78%] bg-gradient-to-r from-primary-accent to-primary-light rounded-full"></div>
@@ -194,7 +195,7 @@ export default function Landing() {
                     </div>
                     <div className="bg-white/8 rounded-xl p-3 backdrop-blur">
                       <div className="text-primary-light text-lg font-bold">45min</div>
-                      <div className="text-white/40 text-[10px]">Workout</div>
+                      <div className="text-white/40 text-[10px]">{t('dashboard.workout_card')}</div>
                     </div>
                     <div className="bg-white/8 rounded-xl p-3 backdrop-blur">
                       <div className="text-primary-light text-lg font-bold">7.5h</div>
@@ -210,8 +211,8 @@ export default function Landing() {
                     <Heart size={14} className="text-primary-accent" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-text-primary">Heart Rate</div>
-                    <div className="text-[10px] text-text-muted">72 bpm — Normal</div>
+                    <div className="text-xs font-bold text-text-primary">{t('dashboard.health_advisory')}</div>
+                    <div className="text-[10px] text-text-muted">72 bpm — {t('dashboard.completed')}</div>
                   </div>
                 </div>
               </div>
@@ -219,8 +220,8 @@ export default function Landing() {
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🔥</span>
                   <div>
-                    <div className="text-xs font-bold text-text-primary">18 Day Streak</div>
-                    <div className="text-[10px] text-text-muted">Keep it going!</div>
+                    <div className="text-xs font-bold text-text-primary">18 {t('dashboard.streak_days')}</div>
+                    <div className="text-[10px] text-text-muted">{t('dashboard.keep_going')}</div>
                   </div>
                 </div>
               </div>
@@ -240,12 +241,12 @@ export default function Landing() {
       <section id="how" className="py-24 bg-bg-main">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <span className="text-primary-accent text-sm font-semibold uppercase tracking-widest">How it Works</span>
+            <span className="text-primary-accent text-sm font-semibold uppercase tracking-widest">{t('landing.how_tag')}</span>
             <h2 className="font-heading text-4xl font-bold text-text-primary mt-3">
-              4 Steps to Your Healthier Self
+              {t('landing.how_title')}
             </h2>
             <p className="text-text-muted mt-3 max-w-lg mx-auto">
-              Our AI analyzes your unique body, preferences, and medical conditions to create the perfect plan.
+              {t('landing.how_subtitle')}
             </p>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -255,9 +256,9 @@ export default function Landing() {
                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-accent to-primary-light flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary-accent/20 group-hover:scale-110 transition-transform">
                     <step.icon size={22} className="text-white" />
                   </div>
-                  <div className="text-xs text-primary-accent font-bold mb-1">Step {i + 1}</div>
-                  <h3 className="font-heading font-bold text-text-primary mb-1">{step.title}</h3>
-                  <p className="text-xs text-text-muted">{step.desc}</p>
+                  <div className="text-xs text-primary-accent font-bold mb-1">{t('common.ago')} {i + 1}</div>
+                  <h3 className="font-heading font-bold text-text-primary mb-1">{t(`landing.${step.title}`)}</h3>
+                  <p className="text-xs text-text-muted">{t(`landing.${step.desc}`)}</p>
                 </div>
                 {i < steps.length - 1 && (
                   <ChevronRight size={20} className="absolute top-1/2 -right-3 -translate-y-1/2 text-primary-light hidden lg:block" />
@@ -272,9 +273,9 @@ export default function Landing() {
       <section className="py-24 bg-bg-card">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <span className="text-primary-accent text-sm font-semibold uppercase tracking-widest">AI Technology</span>
+            <span className="text-primary-accent text-sm font-semibold uppercase tracking-widest">{t('landing.ai_tag')}</span>
             <h2 className="font-heading text-4xl font-bold text-text-primary mt-3">
-              3 AI Models Working For You
+              {t('landing.ai_title')}
             </h2>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
@@ -284,8 +285,8 @@ export default function Landing() {
                 <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${model.color} flex items-center justify-center mb-5 shadow-lg group-hover:scale-110 transition-transform`}>
                   <model.icon size={22} className="text-white" />
                 </div>
-                <h3 className="font-heading text-xl font-bold text-text-primary mb-2">{model.title}</h3>
-                <p className="text-sm text-text-muted leading-relaxed">{model.desc}</p>
+                <h3 className="font-heading text-xl font-bold text-text-primary mb-2">{t(`landing.${model.title}`)}</h3>
+                <p className="text-sm text-text-muted leading-relaxed">{t(`landing.${model.desc}`)}</p>
               </div>
             ))}
           </div>
@@ -296,9 +297,9 @@ export default function Landing() {
       <section id="features" className="py-24 bg-bg-main">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <span className="text-primary-accent text-sm font-semibold uppercase tracking-widest">Features</span>
+            <span className="text-primary-accent text-sm font-semibold uppercase tracking-widest">{t('landing.features_tag')}</span>
             <h2 className="font-heading text-4xl font-bold text-text-primary mt-3">
-              Everything You Need
+              {t('landing.features_title')}
             </h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -307,8 +308,8 @@ export default function Landing() {
                 <div className="w-12 h-12 rounded-xl bg-primary-pale flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <f.icon size={20} className="text-primary-accent" />
                 </div>
-                <h3 className="font-heading font-bold text-text-primary mb-2">{f.title}</h3>
-                <p className="text-sm text-text-muted leading-relaxed">{f.desc}</p>
+                <h3 className="font-heading font-bold text-text-primary mb-2">{t(`landing.${f.title}`)}</h3>
+                <p className="text-sm text-text-muted leading-relaxed">{t(`landing.${f.desc}`)}</p>
               </div>
             ))}
           </div>
@@ -319,11 +320,11 @@ export default function Landing() {
       <section id="foods" className="py-24 bg-bg-card overflow-hidden">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
-            <span className="text-primary-accent text-sm font-semibold uppercase tracking-widest">Lebanese Cuisine</span>
+            <span className="text-primary-accent text-sm font-semibold uppercase tracking-widest">{t('landing.foods_tag')}</span>
             <h2 className="font-heading text-4xl font-bold text-text-primary mt-3">
-              We Know Your Food
+              {t('landing.foods_title')}
             </h2>
-            <p className="text-text-muted mt-3">AI-powered calorie tracking for authentic Lebanese dishes</p>
+            <p className="text-text-muted mt-3">{t('landing.foods_subtitle')}</p>
           </div>
           <div className="flex gap-5 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin">
             {foods.map((food, i) => (
@@ -348,16 +349,16 @@ export default function Landing() {
         </div>
         <div className="relative max-w-3xl mx-auto px-6 text-center">
           <h2 className="font-heading text-4xl lg:text-5xl font-bold text-white mb-6">
-            Start Your Health Journey Today
+            {t('landing.cta_title')}
           </h2>
           <p className="text-white/60 text-lg mb-8 max-w-xl mx-auto">
-            Join thousands in Lebanon who are transforming their health with AI-powered coaching.
+            {t('landing.cta_desc')}
           </p>
           <Link
             to={user ? "/dashboard" : "/onboarding"}
             className="inline-flex items-center gap-2 bg-primary-accent hover:bg-primary-light text-white font-semibold px-10 py-4 rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-primary-accent/30 text-lg group"
           >
-            {user ? "Go to Dashboard" : "Get Started Free"}
+            {user ? t('landing.go_to_dashboard') : t('landing.get_started_free')}
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
@@ -375,15 +376,15 @@ export default function Landing() {
               </div>
               <span className="font-heading font-bold text-white">VitalSense AI</span>
             </div>
-            <p className="text-white/40 text-sm">Your AI-powered health companion for a better life.</p>
+            <p className="text-white/40 text-sm">{t('landing.footer_desc')}</p>
             <div className="flex gap-6">
-              <a href="#" className="text-white/40 hover:text-white text-sm transition-colors">Privacy</a>
-              <a href="#" className="text-white/40 hover:text-white text-sm transition-colors">Terms</a>
-              <a href="#" className="text-white/40 hover:text-white text-sm transition-colors">Contact</a>
+              <a href="#" className="text-white/40 hover:text-white text-sm transition-colors">{t('landing.privacy')}</a>
+              <a href="#" className="text-white/40 hover:text-white text-sm transition-colors">{t('landing.terms')}</a>
+              <a href="#" className="text-white/40 hover:text-white text-sm transition-colors">{t('landing.contact')}</a>
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-white/5 text-center">
-            <p className="text-white/30 text-xs">© 2026 VitalSense AI. All rights reserved.</p>
+            <p className="text-white/30 text-xs">© 2026 VitalSense AI. {t('landing.all_rights')}</p>
           </div>
         </div>
       </footer>

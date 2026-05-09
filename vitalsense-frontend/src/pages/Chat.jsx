@@ -57,7 +57,10 @@ export default function Chat() {
       if (saved) {
         try {
           const parsed = JSON.parse(saved)
-          setMessages(scrubMessages(parsed))
+          // Filter messages older than 24 hours
+          const cutoff = Date.now() - (24 * 60 * 60 * 1000)
+          const filtered = scrubMessages(parsed).filter(m => !m.timestamp || m.timestamp > cutoff)
+          setMessages(filtered)
           return
         } catch (e) { console.error('Failed to parse saved chat:', e) }
       }
@@ -67,11 +70,16 @@ export default function Chat() {
         if (res.ok) {
           const history = await res.json()
           if (history.length > 0) {
-            const mapped = history.map(m => ({ role: m.role === 'assistant' ? 'ai' : 'user', text: m.content, type: 'normal' }))
+            const mapped = history.map(m => ({ 
+              role: m.role === 'assistant' ? 'ai' : 'user', 
+              text: m.content, 
+              type: 'normal',
+              timestamp: new Date(m.sent_at).getTime()
+            }))
             setMessages(scrubMessages(mapped))
           } else {
-            const name = prof?.name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || 'there'
-            setMessages([{ role: 'ai', type: 'normal', text: `Hi ${name}! 👋 I'm your VitalSense AI health coach. I know your full meal plan, workout schedule, and medical history. Ask me anything about your nutrition, workouts, or health!` }])
+            const name = prof?.name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || t('common.user')
+            setMessages([{ role: 'ai', type: 'normal', text: t('chat.coach_greeting', { name }) }])
           }
         }
       } catch (err) { console.error('Failed to load chat history:', err) }
@@ -141,8 +149,9 @@ export default function Chat() {
   const sendMessage = async () => {
     if (!input.trim()) return
     const userMessage = input.trim()
+    const now = Date.now()
     setInput('')
-    setMessages(prev => [...prev, { role: 'user', text: userMessage }])
+    setMessages(prev => [...prev, { role: 'user', text: userMessage, timestamp: now }])
 
     const isDanger = checkDanger(userMessage)
 
@@ -160,25 +169,52 @@ export default function Chat() {
         role: 'ai',
         type: 'emergency',
         text: userMessage,
+        timestamp: Date.now()
       }])
     }
 
     setIsTyping(true)
     try {
+      // 1. Get planned calories for today
       const fullDayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
       const todayName = fullDayNames[new Date().getDay()]
-      const todayMeals = plan?.weeklyMealPlan?.[todayName] || []
-      const totalPlannedCal = todayMeals.reduce((s, m) => s + (m?.calories || 0), 0)
+      const todayPlanMeals = plan?.weeklyMealPlan?.[todayName] || []
+      
+      // Fix: todayPlanMeals is a list of meal objects, each with a 'dishes' array
+      let totalPlannedCal = 0
+      todayPlanMeals.forEach(meal => {
+        if (Array.isArray(meal.dishes)) {
+          meal.dishes.forEach(d => { totalPlannedCal += (d.calories || 0) })
+        } else if (meal.calories) {
+          totalPlannedCal += meal.calories // fallback for flat format
+        }
+      })
+
+      // 2. Get ACTUAL consumed calories for today
+      const todayStr = new Date().toISOString().split('T')[0]
+      const { data: logs } = await supabase.from('meal_logs')
+        .select('calories')
+        .eq('user_id', user.id)
+        .gte('logged_at', `${todayStr}T00:00:00`)
+        .lte('logged_at', `${todayStr}T23:59:59`)
+      
+      const actualConsumedCal = (logs || []).reduce((s, l) => s + (l.calories || 0), 0)
+      const calorieTarget = profile?.calorie_target || 2000
+      const remainingBudget = calorieTarget - actualConsumedCal
 
       const systemContext = `You are a personal health coach for this user:
         Name: ${profile?.name || 'User'}, Age: ${profile?.age || '?'}, Gender: ${profile?.gender || '?'},
         Weight: ${profile?.weight || '?'}kg, Height: ${profile?.height || '?'}cm,
-        Goal: ${profile?.goal || '?'}, Daily calorie target: ${profile?.calorie_target || 2000} kcal,
-        Medical conditions: ${profile?.medical_conditions || 'None'},
-        Today's planned meals: ${todayMeals.map(m => `${m.name} (${m.calories} kcal)`).join(', ')},
-        Total planned calories today: ${totalPlannedCal} kcal,
-        Remaining calorie budget: ${(profile?.calorie_target || 2000) - totalPlannedCal} kcal.
-        Answer only based on this user's specific data. Only recommend Lebanese dishes.
+        Goal: ${profile?.goal || '?'}, Daily calorie target: ${calorieTarget} kcal.
+        
+        CURRENT STATUS FOR TODAY:
+        - Actually consumed: ${actualConsumedCal} kcal
+        - Planned in meal plan: ${totalPlannedCal} kcal
+        - Remaining budget: ${remainingBudget} kcal
+        
+        Today's planned dishes: ${todayPlanMeals.map(m => (m.dishes || []).map(d => d.name).join(', ')).join(', ')}.
+        
+        Answer based on ACTUAL consumed vs target. Only recommend Lebanese dishes.
         If user reports chest pain, dizziness, or fainting — immediately flag a health warning.`
 
       const response = await authFetch(`${API_BASE}/chat/`, {
@@ -193,13 +229,14 @@ export default function Chat() {
         if (isFoodQuestion && !isDanger) {
           setMessages(prev => [...prev, {
             role: 'ai', type: 'food-check', text: data.reply,
-            remaining: (profile?.calorie_target || 2000) - totalPlannedCal,
-            total: profile?.calorie_target || 2000,
+            remaining: remainingBudget,
+            total: calorieTarget,
             verdict: 'info',
-            verdictText: `You have ${(profile?.calorie_target || 2000) - totalPlannedCal} kcal remaining today.`,
+            verdictText: `You have ${remainingBudget} kcal remaining today based on your logs.`,
+            timestamp: Date.now()
           }])
         } else if (!isDanger) {
-          setMessages(prev => [...prev, { role: 'ai', type: 'normal', text: data.reply }])
+          setMessages(prev => [...prev, { role: 'ai', type: 'normal', text: data.reply, timestamp: Date.now() }])
         }
       } else { throw new Error(`Server error: ${response.status}`) }
     } catch (error) {
@@ -219,7 +256,14 @@ export default function Chat() {
   const fullDayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   const todayName = fullDayNames[new Date().getDay()]
   const todayMeals = plan?.weeklyMealPlan?.[todayName] || []
-  const totalPlannedCal = todayMeals.reduce((s, m) => s + (m?.calories || 0), 0)
+  let totalPlannedCal = 0
+  todayMeals.forEach(meal => {
+    if (Array.isArray(meal.dishes)) {
+      meal.dishes.forEach(d => { totalPlannedCal += (d.calories || 0) })
+    } else if (meal.calories) {
+      totalPlannedCal += meal.calories
+    }
+  })
   const remainingCal = (profile?.calorie_target || 2000) - totalPlannedCal
 
   return (
@@ -237,32 +281,37 @@ export default function Chat() {
           <div className="bg-bg-main rounded-2xl p-4 space-y-3 mb-4">
             <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider">{t('chat.health_profile')}</h3>
             {[
-              { label: 'Weight', value: `${profile?.weight || '—'} kg` },
-              { label: 'Goal', value: profile?.goal?.replace('_', ' ') || '—' },
-              { label: 'Conditions', value: profile?.medical_conditions ? profile.medical_conditions.substring(0, 30) + '...' : 'None' },
-              { label: 'Activity', value: profile?.activity_level || '—' },
+              { label: t('settings.weight'), value: `${profile?.weight || '—'} ${t('common.kg')}` },
+              { label: t('onboarding.choose_goal'), value: profile?.goal?.replace('_', ' ') || '—' },
+              { label: t('onboarding.health_conditions'), value: profile?.medical_conditions ? (profile.medical_conditions.length > 20 ? profile.medical_conditions.substring(0, 20) + '...' : profile.medical_conditions) : t('common.none') },
+              { label: t('onboarding.activity_level'), value: profile?.activity_level || '—' },
             ].map((s, i) => (
               <div key={i} className="flex justify-between items-center">
                 <span className="text-xs text-text-muted">{s.label}</span>
-                <span className="text-xs font-semibold text-text-primary capitalize">{s.value}</span>
+                <span className="text-[10px] font-bold text-text-primary capitalize text-right ml-2 leading-tight">{s.value}</span>
               </div>
             ))}
           </div>
           <div className="bg-bg-main rounded-2xl p-4">
             <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">{t('chat.todays_calories')}</h3>
-            <MacroBar label="Consumed" current={totalPlannedCal} target={profile?.calorie_target || 2000} color="#4CAF7D" unit=" kcal" />
-            <p className="text-xs text-text-muted mt-2">{remainingCal} kcal remaining</p>
+            <MacroBar label={t('dashboard.completed')} current={Math.round(totalPlannedCal)} target={profile?.calorie_target || 2000} color="#4CAF7D" unit={` ${t('common.kcal')}`} />
+            <p className="text-xs text-text-muted mt-2">{Math.round(remainingCal)} {t('common.kcal')} {t('nutrition.calories_remaining')}</p>
           </div>
           {todayMeals.length > 0 && (
             <div className="bg-bg-main rounded-2xl p-4 mt-4">
               <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">{t('chat.todays_meals')}</h3>
               <div className="space-y-2">
-                {todayMeals.map((meal, i) => (
-                  <div key={i} className="flex justify-between text-xs">
-                    <span className="text-text-primary font-medium truncate mr-2">{meal.name}</span>
-                    <span className="text-text-muted flex-shrink-0">{meal.calories}</span>
-                  </div>
-                ))}
+                {todayMeals.map((mealSlot, i) => {
+                  const slotCal = Array.isArray(mealSlot.dishes) 
+                    ? mealSlot.dishes.reduce((s, d) => s + (d.calories || 0), 0)
+                    : (mealSlot.calories || 0)
+                  return (
+                    <div key={i} className="flex justify-between text-xs">
+                      <span className="text-text-primary font-medium truncate mr-2">{mealSlot.meal || mealSlot.name}</span>
+                      <span className="text-text-muted flex-shrink-0">{slotCal} {t('common.kcal')}</span>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}
@@ -280,7 +329,7 @@ export default function Chat() {
               <h3 className="text-sm font-bold text-text-primary">{t('chat.title')}</h3>
               <div className="flex items-center gap-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                <span className="text-[10px] text-text-muted">Online · Knows your plan</span>
+                <span className="text-[10px] text-text-muted">{t('common.online')} · {t('chat.knows_plan')}</span>
               </div>
             </div>
           </div>
@@ -334,10 +383,10 @@ export default function Chat() {
                   <div className="bg-primary-pale border border-primary-light/30 rounded-2xl rounded-tl-sm p-4 shadow-sm">
                     <div className="flex items-center gap-2 mb-2">
                       <CheckCircle size={16} className="text-primary-accent" />
-                      <span className="text-sm font-bold text-primary-accent">Food Check</span>
+                      <span className="text-sm font-bold text-primary-accent">{t('chat.food_check')}</span>
                     </div>
                     <p className="text-sm text-text-primary mb-3">{msg.text}</p>
-                    <MacroBar label="Calories" current={msg.total - msg.remaining} target={msg.total} color="#4CAF7D" unit=" kcal" />
+                    <MacroBar label={t('common.kcal')} current={msg.total - msg.remaining} target={msg.total} color="#4CAF7D" unit={` ${t('common.kcal')}`} />
                     <p className="text-xs font-semibold text-primary-accent mt-2">{msg.verdictText}</p>
                   </div>
                 ) : msg.type === 'doctor-summary' ? (
@@ -423,7 +472,7 @@ export default function Chat() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && sendMessage()}
-            placeholder="Ask about your health, meals, or workouts..."
+            placeholder={t('chat.placeholder')}
             className="flex-1 px-4 py-2.5 bg-bg-main rounded-xl text-sm text-text-primary placeholder:text-text-light border border-transparent focus:border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all"
             disabled={isTyping}
           />
@@ -457,13 +506,13 @@ function EmergencyCard({ symptom, profile, user, onGenerateSummary, onDownloadPD
           <AlertTriangle size={20} className="text-white" />
           <span className="text-base font-bold">{t('chat.emergency_title')}</span>
         </div>
-        <p className="text-sm text-red-100 mb-4">This sounds serious. Please take action immediately:</p>
+        <p className="text-sm text-red-100 mb-4">{t('chat.emergency_subtitle')}</p>
         <ol className="space-y-2 mb-5">
           {[
-            'Stop all physical activity now',
-            'Sit or lie down in a safe position',
-            'Call emergency services: 140 (Lebanon Red Cross)',
-            'Contact someone nearby for help',
+            t('chat.emergency_step1'),
+            t('chat.emergency_step2'),
+            t('chat.emergency_step3'),
+            t('chat.emergency_step4'),
           ].map((step, j) => (
             <li key={j} className="text-sm text-white flex items-start gap-2">
               <span className="bg-white/20 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0 text-xs font-bold">{j + 1}</span>
@@ -478,7 +527,7 @@ function EmergencyCard({ symptom, profile, user, onGenerateSummary, onDownloadPD
             className="flex items-center gap-2 bg-white text-red-600 text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-red-50 transition-colors disabled:opacity-60"
           >
             <ClipboardList size={14} />
-            {generating ? 'Generating...' : summary ? 'Summary Ready' : '📋 Generate Doctor Summary'}
+            {generating ? t('common.loading') : summary ? t('progress.ai_report') : t('chat.generate_report')}
           </button>
           <a
             href="tel:140"

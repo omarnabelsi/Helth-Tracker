@@ -46,6 +46,8 @@ try:
         doctor_summary,
         weekly_report,
         analyze_progress_photo,
+        nutrition,
+        inbody,
     )
     print("[DEBUG] Routers imported successfully.")
 except Exception as e:
@@ -86,6 +88,8 @@ app.include_router(meal_photo.router,            prefix="/api/analyze-meal-photo
 app.include_router(doctor_summary.router,        prefix="/api/doctor-summary",  tags=["Doctor Summary"])
 app.include_router(weekly_report.router,         prefix="/api/weekly-report",   tags=["Weekly Report"])
 app.include_router(analyze_progress_photo.router,prefix="/api/analyze-progress-photo", tags=["Progress Photo Analysis"])
+app.include_router(nutrition.router, prefix="/api", tags=["Nutrition"])
+app.include_router(inbody.router, prefix="/api/inbody", tags=["InBody Analysis"])
 
 
 @app.get("/", tags=["Root"])

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { NavLink, useLocation, Outlet } from 'react-router-dom'
 import {
   Home, Utensils, Dumbbell, TrendingUp, Brain, MessageCircle,
-  Settings, Crown, ChevronLeft, ChevronRight, Bell, Search, Trophy
+  Settings, Crown, ChevronLeft, ChevronRight, Bell, Search, Trophy, Zap
 } from 'lucide-react'
 import TopBar from './TopBar'
 import { useAuth } from '../context/AuthContext'
@@ -10,13 +10,13 @@ import { supabase } from '../lib/supabase'
 import { useTranslation } from 'react-i18next'
 
 const navItems = [
-  { to: '/dashboard', icon: Home, label: 'Home' },
-  { to: '/nutrition', icon: Utensils, label: 'Nutrition' },
-  { to: '/workout', icon: Dumbbell, label: 'Workouts' },
-  { to: '/progress', icon: TrendingUp, label: 'Progress' },
-  { to: '/achievements', icon: Trophy, label: 'Achievements' },
-  { to: '/chat', icon: Brain, label: 'Insights' },
-  { to: '/chat', icon: MessageCircle, label: 'Messages' },
+  { to: '/dashboard', icon: Home, labelKey: 'nav.home' },
+  { to: '/nutrition', icon: Utensils, labelKey: 'nav.nutrition' },
+  { to: '/workout', icon: Dumbbell, labelKey: 'nav.workouts' },
+  { to: '/inbody', icon: Zap, labelKey: 'nav.inbody_ai' },
+  { to: '/progress', icon: TrendingUp, labelKey: 'nav.progress' },
+  { to: '/achievements', icon: Trophy, labelKey: 'nav.achievements' },
+  { to: '/chat', icon: Brain, labelKey: 'nav.insights' },
 ]
 
 export default function AppLayout() {
@@ -47,9 +47,9 @@ export default function AppLayout() {
 
       {/* Sidebar */}
       <aside
-        className={`absolute md:relative flex flex-col bg-primary-dark transition-all duration-300 ease-in-out z-40 h-full ${
+        className={`absolute md:relative flex flex-col bg-primary-dark transition-all duration-300 ease-in-out z-40 h-full ltr:left-0 rtl:right-0 ${
           collapsed ? 'w-[72px]' : 'w-[200px]'
-        } ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+        } ${mobileMenuOpen ? 'translate-x-0' : 'ltr:-translate-x-full rtl:translate-x-full md:ltr:translate-x-0 md:rtl:translate-x-0'}`}
       >
         {/* Logo */}
         <div className="flex items-center gap-2.5 px-4 py-6 border-b border-white/10">
@@ -82,7 +82,7 @@ export default function AppLayout() {
             >
               <item.icon size={20} className="flex-shrink-0" />
               {!collapsed && (
-                <span className="text-sm font-medium">{item.label}</span>
+                <span className="text-sm font-medium">{t(item.labelKey)}</span>
               )}
             </NavLink>
           ))}
@@ -118,9 +118,13 @@ export default function AppLayout() {
         {/* Collapse Toggle - hidden on mobile */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="hidden md:flex absolute -right-3 top-20 w-6 h-6 rounded-full bg-bg-card shadow-md border border-gray-200 items-center justify-center text-text-muted hover:text-primary-accent transition-colors z-10"
+          className="hidden md:flex absolute ltr:-right-3 rtl:-left-3 top-20 w-6 h-6 rounded-full bg-bg-card shadow-md border border-gray-200 items-center justify-center text-text-muted hover:text-primary-accent transition-colors z-10"
         >
-          {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
+          {collapsed ? (
+            document.documentElement.dir === 'rtl' ? <ChevronLeft size={12} /> : <ChevronRight size={12} />
+          ) : (
+            document.documentElement.dir === 'rtl' ? <ChevronRight size={12} /> : <ChevronLeft size={12} />
+          )}
         </button>
       </aside>
 

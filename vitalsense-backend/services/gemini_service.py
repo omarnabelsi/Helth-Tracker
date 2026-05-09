@@ -10,12 +10,10 @@ genai.configure(api_key=GEMINI_API_KEY)
 
 # Ordered fallback chain — models with available quota first
 MODEL_CHAIN = [
-    "gemini-2.5-flash-lite",
-    "gemini-flash-latest",
-    "gemini-flash-lite-latest",
-    "gemini-2.0-flash-lite",
-    "gemini-2.0-flash",
-    "gemini-2.5-flash",
+    "models/gemini-2.5-flash",
+    "models/gemini-2.0-flash",
+    "models/gemini-flash-latest",
+    "models/gemini-pro-latest",
 ]
 
 

@@ -6,7 +6,7 @@ export default function MacroBar({ label, current, target, color = '#3B82F6', un
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold text-text-primary">{label}</span>
         <span className="text-xs text-text-muted">
-          {current}{unit} / {target}{unit}
+          {Math.round(current)}{unit} / {Math.round(target)}{unit}
         </span>
       </div>
       <div className="h-2 bg-gray-100 rounded-full overflow-hidden">

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Bell, Search, Sun, Moon, Globe } from 'lucide-react'
+import { Bell, Search, Sun, Moon, Globe, Palette } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { useTranslation } from 'react-i18next'
+import { LanguageToggle } from './LanguageToggle'
+import { useTheme } from '../themes/ThemeContext'
 
 export default function TopBar({ onMenuClick }) {
   const { t } = useTranslation();
@@ -11,7 +13,7 @@ export default function TopBar({ onMenuClick }) {
   const [profile, setProfile] = useState(null)
   const [notifications, setNotifications] = useState([])
   const [showNotifications, setShowNotifications] = useState(false)
-  const [theme, setTheme] = useState(localStorage.getItem('vs_theme') || 'light')
+  const { theme, setTheme, themes } = useTheme()
 
   useEffect(() => {
     if (!user) return
@@ -65,11 +67,6 @@ export default function TopBar({ onMenuClick }) {
     }
   }, [user])
 
-  // Apply theme on mount
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-  }, [])
-
   const unreadCount = notifications.filter(n => !n.read).length
 
   const markAllAsRead = async () => {
@@ -78,20 +75,17 @@ export default function TopBar({ onMenuClick }) {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })))
   }
 
-  const toggleTheme = async () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light'
-    setTheme(newTheme)
-    document.documentElement.setAttribute('data-theme', newTheme)
-    localStorage.setItem('vs_theme', newTheme)
-    if (user) {
-      await supabase.from('profiles').update({ theme: newTheme }).eq('user_id', user.id)
-    }
+  const toggleTheme = () => {
+    const keys = Object.keys(themes);
+    const currentIndex = keys.indexOf(theme);
+    const nextIndex = (currentIndex + 1) % keys.length;
+    setTheme(keys[nextIndex]);
   }
 
   const toggleLanguage = async () => {
     const newLang = i18n.language === 'en' ? 'ar' : 'en'
     i18n.changeLanguage(newLang)
-    localStorage.setItem('vs_language', newLang)
+    localStorage.setItem('language', newLang)
     document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr'
     document.documentElement.lang = newLang
     if (user) {
@@ -114,11 +108,11 @@ export default function TopBar({ onMenuClick }) {
         </button>
         {/* Search - hidden on small mobile to prevent overlap */}
         <div className="relative flex-1 md:w-80 hidden sm:block">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+          <Search size={16} className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input
             type="text"
-            placeholder="Search..."
-            className="w-full pl-10 pr-4 py-2 bg-bg-main rounded-xl text-sm text-text-primary placeholder:text-text-light border border-transparent focus:border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all"
+            placeholder={t('common.search')}
+            className="w-full ltr:pl-10 ltr:pr-4 rtl:pr-10 rtl:pl-4 py-2 bg-bg-main rounded-xl text-sm text-text-primary placeholder:text-text-light border border-transparent focus:border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all"
           />
         </div>
       </div>
@@ -126,14 +120,7 @@ export default function TopBar({ onMenuClick }) {
       {/* Actions */}
       <div className="flex items-center gap-2 md:gap-3 relative">
         {/* Language Toggle - only icon on mobile */}
-        <button
-          onClick={toggleLanguage}
-          className="flex items-center gap-1.5 px-2 md:px-3 py-2 rounded-xl bg-bg-main text-text-muted hover:text-primary-accent hover:bg-primary-pale transition-all text-xs font-bold"
-          title="Toggle language"
-        >
-          <Globe size={14} />
-          <span className="hidden xs:inline">{i18n.language === 'en' ? 'عربي' : 'EN'}</span>
-        </button>
+        <LanguageToggle userId={user?.id} />
 
         {/* Theme Toggle */}
         <button
@@ -141,7 +128,7 @@ export default function TopBar({ onMenuClick }) {
           className="w-10 h-10 rounded-xl bg-bg-main flex items-center justify-center text-text-muted hover:text-primary-accent hover:bg-primary-pale transition-all"
           title="Toggle theme"
         >
-          {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          <Palette size={18} />
         </button>
 
         {/* Notifications */}
@@ -151,7 +138,7 @@ export default function TopBar({ onMenuClick }) {
         >
           <Bell size={18} />
           {unreadCount > 0 && (
-            <span className="absolute top-2 right-2.5 w-2 h-2 bg-danger rounded-full ring-2 ring-white"></span>
+            <span className="absolute top-2 ltr:right-2.5 rtl:left-2.5 w-2 h-2 bg-danger rounded-full ring-2 ring-white"></span>
           )}
         </button>
 
