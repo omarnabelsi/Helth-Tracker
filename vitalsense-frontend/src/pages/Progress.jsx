@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { Camera, TrendingDown, TrendingUp, Flame, Bot, Upload, ChevronRight, Scale, Target, Calendar, Award, Share2, Trash2 } from 'lucide-react'
 import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area, AreaChart } from 'recharts'
-import html2canvas from 'html2canvas'
+import { toPng } from 'html-to-image'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-hot-toast'
+import ConfirmModal from '../components/ConfirmModal'
 
 const mockWeightData = [
   { date: 'Apr 10', weight: 76.2 },
@@ -39,6 +40,7 @@ export default function Progress() {
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
   const [aiReport, setAiReport] = useState('')
   const [isGeneratingReport, setIsGeneratingReport] = useState(false)
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, photoId: null, photoUrl: null })
   
   const fileInputRef = useRef(null)
   const shareRef = useRef(null)
@@ -188,7 +190,12 @@ export default function Progress() {
   }
 
   const handleDeletePhoto = async (photoId, photoUrl) => {
-    if (!confirm('Are you sure you want to delete this photo?')) return;
+    setDeleteModal({ isOpen: true, photoId, photoUrl })
+  }
+
+  const confirmDeletePhoto = async () => {
+    const { photoId, photoUrl } = deleteModal
+    if (!photoId) return
     
     try {
       const { error: dbError } = await supabase
@@ -246,6 +253,7 @@ export default function Progress() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6 overflow-y-auto">
+      <div ref={shareRef} className="space-y-6 p-4 rounded-3xl bg-bg-card border border-white/5 shadow-2xl">
       {/* Header */}
       <div className="animate-fade-in">
         <h1 className="font-heading text-2xl font-bold text-text-primary">{t('progress.title')}</h1>
@@ -524,15 +532,31 @@ export default function Progress() {
       )}
 
       {/* Share Progress Button */}
-      <div ref={shareRef} className="bg-bg-card rounded-2xl p-6 border border-gray-100 shadow-sm animate-fade-in-up delay-600">
+      <div className="bg-bg-card rounded-2xl p-6 border border-gray-100 shadow-sm animate-fade-in-up delay-600">
         <button
           onClick={async () => {
             if (shareRef.current) {
-              const canvas = await html2canvas(shareRef.current)
-              const link = document.createElement('a')
-              link.download = `VitalSense_Progress_${new Date().toISOString().split('T')[0]}.png`
-              link.href = canvas.toDataURL()
-              link.click()
+              const loadingToast = toast.loading('Generating your progress report...')
+              try {
+                // html-to-image handles modern CSS (oklch, oklab) much better than html2canvas
+                const dataUrl = await toPng(shareRef.current, {
+                  cacheBust: true,
+                  backgroundColor: '#0a192f',
+                  pixelRatio: 2, // High resolution
+                })
+                
+                const link = document.createElement('a')
+                link.download = `VitalSense_Progress_${new Date().toISOString().split('T')[0]}.png`
+                link.href = dataUrl
+                link.click()
+                
+                toast.dismiss(loadingToast)
+                toast.success('Progress report downloaded!')
+              } catch (err) {
+                console.error('Share error:', err)
+                toast.dismiss(loadingToast)
+                toast.error('Failed to generate image. Please try again.')
+              }
             }
           }}
           className="btn-primary flex items-center justify-center gap-2 w-full font-bold py-3.5 rounded-xl transition-all shadow-xl shadow-primary-accent/15 active:scale-[0.99]"
@@ -541,6 +565,18 @@ export default function Progress() {
           {t('progress.share_progress')}
         </button>
       </div>
+      
+      {/* Confirm Delete Modal */}
+      <ConfirmModal 
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+        onConfirm={confirmDeletePhoto}
+        title="Delete Progress Photo"
+        message="Are you sure you want to delete this photo? This action cannot be undone."
+        confirmText="Delete"
+        type="danger"
+      />
+    </div>
     </div>
   )
 }

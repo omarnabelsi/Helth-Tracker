@@ -531,34 +531,6 @@ export default function Dashboard() {
           <p className="text-[10px] text-text-muted mt-1">{isMockUser ? `${t('dashboard.vs_last_week')}: -0.5 kg` : t('progress.log_first_weight')}</p>
         </div>
 
-        {/* Sleep Widget */}
-        <div className="bg-bg-main rounded-2xl p-4 animate-slide-right delay-300">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Moon size={14} className="text-indigo-500" />
-              <h3 className="text-sm font-bold text-text-primary">{t('dashboard.sleep')}</h3>
-            </div>
-            <span className="text-xs text-text-muted">{t('dashboard.last_night') || 'Last night'}</span>
-          </div>
-          <div className="mb-3">
-            <span className="text-2xl font-bold text-text-primary font-heading">{isMockUser ? '7.5' : '--'}</span>
-            <span className="text-sm text-text-muted ml-1">{t('common.hours')}</span>
-          </div>
-          {/* Sleep bar chart */}
-          <div className="flex items-end gap-1.5 h-12">
-            {(isMockUser ? [65, 80, 70, 90, 75, 85, 78] : [0, 0, 0, 0, 0, 0, 0]).map((h, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div
-                  className={`w-full rounded-t transition-all ${
-                    i === 6 ? 'bg-indigo-500' : 'bg-indigo-200'
-                  }`}
-                  style={{ height: `${h * 0.5}px` }}
-                />
-                <span className="text-[8px] text-text-light">{i18n.language === 'ar' ? ['ن','ث','ر','خ','ج','س','ح'][i] : weekDays[i][0]}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   )

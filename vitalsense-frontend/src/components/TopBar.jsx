@@ -13,7 +13,7 @@ export default function TopBar({ onMenuClick }) {
   const [profile, setProfile] = useState(null)
   const [notifications, setNotifications] = useState([])
   const [showNotifications, setShowNotifications] = useState(false)
-  const { theme, setTheme, themes } = useTheme()
+  const { themeId, changeTheme, themes } = useTheme()
 
   useEffect(() => {
     if (!user) return
@@ -31,7 +31,7 @@ export default function TopBar({ onMenuClick }) {
           }
           // Apply saved theme preference
           if (data.theme) {
-            setTheme(data.theme)
+            changeTheme(data.theme)
             document.documentElement.setAttribute('data-theme', data.theme)
             localStorage.setItem('vs_theme', data.theme)
           }
@@ -76,10 +76,10 @@ export default function TopBar({ onMenuClick }) {
   }
 
   const toggleTheme = () => {
-    const keys = Object.keys(themes);
-    const currentIndex = keys.indexOf(theme);
+    const keys = Object.keys(themes || {});
+    const currentIndex = keys.indexOf(themeId);
     const nextIndex = (currentIndex + 1) % keys.length;
-    setTheme(keys[nextIndex]);
+    changeTheme(keys[nextIndex]);
   }
 
   const toggleLanguage = async () => {
