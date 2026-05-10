@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Check, Camera, ChevronDown, ChevronUp, Flame, ArrowLeftRight, X, Search, Upload, FileText, Sparkles, AlertTriangle, PieChart as PieChartIcon } from 'lucide-react'
+import { Check, Camera, ChevronDown, ChevronUp, Flame, ArrowLeftRight, X, Search, Upload, FileText, Sparkles, PieChart as PieChartIcon } from 'lucide-react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import MacroBar from '../components/MacroBar'
 import { useAuth } from '../context/AuthContext'
@@ -181,7 +181,7 @@ export default function Nutrition() {
       }
 
       const today = new Date().toISOString().split('T')[0]
-      const { data: log } = await supabase.from('daily_logs').select('meal_data').eq('user_id', user.id).eq('log_date', today).maybeSingle()
+      const { data: log } = await supabase.from('daily_logs').select('meal_data').eq('user_id', user.id).eq('log_date', today).single()
 
       if (log?.meal_data) {
         setMeals(log.meal_data)
@@ -315,17 +315,12 @@ export default function Nutrition() {
       {/* Alerts */}
       <div className="space-y-2 animate-fade-in">
         {totalCal > calorieTarget && (
-          <div className="bg-red-50/10 dark:bg-red-900/20 border border-red-500/20 dark:border-red-500/30 rounded-2xl p-4 flex items-start gap-4 animate-fade-in hover:border-red-500/40 transition-all shadow-sm shadow-red-500/5">
-            <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
-              <AlertTriangle size={18} className="text-red-600 dark:text-red-400" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-bold text-red-900 dark:text-red-100 flex items-center gap-2">
-                🚨 {t('common.warning') || 'Calorie Alert'}
-              </p>
-              <p className="text-xs text-red-800/80 dark:text-red-200/70 mt-1 leading-relaxed">
-                {t('nutrition.warning_over')} <span className="font-bold underline underline-offset-2">{totalCal - calorieTarget} {t('common.kcal')}</span>.
-              </p>
+          <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center justify-between backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center border border-red-500/20">
+                <span className="text-xl">🚨</span>
+              </div>
+              <p className="text-sm font-bold text-red-500">{t('nutrition.warning_over')} {totalCal - calorieTarget} {t('common.kcal')}.</p>
             </div>
           </div>
         )}
@@ -414,8 +409,8 @@ export default function Nutrition() {
                           <span className="bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded text-[9px] font-bold">P {Math.round(item.protein)}g</span>
                           <span className="bg-orange-500/10 text-orange-500 px-2 py-0.5 rounded text-[9px] font-bold">C {Math.round(item.carbs)}g</span>
                           <span className="bg-red-500/10 text-red-500 px-2 py-0.5 rounded text-[9px] font-bold">F {Math.round(item.fat)}g</span>
-                          <span className="bg-purple-500/10 text-purple-500 px-2 py-0.5 rounded text-[9px] font-bold">{t('nutrition.portion')}: {item.loggedGrams}g</span>
-                          <span className="bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded text-[9px] font-bold">{Math.round(item.calories)} kcal ({item.loggedGrams}g)</span>
+                          <span className="bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded text-[9px] font-bold">{Math.round(item.calories)} kcal</span>
+                          <span className="bg-primary-accent/10 text-primary-accent px-2 py-0.5 rounded text-[9px] font-bold">{Math.round(item.loggedGrams)} {t('common.g')}</span>
                         </div>
                       </div>
                       <div className="flex gap-2">
@@ -561,7 +556,7 @@ export default function Nutrition() {
                       />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted font-bold ml-1">{t('common.g')}</span>
                     </div>
-                    <button onClick={() => handleFoodSelect(selectedFoodForGrams)} className="btn-primary text-white px-10 py-4 rounded-xl font-bold active:scale-95 transition-all">{t('common.save')}</button>
+                    <button onClick={() => handleFoodSelect(selectedFoodForGrams)} className="bg-primary-accent text-white px-10 py-4 rounded-xl font-bold hover:shadow-lg hover:shadow-primary-accent/20 active:scale-95 transition-all">{t('common.save')}</button>
                   </div>
                   <div className="grid grid-cols-4 gap-3">
                     {[

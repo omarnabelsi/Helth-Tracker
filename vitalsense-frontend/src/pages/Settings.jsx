@@ -238,7 +238,7 @@ export default function Settings() {
             </div>
             
             <div className="mt-6 flex justify-end">
-              <button onClick={handleProfileSave} disabled={isSavingProfile} className="btn-primary flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-primary-accent/10 hover:shadow-primary-accent/20 active:scale-[0.98] disabled:opacity-50">
+              <button onClick={handleProfileSave} disabled={isSavingProfile} className="flex items-center gap-2 bg-[#2E7D52] hover:bg-[#236040] text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-50">
                 {isSavingProfile ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                 {t('settings.save_changes')}
               </button>
@@ -284,7 +284,7 @@ export default function Settings() {
                 <p className="text-sm font-semibold text-text-primary">{t('settings.regenerate_plan')}</p>
                 <p className="text-xs text-text-muted">{t('onboarding.analyzing_subtitle')}</p>
               </div>
-              <button onClick={handleRegeneratePlan} disabled={isGeneratingPlan} className="btn-primary flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap shadow-lg shadow-primary-accent/10 hover:shadow-primary-accent/20 active:scale-[0.98] disabled:opacity-50">
+              <button onClick={handleRegeneratePlan} disabled={isGeneratingPlan} className="flex items-center gap-2 bg-[#2E7D52] hover:bg-[#236040] text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap disabled:opacity-50">
                 {isGeneratingPlan ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
                 {t('settings.regenerate_plan')}
               </button>
@@ -308,9 +308,9 @@ export default function Settings() {
               
               <div>
                 <label className="text-xs font-semibold text-text-muted mb-1 block">{t('settings.change_password')}</label>
-                <div className="flex gap-2">
-                  <input type="password" placeholder={t('settings.new_password')} value={password} onChange={e => setPassword(e.target.value)} className="flex-1 px-4 py-2.5 bg-bg-main rounded-xl text-sm border border-transparent focus:border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all" />
-                  <button onClick={handlePasswordChange} className="btn-primary px-4 rounded-xl font-semibold text-sm transition-all shadow-md shadow-primary-accent/10 active:scale-[0.95]">
+                <div className="space-y-3">
+                  <input type="password" placeholder={t('settings.new_password')} value={password} onChange={e => setPassword(e.target.value)} className="w-full px-4 py-2.5 bg-bg-main rounded-xl text-sm border border-transparent focus:border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all" />
+                  <button onClick={handlePasswordChange} className="w-full bg-primary-accent/10 hover:bg-primary-accent text-primary-accent hover:text-white py-2.5 rounded-xl font-bold text-xs transition-all border border-primary-accent/20 flex items-center justify-center uppercase tracking-wider">
                     {t('common.save')}
                   </button>
                 </div>
@@ -326,10 +326,8 @@ export default function Settings() {
                 <span className="text-sm text-text-primary font-medium block mb-2">{t('settings.theme', 'App Theme')}</span>
                 <ThemePicker />
               </div>
-              <button onClick={handleSignOut} className="btn-danger w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-sm transition-all mt-4 active:scale-[0.98]">
-                <LogOut size={16} />
-                {t('settings.sign_out')}
-              </button>
+              <button onClick={handleSignOut} className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white px-4 py-3 rounded-xl font-bold text-sm transition-all mt-6 border border-red-500/20 shadow-sm shadow-red-500/5">
+                <LogOut size={18} />{t('settings.sign_out')}</button>
             </div>
           </div>
 

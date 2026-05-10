@@ -27,91 +27,93 @@ export const PPL_EXERCISES = {
   // ─── PUSH ───────────────────────────────────────────
   push: {
     home: [
-      { name: 'Push-ups', nameAr: 'تمرين الضغط', sets: 4, reps: '10-15', muscle: 'chest', notes: 'Focus on form' },
-      { name: 'Decline Push-ups', nameAr: 'ضغط منحدر', sets: 3, reps: '10-12', muscle: 'chest', notes: 'Feet on chair' },
-      { name: 'Pike Push-ups', nameAr: 'ضغط القمة', sets: 3, reps: '8-10', muscle: 'shoulders', notes: 'Hips high' },
-      { name: 'Lateral Raises (Bottles)', nameAr: 'رفع جانبي', sets: 3, reps: '12-15', muscle: 'shoulders', notes: 'Control the weight' },
-      { name: 'Diamond Push-ups', nameAr: 'ضغط الألماس', sets: 3, reps: '8-12', muscle: 'triceps', notes: 'Hands form diamond' }
+      { name: 'Push-ups', nameAr: 'تمرين الضغط', sets: 4, reps: '10-15', muscle: 'chest', notes: 'Keep core tight' },
+      { name: 'Decline Push-ups', nameAr: 'ضغط منحدر', sets: 3, reps: '10-12', muscle: 'chest', notes: 'Feet elevated on chair' },
+      { name: 'Pike Push-ups', nameAr: 'ضغط القمة', sets: 3, reps: '8-10', muscle: 'shoulders', notes: 'Hips high, head toward floor' },
+      { name: 'Lateral Raises (Bottles)', nameAr: 'رفع جانبي', sets: 3, reps: '12-15', muscle: 'shoulders', notes: 'Use water bottles' },
+      { name: 'Diamond Push-ups', nameAr: 'ضغط الألماس', sets: 3, reps: '8-12', muscle: 'triceps', notes: 'Hands form diamond shape' }
     ],
     small_gym: [
-      { name: 'Dumbbell Bench Press', nameAr: 'ضغط الدمبل على المقعد', sets: 4, reps: '8-10', muscle: 'chest', notes: 'Full range' },
-      { name: 'Incline Dumbbell Press', nameAr: 'ضغط الدمبل المائل', sets: 3, reps: '8-10', muscle: 'chest', notes: 'Upper chest focus' },
-      { name: 'Dumbbell Shoulder Press', nameAr: 'ضغط الكتف بالدمبل', sets: 4, reps: '8-10', muscle: 'shoulders', notes: 'Full extension' },
-      { name: 'Lateral Raises', nameAr: 'الرفع الجانبي', sets: 3, reps: '12-15', muscle: 'shoulders', notes: 'Keep elbows slightly bent' },
+      { name: 'Dumbbell Bench Press', nameAr: 'ضغط الدمبل على المقعد', sets: 4, reps: '8-10', muscle: 'chest', notes: 'Full range of motion' },
+      { name: 'Incline Dumbbell Press', nameAr: 'ضغط الدمبل المائل', sets: 3, reps: '8-10', muscle: 'chest', notes: '30-45 degree incline' },
+      { name: 'Dumbbell Shoulder Press', nameAr: 'ضغط الكتف بالدمبل', sets: 4, reps: '8-10', muscle: 'shoulders', notes: 'Seated or standing' },
+      { name: 'Lateral Raises', nameAr: 'الرفع الجانبي', sets: 3, reps: '12-15', muscle: 'shoulders', notes: 'Slight bend in elbows' },
       { name: 'Overhead Tricep Extension', nameAr: 'تمديد الترايسبس', sets: 3, reps: '10-12', muscle: 'triceps', notes: 'Keep elbows close' }
     ],
     big_gym: [
-      { name: 'Barbell Bench Press', nameAr: 'ضغط البار على المقعد', sets: 4, reps: '6-8', muscle: 'chest', notes: 'Power movement' },
-      { name: 'Incline Barbell Press', nameAr: 'ضغط البار المائل', sets: 4, reps: '8-10', muscle: 'chest', notes: 'Upper chest focus' },
-      { name: 'Barbell Overhead Press', nameAr: 'ضغط البار فوق الرأس', sets: 4, reps: '6-8', muscle: 'shoulders', notes: 'Strict form' },
-      { name: 'Cable Lateral Raises', nameAr: 'رفع جانبي بالكابل', sets: 3, reps: '15-20', muscle: 'shoulders', notes: 'Constant tension' },
-      { name: 'Cable Pushdown', nameAr: 'دفع الكابل للأسفل', sets: 4, reps: '12-15', muscle: 'triceps', notes: 'Lock elbows at sides' }
+      { name: 'Barbell Bench Press', nameAr: 'ضغط البار على المقعد', sets: 4, reps: '6-8', muscle: 'chest', notes: 'Warm up properly' },
+      { name: 'Incline Barbell Press', nameAr: 'ضغط البار المائل', sets: 4, reps: '8-10', muscle: 'chest', notes: '30-45 degree incline' },
+      { name: 'Barbell Overhead Press', nameAr: 'ضغط البار فوق الرأس', sets: 4, reps: '6-8', muscle: 'shoulders', notes: 'Core braced' },
+      { name: 'Cable Lateral Raises', nameAr: 'رفع جانبي بالكابل', sets: 3, reps: '15-20', muscle: 'shoulders', notes: 'Single arm at a time' },
+      { name: 'Cable Pushdown', nameAr: 'دفع الكابل للأسفل', sets: 4, reps: '12-15', muscle: 'triceps', notes: 'Elbows locked at sides' }
     ]
   },
 
   // ─── PULL ───────────────────────────────────────────
   pull: {
     home: [
-      { name: 'Pull-ups', nameAr: 'عقلة', sets: 4, reps: '5-10', muscle: 'back', notes: 'Full hang' },
+      { name: 'Pull-ups', nameAr: 'عقلة', sets: 4, reps: '5-10', muscle: 'back', notes: 'Full hang at bottom' },
+      { name: 'Inverted Rows (Table)', nameAr: 'شفط مقلوب', sets: 3, reps: '10-12', muscle: 'back', notes: 'Keep body straight' },
       { name: 'Resistance Band Rows', nameAr: 'شفط بالشريط المطاطي', sets: 3, reps: '12-15', muscle: 'back', notes: 'Squeeze shoulder blades' },
-      { name: 'Superman Hold', nameAr: 'تمرين سوبرمان', sets: 3, reps: '12-15', muscle: 'back', notes: 'Lower back focus' },
       { name: 'Chin-ups', nameAr: 'شنق عكسي', sets: 3, reps: '5-10', muscle: 'biceps', notes: 'Palms facing you' },
-      { name: 'Towel Bicep Curls', nameAr: 'تجعيل البيسبس بالمنشفة', sets: 3, reps: '10-15', muscle: 'biceps', notes: 'Slow and controlled' }
+      { name: 'Towel Bicep Curls', nameAr: 'تجعيل البيسبس بالمنشفة', sets: 3, reps: '10-15', muscle: 'biceps', notes: 'Loop towel around pole' }
     ],
     small_gym: [
-      { name: 'Dumbbell Bent Over Row', nameAr: 'شفط الدمبل للخلف', sets: 4, reps: '8-10', muscle: 'back', notes: 'Back flat' },
-      { name: 'Single Arm Dumbbell Row', nameAr: 'شفط أحادي', sets: 3, reps: '10-12', muscle: 'back', notes: 'Knee on bench' },
-      { name: 'Dumbbell Face Pulls', nameAr: 'شد الوجه بالدمبل', sets: 3, reps: '15', muscle: 'back', notes: 'Rear delt focus' },
+      { name: 'Dumbbell Bent Over Row', nameAr: 'شفط الدمبل للخلف', sets: 4, reps: '8-10', muscle: 'back', notes: 'Back flat, squeeze at top' },
+      { name: 'Single Arm Dumbbell Row', nameAr: 'شفط أحادي', sets: 3, reps: '10-12', muscle: 'back', notes: 'Knee on bench for support' },
+      { name: 'Dumbbell Face Pulls', nameAr: 'شد الوجه بالدمبل', sets: 3, reps: '15', muscle: 'shoulders', notes: 'Rear delt focus' },
       { name: 'Dumbbell Bicep Curls', nameAr: 'تجعيل البيسبس', sets: 4, reps: '10-12', muscle: 'biceps', notes: 'Alternate arms' },
-      { name: 'Hammer Curls', nameAr: 'تجعيل المطرقة', sets: 3, reps: '10-12', muscle: 'biceps', notes: 'Neutral grip' }
+      { name: 'Hammer Curls', nameAr: 'تجعيل المطرقة', sets: 3, reps: '10-12', muscle: 'biceps', notes: 'Neutral grip throughout' }
     ],
     big_gym: [
-      { name: 'Lat Pulldown', nameAr: 'شد اللاتيسيموس', sets: 4, reps: '10-12', muscle: 'back', notes: 'Wide grip' },
-      { name: 'Seated Cable Row', nameAr: 'شفط الكابل جالساً', sets: 4, reps: '10-12', muscle: 'back', notes: 'Squeeze at back' },
-      { name: 'T-Bar Row', nameAr: 'شفط T-بار', sets: 3, reps: '8-10', muscle: 'back', notes: 'Power row' },
-      { name: 'Barbell Bicep Curl', nameAr: 'تجعيل البار', sets: 4, reps: '8-10', muscle: 'biceps', notes: 'Strict curls' },
-      { name: 'Preacher Curls', nameAr: 'تجعيل الواعظ', sets: 3, reps: '10-12', muscle: 'biceps', notes: 'Peak contraction' }
+      { name: 'Lat Pulldown', nameAr: 'شد اللاتيسيموس', sets: 4, reps: '10-12', muscle: 'back', notes: 'Wide grip, chest up' },
+      { name: 'Seated Cable Row', nameAr: 'شفط الكابل جالساً', sets: 4, reps: '10-12', muscle: 'back', notes: 'Squeeze shoulder blades' },
+      { name: 'Cable Face Pulls', nameAr: 'شد الوجه بالكابل', sets: 3, reps: '15-20', muscle: 'shoulders', notes: 'Elbows high and wide' },
+      { name: 'Barbell Bicep Curl', nameAr: 'تجعيل البار', sets: 4, reps: '8-10', muscle: 'biceps', notes: 'No swinging' },
+      { name: 'Hammer Curls', nameAr: 'تجعيل المطرقة', sets: 3, reps: '10-12', muscle: 'biceps', notes: 'Neutral grip' }
     ]
   },
 
   // ─── LEGS ───────────────────────────────────────────
   legs: {
     home: [
-      { name: 'Bodyweight Squats', nameAr: 'قرفصاء بوزن الجسم', sets: 4, reps: '15-20', muscle: 'quads', notes: 'Full depth' },
-      { name: 'Lunges', nameAr: 'خطوات الرياضة', sets: 3, reps: '12 each leg', muscle: 'quads', notes: 'Step forward' },
-      { name: 'Glute Bridges', nameAr: 'جسر الردفين', sets: 4, reps: '15-20', muscle: 'glutes', notes: 'Squeeze glutes' },
-      { name: 'Romanian Deadlift (Bodyweight)', nameAr: 'رفع رومانيا بوزن الجسم', sets: 3, reps: '12-15', muscle: 'hamstrings', notes: 'Hip hinge' },
-      { name: 'Calf Raises', nameAr: 'رفع الساق', sets: 4, reps: '20-25', muscle: 'calves', notes: 'On a step' }
+      { name: 'Bodyweight Squats', nameAr: 'قرفصاء بوزن الجسم', sets: 4, reps: '15-20', muscle: 'quads', notes: 'Knees track over toes' },
+      { name: 'Lunges', nameAr: 'خطوات الرياضة', sets: 3, reps: '12 each leg', muscle: 'quads', notes: 'Step forward, knee to floor' },
+      { name: 'Romanian Deadlift (Bodyweight)', nameAr: 'رفع رومانيا بوزن الجسم', sets: 3, reps: '12-15', muscle: 'hamstrings', notes: 'Hinge at hips' },
+      { name: 'Glute Bridges', nameAr: 'جسر الردفين', sets: 4, reps: '15-20', muscle: 'glutes', notes: 'Squeeze at top' },
+      { name: 'Calf Raises', nameAr: 'رفع الساق', sets: 4, reps: '20-25', muscle: 'calves', notes: 'Full stretch at bottom' }
     ],
     small_gym: [
-      { name: 'Dumbbell Goblet Squat', nameAr: 'قرفصاء الكأس', sets: 4, reps: '10-12', muscle: 'quads', notes: 'Hold DB at chest' },
-      { name: 'Bulgarian Split Squat', nameAr: 'قرفصاء بلغارية', sets: 3, reps: '8-10 each leg', muscle: 'quads', notes: 'Rear foot elevated' },
-      { name: 'Dumbbell Romanian Deadlift', nameAr: 'رفع رومانيا بالدمبل', sets: 4, reps: '10-12', muscle: 'hamstrings', notes: 'Keep back flat' },
-      { name: 'Dumbbell Hip Thrust', nameAr: 'دفع الورك بالدمبل', sets: 4, reps: '12-15', muscle: 'glutes', notes: 'Power move' },
-      { name: 'Standing Calf Raises', nameAr: 'رفع الساق واقفاً', sets: 4, reps: '20', muscle: 'calves', notes: 'Full range' }
+      { name: 'Dumbbell Goblet Squat', nameAr: 'قرفصاء الكأس', sets: 4, reps: '10-12', muscle: 'quads', notes: 'Dumbbell at chest level' },
+      { name: 'Dumbbell Romanian Deadlift', nameAr: 'رفع رومانيا بالدمبل', sets: 4, reps: '10-12', muscle: 'hamstrings', notes: 'Feel the stretch in hamstrings' },
+      { name: 'Dumbbell Lunges', nameAr: 'خطوات بالدمبل', sets: 3, reps: '10 each leg', muscle: 'quads', notes: 'Alternate legs' },
+      { name: 'Dumbbell Hip Thrust', nameAr: 'دفع الورك بالدمبل', sets: 4, reps: '12-15', muscle: 'glutes', notes: 'Dumbbell on hips' },
+      { name: 'Standing Calf Raises', nameAr: 'رفع الساق واقفاً', sets: 4, reps: '20', muscle: 'calves', notes: 'Slow and controlled' }
     ],
     big_gym: [
-      { name: 'Barbell Back Squat', nameAr: 'قرفصاء البار الخلفي', sets: 4, reps: '6-8', muscle: 'quads', notes: 'Heavy squats' },
-      { name: 'Leg Press', nameAr: 'ضغط الأرجل', sets: 4, reps: '10-12', muscle: 'quads', notes: 'Control descent' },
-      { name: 'Romanian Deadlift', nameAr: 'رفع رومانيا', sets: 4, reps: '8-10', muscle: 'hamstrings', notes: 'Stretch focus' },
-      { name: 'Leg Curl Machine', nameAr: 'آلة تجعيل الأرجل', sets: 4, reps: '10-12', muscle: 'hamstrings', notes: 'Squeeze at top' },
-      { name: 'Seated Calf Raises', nameAr: 'رفع الساق جالساً', sets: 4, reps: '15-20', muscle: 'calves', notes: 'Peak stretch' }
+      { name: 'Barbell Back Squat', nameAr: 'قرفصاء البار الخلفي', sets: 4, reps: '6-8', muscle: 'quads', notes: 'King of leg exercises' },
+      { name: 'Romanian Deadlift', nameAr: 'رفع رومانيا', sets: 4, reps: '8-10', muscle: 'hamstrings', notes: 'Bar close to body' },
+      { name: 'Leg Press', nameAr: 'ضغط الأرجل', sets: 4, reps: '10-12', muscle: 'quads', notes: 'Vary foot position for emphasis' },
+      { name: 'Leg Curl Machine', nameAr: 'آلة تجعيل الأرجل', sets: 4, reps: '10-12', muscle: 'hamstrings', notes: 'Full stretch at top' },
+      { name: 'Seated Calf Raises', nameAr: 'رفع الساق جالساً', sets: 4, reps: '15-20', muscle: 'calves', notes: 'Slow and full range' }
     ]
   },
 
   // ─── REST ───────────────────────────────────────────
   rest: {
     home: [
-      { name: 'Light Walking', nameAr: 'مشي خفيف', sets: 1, reps: '20-30 min', muscle: 'cardio', notes: 'Enjoy it' },
-      { name: 'Full Body Stretch', nameAr: 'تمدد كامل', sets: 1, reps: '15-20 min', muscle: 'flexibility', notes: 'Relax' }
+      { name: 'Light Walking', nameAr: 'مشي خفيف', sets: 1, reps: '20-30 min', muscle: 'cardio', notes: 'Keep it easy, enjoy it' },
+      { name: 'Full Body Stretch', nameAr: 'تمدد كامل', sets: 1, reps: '15-20 min', muscle: 'flexibility', notes: 'Hold each stretch 30 seconds' },
+      { name: 'Foam Rolling', nameAr: 'دحرجة بالأسطوانة', sets: 1, reps: '10-15 min', muscle: 'recovery', notes: 'Focus on sore areas' }
     ],
     small_gym: [
-      { name: 'Light Treadmill Walk', nameAr: 'مشي خفيف على التريدميل', sets: 1, reps: '20 min', muscle: 'cardio', notes: 'Easy pace' },
-      { name: 'Full Body Stretch', nameAr: 'تمدد كامل', sets: 1, reps: '15 min', muscle: 'flexibility', notes: 'Relax' }
+      { name: 'Light Treadmill Walk', nameAr: 'مشي خفيف على التريدميل', sets: 1, reps: '20 min', muscle: 'cardio', notes: 'Low incline, easy pace' },
+      { name: 'Full Body Stretch', nameAr: 'تمدد كامل', sets: 1, reps: '15 min', muscle: 'flexibility', notes: 'Hold each stretch 30 seconds' }
     ],
     big_gym: [
-      { name: 'Light Treadmill Walk', nameAr: 'مشي خفيف على التريدميل', sets: 1, reps: '20 min', muscle: 'cardio', notes: 'Easy pace' },
-      { name: 'Full Body Stretch', nameAr: 'تمدد كامل', sets: 1, reps: '15 min', muscle: 'flexibility', notes: 'Relax' }
+      { name: 'Light Treadmill Walk', nameAr: 'مشي خفيف على التريدميل', sets: 1, reps: '20 min', muscle: 'cardio', notes: 'Low incline, easy pace' },
+      { name: 'Stationary Bike (easy)', nameAr: 'دراجة ثابتة خفيفة', sets: 1, reps: '15 min', muscle: 'cardio', notes: 'Recovery pace' },
+      { name: 'Full Body Stretch', nameAr: 'تمدد كامل', sets: 1, reps: '15 min', muscle: 'flexibility', notes: 'Focus on worked muscles' }
     ]
   }
 }

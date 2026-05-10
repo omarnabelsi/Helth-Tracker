@@ -65,14 +65,7 @@ export const ThemeProvider = ({ children }) => {
   }, [themeId])
 
   return (
-    <ThemeContext.Provider value={{ 
-      themeId, 
-      changeTheme, 
-      setTheme: changeTheme, // Alias for compatibility
-      theme: themeId,        // TopBar expects 'theme' to be the ID
-      currentTheme: THEMES[themeId],
-      themes: THEMES         // TopBar expects 'themes'
-    }}>
+    <ThemeContext.Provider value={{ themeId, changeTheme, theme: THEMES[themeId] }}>
       {children}
     </ThemeContext.Provider>
   )

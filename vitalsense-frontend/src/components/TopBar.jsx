@@ -108,11 +108,11 @@ export default function TopBar({ onMenuClick }) {
         </button>
         {/* Search - hidden on small mobile to prevent overlap */}
         <div className="relative flex-1 md:w-80 hidden sm:block">
-          <Search size={16} className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 text-text-muted" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input
             type="text"
             placeholder={t('common.search')}
-            className="w-full ltr:pl-10 ltr:pr-4 rtl:pr-10 rtl:pl-4 py-2 bg-bg-main rounded-xl text-sm text-text-primary placeholder:text-text-light border border-transparent focus:border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all"
+            className="w-full pl-10 pr-4 py-2 bg-bg-main rounded-xl text-sm text-text-primary placeholder:text-text-light border border-transparent focus:border-primary-accent/30 focus:ring-2 focus:ring-primary-accent/10 outline-none transition-all"
           />
         </div>
       </div>
@@ -138,7 +138,7 @@ export default function TopBar({ onMenuClick }) {
         >
           <Bell size={18} />
           {unreadCount > 0 && (
-            <span className="absolute top-2 ltr:right-2.5 rtl:left-2.5 w-2 h-2 bg-danger rounded-full ring-2 ring-white"></span>
+            <span className="absolute top-2 right-2.5 w-2 h-2 bg-danger rounded-full ring-2 ring-white"></span>
           )}
         </button>
 

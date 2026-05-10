@@ -11,26 +11,6 @@
     "settings": "الإعدادات",
     "sign_out": "تسجيل الخروج"
   },
-  "achievements": {
-    "unlocked": "تم الفتح",
-    "unlocked_count": "مفتوح",
-    "subtitle": "إنجازاتك وجوائزك في اللياقة",
-    "recent": "الإنجازات الأخيرة"
-  },
-  "badges": {
-    "first_login": { "title": "مرحباً!", "desc": "انضممت إلى VitalSense AI" },
-    "first_workout": { "title": "الجهد الأول", "desc": "أكملت تمرينك الأول" },
-    "first_meal_log": { "title": "طاقة كاملة", "desc": "سجلت وجبتك الأولى" },
-    "streak_3": { "title": "مشتعل", "desc": "3 أيام متتالية" },
-    "streak_7": { "title": "محارب الأسبوع", "desc": "7 أيام متتالية" },
-    "streak_14": { "title": "بطل الأسبوعين", "desc": "14 يوماً متتالياً" },
-    "streak_30": { "title": "سيد الشهر", "desc": "30 يوماً متتالياً" },
-    "lost_1kg": { "title": "الكيلو الأول", "desc": "خسرت كيلوغرامك الأول" },
-    "lost_5kg": { "title": "ساحق الأهداف", "desc": "خسرت 5 كيلوغرامات" },
-    "workouts_10": { "title": "مخلص", "desc": "أكملت 10 تمارين" },
-    "plan_complete": { "title": "أسبوع كامل", "desc": "أكملت جميع التمارين في أسبوع واحد" },
-    "calorie_goal_7": { "title": "محترف التغذية", "desc": "حققت هدف السعرات لـ 7 أيام متتالية" }
-  },
   "dashboard": {
     "greeting_morning": "صباح الخير",
     "greeting_afternoon": "مساء الخير",
@@ -81,9 +61,7 @@
     "kcal_target": "سعرة حرارية هدف",
     "calories_remaining": "السعرات المتبقية",
     "consumed": "مستهلك",
-    "protein": "بروتين",
-    "portion": "الكمية",
-    "save_btn": "حفظ التغييرات",
+    "protein": "البروتين",
     "carbs": "الكربوهيدرات",
     "fat": "الدهون",
     "breakfast": "الفطور",
@@ -180,15 +158,6 @@
     "sat": "سبت",
     "sun": "أحد"
   },
-  "common": {
-    "for": "لـ",
-    "g": "جم",
-    "kg": "كجم",
-    "kcal": "سعرة",
-    "save": "حفظ",
-    "back": "رجوع",
-    "today": "اليوم"
-  },
   "progress": {
     "title": "متتبع التقدم",
     "subtitle": "تابع تحولك مع مرور الوقت",
@@ -245,7 +214,6 @@
     "targets_error": "فشل تحديث أهداف الملف الشخصي."
   },
   "chat": {
-    "coach_greeting": "مرحباً {{name}}! أنا مدربك الذكي من VitalSense. كيف يمكنني مساعدتك اليوم؟",
     "title": "مدرب VitalSense",
     "online": "متصل",
     "knows_plan": "يعرف خطتك",
@@ -259,22 +227,39 @@
     "suggested_workout": "هل يمكنك مساعدتي في تمرين اليوم؟",
     "suggested_snack": "أريد فكرة وجبة خفيفة صحية",
     "emergency_title": "🚨 تم اكتشاف حالة طارئة صحية",
-    "emergency_stop": "أوقف كل النشاط البدني فوراً",
-    "emergency_sit": "اجلس أو استلقِ في مكان آمن",
-    "emergency_call": "اتصل بالإسعاف: 140 (الصليب الأحمر اللبناني)",
+    "emergency_subtitle": "هذا يبدو خطيراً. يرجى اتباع هذه الخطوات فوراً:",
+    "emergency_step1": "أوقف كل النشاط البدني فوراً",
+    "emergency_step2": "اجلس أو استلقِ في مكان آمن",
+    "emergency_step3": "اتصل بالإسعاف: 140 (الصليب الأحمر اللبناني)",
+    "emergency_step4": "اتصل بشخص قريب للمساعدة",
     "generate_summary": "إنشاء ملخص للطبيب",
     "call_140": "الاتصال بـ 140",
     "copy_summary": "نسخ الملخص",
     "download_summary": "تحميل كـ PDF",
     "error_connecting": "لا يمكن الوصول إلى الخادم. تأكد من تشغيل الخلفية.",
-    "session_expired": "انتهت جلستك. جارٍ التحويل إلى صفحة الدخول..."
+    "session_expired": "انتهت جلستك. جارٍ التحويل إلى صفحة الدخول...",
+    "coach_greeting": "أهلاً {{name}}، أنا مدرب VitalSense الخاص بك. كيف يمكنني مساعدتك اليوم؟"
+  },
+  "badges": {
+    "first_login": { "title": "مرحباً!", "desc": "انضممت إلى VitalSense AI" },
+    "first_workout": { "title": "أول عرق", "desc": "أكملت أول تمرين لك" },
+    "first_meal_log": { "title": "ابدأ التغذية", "desc": "سجلت أول وجبة لك" },
+    "streak_3": { "title": "في القمة", "desc": "3 أيام متتالية" },
+    "streak_7": { "title": "محارب الأسبوع", "desc": "7 أيام متتالية" },
+    "streak_14": { "title": "بطل الأسبوعين", "desc": "14 يوماً متتالياً" },
+    "streak_30": { "title": "سيد الشهر", "desc": "30 يوماً متتالياً" },
+    "lost_1kg": { "title": "أول كيلو", "desc": "خسرت أول كيلوغرام" },
+    "lost_5kg": { "title": "محقق الأهداف", "desc": "خسرت 5 كيلوغرامات" },
+    "workouts_10": { "title": "ملتزم", "desc": "أكملت 10 تمارين" },
+    "plan_complete": { "title": "أسبوع كامل", "desc": "أكملت جميع تمارين الأسبوع السبعة" },
+    "calorie_goal_7": { "title": "خبير التغذية", "desc": "حققت هدف السعرات 7 أيام متتالية" }
   },
   "settings": {
     "title": "الإعدادات",
     "profile_section": "إعدادات الملف الشخصي",
     "health_section": "الصحة والأهداف",
-    "account_section": "الحساب",
-    "notifications_section": "الإشعارات",
+    "account": "الحساب",
+    "notifications": "الإشعارات",
     "name": "الاسم",
     "age": "العمر",
     "gender": "الجنس",
@@ -319,6 +304,7 @@
     "unlocked": "مفتوح",
     "locked": "مقفل",
     "progress": "إنجازات مفتوحة",
+    "unlocked_count": "إنجازات مفتوحة",
     "recent": "الأوسمة الأخيرة",
     "badge_first_login": "مرحباً!",
     "badge_first_login_desc": "انضممت إلى VitalSense AI",
@@ -456,6 +442,8 @@
     "emergency": "تم الإبلاغ عن حالة طارئة صحية"
   },
   "common": {
+    "for": "لـ",
+    "g": "غ",
     "loading": "جارٍ التحميل...",
     "save": "حفظ",
     "cancel": "إلغاء",
@@ -498,6 +486,8 @@
     "share": "مشاركة",
     "copy": "نسخ",
     "copied": "تم النسخ!",
+    "online": "متصل",
+    "user": "مستخدم",
     "optional": "اختياري",
     "required": "مطلوب",
     "per_100g": "لكل 100 غرام",

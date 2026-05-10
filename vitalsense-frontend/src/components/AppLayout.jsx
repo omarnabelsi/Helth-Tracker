@@ -47,9 +47,9 @@ export default function AppLayout() {
 
       {/* Sidebar */}
       <aside
-        className={`absolute md:relative flex flex-col bg-primary-dark transition-all duration-300 ease-in-out z-40 h-full ltr:left-0 rtl:right-0 ${
+        className={`absolute md:relative flex flex-col bg-primary-dark transition-all duration-300 ease-in-out z-40 h-full ${
           collapsed ? 'w-[72px]' : 'w-[200px]'
-        } ${mobileMenuOpen ? 'translate-x-0' : 'ltr:-translate-x-full rtl:translate-x-full md:ltr:translate-x-0 md:rtl:translate-x-0'}`}
+        } ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
       >
         {/* Logo */}
         <div className="flex items-center gap-2.5 px-4 py-6 border-b border-white/10">
@@ -118,13 +118,9 @@ export default function AppLayout() {
         {/* Collapse Toggle - hidden on mobile */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="hidden md:flex absolute ltr:-right-3 rtl:-left-3 top-20 w-6 h-6 rounded-full bg-bg-card shadow-md border border-gray-200 items-center justify-center text-text-muted hover:text-primary-accent transition-colors z-10"
+          className="hidden md:flex absolute -right-3 top-20 w-6 h-6 rounded-full bg-bg-card shadow-md border border-gray-200 items-center justify-center text-text-muted hover:text-primary-accent transition-colors z-10"
         >
-          {collapsed ? (
-            document.documentElement.dir === 'rtl' ? <ChevronLeft size={12} /> : <ChevronRight size={12} />
-          ) : (
-            document.documentElement.dir === 'rtl' ? <ChevronRight size={12} /> : <ChevronLeft size={12} />
-          )}
+          {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
         </button>
       </aside>
 

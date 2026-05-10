@@ -45,7 +45,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user) return
     
-    // Load dismissed from local storage (persistent across sessions)
+    // Load dismissed from local storage
     const saved = localStorage.getItem(`dismissed_advisories_${user.id}`)
     if (saved) setDismissedAdvisories(JSON.parse(saved))
 
@@ -178,23 +178,21 @@ export default function Dashboard() {
 
         {/* ── Health Warnings (from AI plan) ── */}
         {healthWarnings.length > 0 && (
-          <div className="space-y-3 animate-fade-in">
+          <div className="space-y-2 animate-fade-in">
             {healthWarnings.map((warning, i) => (
-              <div key={i} className="bg-amber-50/10 dark:bg-amber-900/20 border border-amber-500/20 dark:border-amber-500/30 rounded-2xl p-4 flex items-start gap-4 relative group transition-all hover:border-amber-500/40">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                  <AlertTriangle size={18} className="text-amber-600 dark:text-amber-400" />
+              <div key={i} className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 flex items-start gap-4 relative group hover:bg-amber-500/10 transition-all duration-300 backdrop-blur-sm">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0 border border-amber-500/20">
+                  <AlertTriangle size={18} className="text-amber-500" />
                 </div>
-                <div className="flex-1 ltr:pr-8 rtl:pl-8">
-                  <p className="text-sm font-bold text-amber-900 dark:text-amber-100 flex items-center gap-2">
-                    <Sparkles size={14} className="text-amber-500 animate-pulse" />
-                    {t('dashboard.health_advisory')}
+                <div className="flex-1 pr-8">
+                  <p className="text-sm font-bold text-amber-500 flex items-center gap-2">
+                    <span>⚠️</span> {t('dashboard.health_advisory')}
                   </p>
-                  <p className="text-xs text-amber-800/80 dark:text-amber-200/70 mt-1 leading-relaxed">{warning}</p>
+                  <p className="text-xs text-text-muted mt-1 leading-relaxed">{warning}</p>
                 </div>
                 <button 
                   onClick={() => dismissAdvisory(warning)}
-                  className="absolute top-4 ltr:right-4 rtl:left-4 w-7 h-7 rounded-full bg-amber-500/10 dark:bg-white/5 flex items-center justify-center text-amber-900/40 dark:text-white/30 hover:bg-amber-500/20 dark:hover:bg-white/10 hover:text-amber-900 dark:hover:text-white transition-all opacity-0 group-hover:opacity-100"
-                  title="Dismiss advisory"
+                  className="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/5 flex items-center justify-center text-text-muted hover:bg-red-500/20 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100 border border-white/5"
                 >
                   <X size={14} />
                 </button>
@@ -275,7 +273,7 @@ export default function Dashboard() {
                     const mealNameStr = meal.meal ? (i18n.language === 'ar' ? t(`nutrition.${meal.meal.toLowerCase()}`) || meal.meal : meal.meal) : meal.name;
                     return (
                       <div key={i} className="flex justify-between items-center text-xs">
-                        <span className="text-text-primary font-medium truncate ltr:mr-2 rtl:ml-2">{mealNameStr}</span>
+                        <span className="text-text-primary font-medium truncate mr-2">{mealNameStr}</span>
                         <span className="text-text-muted flex-shrink-0">{Math.round(meal.dishes ? meal.dishes.reduce((a, b) => a + (b.calories || 0), 0) : meal.calories)} {t('common.kcal')}</span>
                       </div>
                     )
@@ -439,7 +437,7 @@ export default function Dashboard() {
                 return (
                   <div key={i} className="flex items-center gap-2 bg-bg-main rounded-xl px-3 py-2">
                     <span className="text-xl">{badgeDef[b.badge_id] || '🏅'}</span>
-                    <span className="text-xs font-semibold text-text-primary">{t(`badges.${b.badge_id}.title`)}</span>
+                    <span className="text-xs font-semibold text-text-primary">{b.badge_id.replace(/_/g, ' ')}</span>
                   </div>
                 )
               })}
@@ -533,6 +531,34 @@ export default function Dashboard() {
           <p className="text-[10px] text-text-muted mt-1">{isMockUser ? `${t('dashboard.vs_last_week')}: -0.5 kg` : t('progress.log_first_weight')}</p>
         </div>
 
+        {/* Sleep Widget */}
+        <div className="bg-bg-main rounded-2xl p-4 animate-slide-right delay-300">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Moon size={14} className="text-indigo-500" />
+              <h3 className="text-sm font-bold text-text-primary">{t('dashboard.sleep')}</h3>
+            </div>
+            <span className="text-xs text-text-muted">{t('dashboard.last_night') || 'Last night'}</span>
+          </div>
+          <div className="mb-3">
+            <span className="text-2xl font-bold text-text-primary font-heading">{isMockUser ? '7.5' : '--'}</span>
+            <span className="text-sm text-text-muted ml-1">{t('common.hours')}</span>
+          </div>
+          {/* Sleep bar chart */}
+          <div className="flex items-end gap-1.5 h-12">
+            {(isMockUser ? [65, 80, 70, 90, 75, 85, 78] : [0, 0, 0, 0, 0, 0, 0]).map((h, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <div
+                  className={`w-full rounded-t transition-all ${
+                    i === 6 ? 'bg-indigo-500' : 'bg-indigo-200'
+                  }`}
+                  style={{ height: `${h * 0.5}px` }}
+                />
+                <span className="text-[8px] text-text-light">{i18n.language === 'ar' ? ['ن','ث','ر','خ','ج','س','ح'][i] : weekDays[i][0]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -618,11 +644,11 @@ function MealReminders({ dismissed, setDismissed, navigate }) {
   const hour = new Date().getHours()
   const reminders = []
   if (hour >= 8 && hour < 10 && !dismissed.includes('breakfast'))
-    reminders.push({ id: 'breakfast', text: t('dashboard.reminder_breakfast'), color: 'bg-amber-50 border-amber-200 text-amber-800' })
+    reminders.push({ id: 'breakfast', text: t('dashboard.reminder_breakfast'), color: 'bg-amber-500/10 border-amber-500/20 text-amber-500' })
   if (hour >= 12 && hour < 14 && !dismissed.includes('lunch'))
-    reminders.push({ id: 'lunch', text: t('dashboard.reminder_lunch'), color: 'bg-blue-50 border-blue-200 text-blue-800' })
+    reminders.push({ id: 'lunch', text: t('dashboard.reminder_lunch'), color: 'bg-blue-500/10 border-blue-500/20 text-blue-400' })
   if (hour >= 18 && hour < 20 && !dismissed.includes('dinner'))
-    reminders.push({ id: 'dinner', text: t('dashboard.reminder_dinner'), color: 'bg-indigo-50 border-indigo-200 text-indigo-800' })
+    reminders.push({ id: 'dinner', text: t('dashboard.reminder_dinner'), color: 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' })
 
   if (!reminders.length) return null
 

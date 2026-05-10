@@ -87,13 +87,12 @@ User Profile: Age {age}, {gender}, {weight}kg, {height}cm.
 DAILY TARGETS: {calorie_target} kcal, Protein: {target_p}g, Carbs: {target_c}g, Fat: {target_f}g.
 
 CRITICAL INSTRUCTION: VARIETY IS MANDATORY. 
-- DO NOT repeat the same snack more than 2 times in a whole week.
-- DO NOT use "Dates" (تمر) as a filler for every snack or meal. If you use it once, do not use it again for at least 2 days.
-- Each day MUST feel different. Rotate through the database: one day use Riz dishes, the next use Yakhnat, then Kafta, etc.
-- A user should NOT see the same food in every single day's plan.
-- You MUST fill EXACTLY 100% of the daily targets. 
-NEVER leave calories or macros "remaining". If one dish isn't enough, you MUST add 2, 3, or 4 dishes to a single meal until the total hits the target.
-For example, if a meal needs 800 kcal, combine several dishes from the list below.
+- DO NOT use the same dish more than 2 times in the entire 7-day plan.
+- DO NOT use "Dates" (تمر) more than 2 times per WEEK total.
+- NEVER use "Dates" (تمر) as a side dish or filler for Breakfast, Lunch, or Dinner. They are ONLY for the Snack slot.
+- If you need more calories/carbs to hit a target, INCREASE the "grams" of the main dish (e.g., more Riz, more Bread, more Stew) instead of adding Dates.
+- Each day MUST be unique. Rotate proteins (Chicken, Beef, Fish, Legumes) and bases (Rice, Bulgur, Bread).
+- You MUST fill 100% of the daily targets using real meals, not by piling up snacks or dates at the end of every meal.
 
 Use ONLY these Lebanese foods (with these EXACT nutritional values):
 {food_db_json}
@@ -102,29 +101,23 @@ STRICT MEAL TIME RULES — NEVER VIOLATE THESE:
 
 BREAKFAST rules:
 - Must be energizing and easy to digest (25% of daily calories).
-- ONLY assign these categories as breakfast: Eggs (Beid, Shakshouka), Dairy (Labneh, Halloumi), Grains/Bread (Manoushe, Oats), Legumes (Foul Moudamas).
-- NEVER assign: Heavy dinner stews (Yakhnat), Rice dishes (Riz bi Lahma, Sayadia), Fish, or excessive sweets for breakfast.
-- A typical breakfast should be something like "Labneh + Bread" or "Eggs + Vegetables".
-- NEVER assign: pizza, burger, shawarma plate, steak, baba ghanouj, warak enab, malfouf mahchi, koussa mahchi, yakhnat dishes, heavy rice dishes, fried heavy meals, desserts of any kind
+- ONLY assign: Eggs (Beid, Shakshouka), Dairy (Labneh, Halloumi), Grains/Bread (Manoushe, Oats), Legumes (Foul Moudamas).
+- NEVER assign: "Dates" (تمر), heavy dinner stews (Yakhnat), Rice dishes, or fish.
 
 LUNCH rules:
 - Biggest meal of the day (35% of daily calories)
-- ALLOWED: almost any Lebanese or world dish is fine for lunch
-- Include a mix of protein + carbs + vegetables
-- Can include: shawarma, riz dishes, kafta, grilled meats, fish, pasta, salads, soups, yakhnat dishes
+- ALLOWED: almost any Lebanese or world dish is fine for lunch.
+- NEVER assign: "Dates" (تمر) as a side or main part of lunch.
 
 DINNER rules:
 - Medium meal (30% of daily calories)
-- FOCUS on: lean protein + vegetables, moderate carbs
-- ALLOWED: grilled chicken, fish, salads, soups, lighter rice, fattoush, tabbouleh, sayadia, loubia, yakhnat dishes
-- AVOID: very heavy fried foods, excessive carbs only meals
+- FOCUS on: lean protein + vegetables.
+- NEVER assign: "Dates" (تمر) for dinner.
 
 SNACK rules:
-- Must be SMALL and LIGHT (max 10% of daily calories, ideally 150-250 kcal).
-- ONLY assign these items as snacks: Mixed Nuts, Apple, Banana, Dates, Yogurt, Cucumber and Tomato, small portion of Fatayer Sabanikh (max 100g), or a small piece of fruit.
-- NEVER assign full meals (Kafta, Borgul, Shawarma, Riz, Yakhnat, Lahm bil Ajin) as a snack.
-- A snack should be a single light item, not a full dish.
-- Desserts like Kachta bi Assal or Baklava can be a snack but only in small portions (max 50g).
+- Must be SMALL and LIGHT (max 10% of daily calories).
+- ONLY assign these items as snacks: Mixed Nuts, Apple, Banana, Dates, Yogurt, Cucumber and Tomato.
+- REMINDER: "Dates" (تمر) can only appear here, and max 2 times per week total across all 7 days.
 
 DESSERTS:
 - Baklava, knafeh, maamoul, halawa, mouhallabiya etc.
@@ -138,9 +131,9 @@ CRITICAL: For every dish you add, you MUST specify the "grams" required to reach
 Calculation: meal_calories = (grams / 100) * cal100.
 
 STRICT PPL WORKOUT RULES (4-Day Cycle Repeat):
-1. PUSH — chest, shoulders, triceps
-2. PULL — back, biceps, rear delts
-3. LEGS — quads, hamstrings, glutes, calves
+1. PUSH — exactly 5 exercises: 2 chest, 2 shoulders, 1 triceps.
+2. PULL — exactly 5 exercises: 2 back, 1 shoulders (rear delts), 2 biceps.
+3. LEGS — exactly 5 exercises: 5 legs exercises (balanced between quads, hamstrings, and calves).
 4. REST — recovery, walking
 (Repeat cycle: if Day 5 is reached, it starts again with PUSH, etc.)
 Plan sequence for 7 days (Example starting on Day 1):

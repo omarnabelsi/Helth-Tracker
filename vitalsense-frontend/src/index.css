@@ -76,32 +76,8 @@ input:focus, textarea:focus {
 .btn-primary {
   background: var(--btn-primary-bg) !important;
   color: var(--btn-primary-txt) !important;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px var(--accent-glow);
 }
-.btn-primary:hover { 
-  transform: translateY(-2px);
-  filter: brightness(1.1);
-  box-shadow: 0 6px 20px var(--accent-glow);
-}
-.btn-primary:active {
-  transform: translateY(0);
-}
-
-.btn-danger {
-  background: rgba(239, 68, 68, 0.08);
-  color: #EF4444;
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.btn-danger:hover {
-  background: #EF4444;
-  color: white;
-  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
-}
-[data-theme="dark"] .btn-danger {
-  background: rgba(239, 68, 68, 0.15);
-}
+.btn-primary:hover { opacity: 0.9; }
 
 .accent { color: var(--accent-light); }
 .accent-bg { background: var(--accent-primary); }
