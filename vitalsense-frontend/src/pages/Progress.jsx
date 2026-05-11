@@ -45,8 +45,6 @@ export default function Progress() {
   const fileInputRef = useRef(null)
   const shareRef = useRef(null)
 
-  const isMockUser = user?.email === 'omarnabelsi12@gmail.com'
-
   useEffect(() => {
     if (!user) return
     ;(async () => {
@@ -77,17 +75,14 @@ export default function Progress() {
   }
 
   const filteredWeightData = useMemo(() => {
-    const data = isMockUser ? mockWeightData : weightLogs.map(l => ({
+    const data = weightLogs.map(l => ({
       date: new Date(l.logged_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       weight: l.weight_kg,
       rawDate: new Date(l.logged_at)
     }))
-    
-    if (isMockUser) return data
-
     const cutoff = subDays(new Date(), timeRange === '2weeks' ? 14 : timeRange === '1month' ? 30 : 90)
     return data.filter(d => d.rawDate >= cutoff)
-  }, [weightLogs, timeRange, isMockUser])
+  }, [weightLogs, timeRange])
 
   const handleWeightLog = async () => {
     if (!newWeight || isNaN(parseFloat(newWeight))) {
@@ -243,7 +238,7 @@ export default function Progress() {
     }
   }
 
-  const displayPhotos = isMockUser ? mockProgressPhotos : progressPhotos.map(p => ({
+  const displayPhotos = progressPhotos.map(p => ({
     id: p.id,
     date: new Date(p.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     bodyFat: p.body_fat_pct ? `${p.body_fat_pct}%` : '---',
@@ -304,7 +299,7 @@ export default function Progress() {
                   <div className="absolute top-3 left-3 bg-bg-card text-text-primary text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
                     {photo.label}
                   </div>
-                  {!isMockUser && photo.id && (
+                  {photo.id && (
                     <button 
                       onClick={() => handleDeletePhoto(photo.id, photo.url)}
                       className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-500 hover:bg-red-600 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg scale-90 group-hover:scale-100"
@@ -364,12 +359,6 @@ export default function Progress() {
       <div className="bg-bg-card rounded-2xl p-6 border border-gray-100 shadow-sm animate-fade-in-up delay-200">
         <div className="flex items-center justify-between mb-5">
           <h3 className="font-heading font-bold text-text-primary">{t('progress.weight_chart')}</h3>
-          {isMockUser && (
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-green-600 bg-green-50 px-3 py-1.5 rounded-full">
-              <TrendingDown size={12} />
-              -1.7 kg this month
-            </div>
-          )}
         </div>
         {filteredWeightData.length > 0 ? (
           <ResponsiveContainer width="100%" height={280}>
@@ -416,15 +405,11 @@ export default function Progress() {
 
       {/* Stat Change Cards */}
       <div className="grid md:grid-cols-3 gap-4 animate-fade-in-up delay-300">
-        {(isMockUser ? [
-          { label: t('progress.total_lost'), value: '-1.2 kg', icon: TrendingDown, color: 'green' },
-          { label: t('progress.body_fat'), value: '-2.1%', icon: TrendingDown, color: 'green' },
-          { label: t('dashboard.streak_days'), value: `18 ${t('dashboard.streak_days')}`, icon: Flame, color: 'orange' },
-        ] : [
+        {[
           { label: t('progress.total_lost'), value: '--', icon: TrendingDown, color: 'green' },
           { label: t('progress.body_fat'), value: '--', icon: TrendingDown, color: 'green' },
           { label: t('dashboard.streak_days'), value: `0 ${t('dashboard.streak_days')}`, icon: Flame, color: 'orange' },
-        ]).map((stat, i) => (
+        ].map((stat, i) => (
           <div key={i} className="bg-bg-card rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
             <div className={`w-12 h-12 rounded-xl ${
               stat.color === 'green' ? 'bg-green-50' : 'bg-orange-50'
@@ -440,18 +425,14 @@ export default function Progress() {
       </div>
 
       {/* AI Progress Report */}
-      {isMockUser && (
-        <div className="bg-bg-card rounded-2xl p-6 border border-gray-100 shadow-sm animate-fade-in-up delay-400">
+      <div className="bg-bg-card rounded-2xl p-6 border border-gray-100 shadow-sm animate-fade-in-up delay-400">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-accent to-primary-light flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary-accent/20">
               <Bot size={22} className="text-white" />
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-heading font-bold text-text-primary">{t('progress.ai_report')}</h3>
-                  <span className="text-[10px] bg-primary-pale text-primary-accent font-semibold px-2 py-0.5 rounded-full uppercase">{t('dashboard.completed')}</span>
-                </div>
+                <h3 className="font-heading font-bold text-text-primary">{t('progress.ai_report')}</h3>
                 {!aiReport && (
                   <button 
                     onClick={generateReport}
@@ -462,28 +443,9 @@ export default function Progress() {
                   </button>
                 )}
               </div>
-              <div className="text-sm text-text-muted leading-relaxed space-y-3">
+              <div className="text-sm text-text-muted leading-relaxed">
                 {aiReport ? (
                   <p>{aiReport}</p>
-                ) : isMockUser ? (
-                  <>
-                    <p>
-                      📊 <strong className="text-text-primary">Since Apr 10, your estimated body fat has decreased by 2.1%</strong> (from 20.3% to ~18.2%). 
-                      This is excellent progress for a 2.5-week period.
-                    </p>
-                    <p>
-                      💪 Your upper body definition has visibly improved based on photo analysis. 
-                      The shoulder-to-waist ratio shows positive development.
-                    </p>
-                    <p>
-                      ⚖️ Weight loss has been steady at ~0.7 kg/week, which is within the recommended healthy range. 
-                      At this rate, you'll reach your target weight of 72 kg by mid-May.
-                    </p>
-                    <p>
-                      💡 <strong className="text-text-primary">Recommendation:</strong> Consider increasing protein intake by 10g/day 
-                      to preserve muscle mass during your cutting phase. Add a post-workout labneh snack.
-                    </p>
-                  </>
                 ) : (
                   <p>Click generate to get your AI progress report based on your logs.</p>
                 )}
@@ -491,7 +453,6 @@ export default function Progress() {
             </div>
           </div>
         </div>
-      )}
 
       {/* Body Metrics Timeline */}
       {weightLogs.length >= 2 && (

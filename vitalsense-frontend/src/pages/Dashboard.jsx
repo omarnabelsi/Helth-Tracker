@@ -120,14 +120,12 @@ export default function Dashboard() {
     localStorage.setItem(`dismissed_advisories_${user.id}`, JSON.stringify(next))
   }
 
-  const isMockUser = user?.email === 'omarnabelsi12@gmail.com'
-
   // Extract today's data from plan
   const todayDayName = fullDayNames[today.getDay()]
   const todayMeals = plan?.weeklyMealPlan?.[todayDayName] || []
   const todayWorkout = plan?.weeklyWorkoutPlan?.find(w => w.day === todayDayName || w.dayName === todayDayName)
   const healthWarnings = (plan?.healthWarnings || []).filter(w => !dismissedAdvisories.includes(w))
-  const coachTip = plan?.coachTip || (isMockUser ? t('dashboard.mock_tip') || "Great progress! Keep following your personalized plan and stay consistent with your meals and workouts." : null)
+  const coachTip = plan?.coachTip || null
 
   // Calculate today's nutrition from AI plan
   let totalCal = 0, totalP = 0, totalC = 0, totalF = 0;
@@ -377,18 +375,9 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2 mb-4">
-              {isMockUser ? ['Apr 10', 'Apr 17', 'Apr 24'].map((date, i) => (
-                <div key={i} className="relative group">
-                  <div className="aspect-[3/4] bg-gradient-to-b from-gray-100 to-gray-200 rounded-xl overflow-hidden flex items-center justify-center">
-                    <div className="w-8 h-12 bg-gray-300 rounded-lg"></div>
-                  </div>
-                  <p className="text-[10px] text-text-muted text-center mt-1 font-medium">{date}</p>
-                </div>
-              )) : (
-                <div className="col-span-3 text-center py-4">
+            <div className="col-span-3 text-center py-4">
                   <p className="text-xs text-text-muted">{t('progress.no_photos')}</p>
                 </div>
-              )}
             </div>
             <button className="w-full bg-purple-50 hover:bg-purple-100 text-purple-600 text-sm font-semibold py-2.5 rounded-xl transition-colors">
               {t('dashboard.see_all_progress')} →
@@ -410,7 +399,7 @@ export default function Dashboard() {
                 </span>
               </div>
               <p className="text-sm text-text-muted leading-relaxed">
-                {coachTip || (isMockUser ? "Great progress! Keep following your personalized plan and stay consistent with your meals and workouts." : t('dashboard.no_plan'))}
+                {coachTip || t('dashboard.no_plan')}
               </p>
               <button
                 onClick={() => navigate('/chat')}
@@ -489,7 +478,6 @@ export default function Dashboard() {
           <Calendar 
             workoutLogs={workoutLogs} 
             mealLogs={mealLogs} 
-            isMockUser={isMockUser}
           />
         </div>
 
@@ -500,12 +488,12 @@ export default function Dashboard() {
               <Scale size={14} className="text-primary-accent" />
               <h3 className="text-sm font-bold text-text-primary">{t('settings.weight')}</h3>
             </div>
-            <span className="text-xs text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-              {isMockUser ? <><TrendingDown size={10} /> -0.5 kg</> : <><TrendingDown size={10} /> --</>}
+             <span className="text-xs text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full flex items-center gap-0.5">
+              <><TrendingDown size={10} /> --</>
             </span>
           </div>
           <div className="mb-2">
-            <span className="text-2xl font-bold text-text-primary font-heading">{isMockUser ? '74.5' : (profile?.weight || '--')}</span>
+            <span className="text-2xl font-bold text-text-primary font-heading">{profile?.weight || '--'}</span>
             <span className="text-sm text-text-muted ml-1">{t('common.kg')}</span>
           </div>
           {/* Mini trend line */}
@@ -528,7 +516,7 @@ export default function Dashboard() {
               </linearGradient>
             </defs>
           </svg>
-          <p className="text-[10px] text-text-muted mt-1">{isMockUser ? `${t('dashboard.vs_last_week')}: -0.5 kg` : t('progress.log_first_weight')}</p>
+          <p className="text-[10px] text-text-muted mt-1">{t('progress.log_first_weight')}</p>
         </div>
 
       </div>
@@ -536,7 +524,7 @@ export default function Dashboard() {
   )
 }
 // ── Custom Calendar Component (Fix 5) ──
-function Calendar({ workoutLogs, mealLogs, isMockUser }) {
+function Calendar({ workoutLogs, mealLogs }) {
   const { i18n } = useTranslation();
   const [viewDate, setViewDate] = useState(new Date())
   const today = new Date()
@@ -583,8 +571,8 @@ function Calendar({ workoutLogs, mealLogs, isMockUser }) {
           const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
           const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear()
           
-          const hasWorkout = workoutLogs.includes(dateStr) || (isMockUser && day % 2 === 0 && day < today.getDate())
-          const hasMeal = mealLogs.includes(dateStr) || (isMockUser && day < today.getDate())
+          const hasWorkout = workoutLogs.includes(dateStr)
+          const hasMeal = mealLogs.includes(dateStr)
           
           return (
             <div key={day} className="flex flex-col items-center">
