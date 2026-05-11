@@ -1,6 +1,9 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
+// Routes that bypass the onboarding check
+const ONBOARDING_EXEMPT = ['/onboarding', '/admin', '/pricing']
+
 export default function ProtectedRoute({ children }) {
   const { session, profile, loading } = useAuth()
   const location = useLocation()
@@ -24,9 +27,12 @@ export default function ProtectedRoute({ children }) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  // If onboarding is not complete, redirect to onboarding page
-  // EXCEPT if they are already ON the onboarding page
-  if (!profile?.onboarding_complete && location.pathname !== '/onboarding') {
+  // Only redirect to onboarding if:
+  // 1. Profile has loaded (not null — avoids redirect during fetch race)
+  // 2. onboarding_complete is explicitly false
+  // 3. Current path is not exempt (onboarding itself, admin, pricing)
+  const isExempt = ONBOARDING_EXEMPT.some(p => location.pathname.startsWith(p))
+  if (profile !== null && profile?.onboarding_complete === false && !isExempt) {
     return <Navigate to="/onboarding" replace />
   }
 
