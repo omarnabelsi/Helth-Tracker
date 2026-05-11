@@ -393,7 +393,7 @@ export default function Dashboard() {
                   <p className="text-xs text-text-muted">{t('progress.no_photos')}</p>
                 </div>
             </div>
-            <button className="w-full bg-purple-50 hover:bg-purple-100 text-purple-600 text-sm font-semibold py-2.5 rounded-xl transition-colors">
+            <button onClick={() => navigate('/progress')} className="w-full bg-purple-50 hover:bg-purple-100 text-purple-600 text-sm font-semibold py-2.5 rounded-xl transition-colors">
               {t('dashboard.see_all_progress')} →
             </button>
           </div>
