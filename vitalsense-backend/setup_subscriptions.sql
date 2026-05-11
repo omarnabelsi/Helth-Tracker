@@ -63,3 +63,59 @@ SELECT
 
 -- 7. Grant select on admin_stats to authenticated role
 GRANT SELECT ON public.admin_stats TO authenticated;
+
+-- ============================================================
+-- ADMIN RLS BYPASS POLICIES
+-- These allow admins to read all profiles and manage subscriptions
+-- Run this AFTER setting is_admin = true on your account
+-- ============================================================
+
+-- Allow admins to read ALL profiles
+DROP POLICY IF EXISTS "Admins can view all profiles" ON public.profiles;
+CREATE POLICY "Admins can view all profiles" ON public.profiles
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.user_id = auth.uid() AND p.is_admin = true
+    )
+  );
+
+-- Allow admins to delete any profile
+DROP POLICY IF EXISTS "Admins can delete profiles" ON public.profiles;
+CREATE POLICY "Admins can delete profiles" ON public.profiles
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.user_id = auth.uid() AND p.is_admin = true
+    )
+  );
+
+-- Allow admins to read ALL subscriptions
+DROP POLICY IF EXISTS "Admins can view all subscriptions" ON public.subscriptions;
+CREATE POLICY "Admins can view all subscriptions" ON public.subscriptions
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.user_id = auth.uid() AND p.is_admin = true
+    )
+  );
+
+-- Allow admins to update ANY subscription (for upgrade/downgrade)
+DROP POLICY IF EXISTS "Admins can update all subscriptions" ON public.subscriptions;
+CREATE POLICY "Admins can update all subscriptions" ON public.subscriptions
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.user_id = auth.uid() AND p.is_admin = true
+    )
+  );
+
+-- Allow admins to insert subscriptions (for upgrading users without one)
+DROP POLICY IF EXISTS "Admins can insert subscriptions" ON public.subscriptions;
+CREATE POLICY "Admins can insert subscriptions" ON public.subscriptions
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.user_id = auth.uid() AND p.is_admin = true
+    )
+  );

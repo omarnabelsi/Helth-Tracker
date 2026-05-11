@@ -16,17 +16,34 @@ const Admin = () => {
     setLoading(true)
     try {
       // Fetch stats via view
-      const { data: statsData } = await supabase
+      const { data: statsData, error: statsErr } = await supabase
         .from('admin_stats').select('*').maybeSingle()
+      if (statsErr) console.warn('Stats error:', statsErr.message)
 
       // Fetch all profiles joined with subscriptions
-      const { data: usersData } = await supabase
+      // Supabase FK join returns subscriptions as array — normalize it
+      const { data: usersData, error: usersErr } = await supabase
         .from('profiles')
-        .select(`*, subscriptions ( plan, status, started_at, expires_at )`)
+        .select(`
+          user_id, name, goal, created_at, is_admin,
+          subscriptions ( plan, status, started_at, expires_at )
+        `)
         .order('created_at', { ascending: false })
 
+      if (usersErr) {
+        console.error('Users fetch error:', usersErr.message, usersErr.details)
+      }
+
+      // Normalize: Supabase returns subscriptions as array from FK join
+      const normalized = (usersData || []).map(u => ({
+        ...u,
+        subscriptions: Array.isArray(u.subscriptions)
+          ? u.subscriptions[0] || null
+          : u.subscriptions
+      }))
+
       setStats(statsData)
-      setUsers(usersData || [])
+      setUsers(normalized)
     } catch (e) {
       console.error('Admin fetch error:', e)
     } finally {
