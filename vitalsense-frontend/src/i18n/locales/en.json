@@ -154,7 +154,20 @@
     "thu": "Thu",
     "fri": "Fri",
     "sat": "Sat",
-    "sun": "Sun"
+    "dumbbells": "Dumbbells",
+    "barbell": "Barbell",
+    "bench": "Bench",
+    "pull_up_bar": "Pull-up Bar",
+    "resistance_bands": "Resistance Bands",
+    "treadmill": "Treadmill",
+    "stationary_bike": "Stationary Bike",
+    "kettlebells": "Kettlebells",
+    "cables": "Cables",
+    "lat_pulldown": "Lat Pulldown",
+    "leg_press": "Leg Press",
+    "smith_machine": "Smith Machine",
+    "rowing_machine": "Rowing Machine",
+    "stairmaster": "Stairmaster"
   },
   "progress": {
     "title": "Progress Tracker",

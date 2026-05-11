@@ -193,7 +193,7 @@ const Onboarding = () => {
         
         .onboarding-container {
           width: 100%;
-          max-width: 480px;
+          max-width: 520px;
           display: flex;
           flex-direction: column;
           gap: 24px;
@@ -587,44 +587,53 @@ const Onboarding = () => {
         /* Equipment checkbox grid */
         .equipment-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 8px;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
           margin-bottom: 20px;
         }
         .equipment-item {
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 12px 14px;
+          gap: 12px;
+          padding: 14px;
           background: rgba(255,255,255,0.04);
           border: 1.5px solid rgba(255,255,255,0.08);
-          border-radius: 12px;
+          border-radius: 14px;
           cursor: pointer;
-          transition: all 0.15s;
+          transition: all 0.2s;
+          min-width: 0; /* Prevents overflow */
         }
         .equipment-item.checked {
           background: rgba(76, 175, 125, 0.12);
           border-color: #4CAF7D;
+          box-shadow: 0 4px 12px rgba(76, 175, 125, 0.1);
         }
         .equipment-checkbox {
-          width: 18px;
-          height: 18px;
-          border-radius: 5px;
+          width: 20px;
+          height: 20px;
+          border-radius: 6px;
           border: 1.5px solid rgba(255,255,255,0.2);
           background: transparent;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          transition: all 0.15s;
+          transition: all 0.2s;
         }
         .equipment-item.checked .equipment-checkbox {
           background: #4CAF7D;
           border-color: #4CAF7D;
           color: white;
-          font-size: 11px;
+          font-size: 12px;
         }
-        .equipment-label { color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 500; }
+        .equipment-label { 
+          color: rgba(255,255,255,0.7); 
+          font-size: 14px; 
+          font-weight: 500;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
         .equipment-item.checked .equipment-label { color: white; }
         
         /* Animations */
@@ -852,18 +861,15 @@ const EquipmentStep = ({ t, form, update, onNext }) => {
       <div
         className={`equipment-item ${selected.length === 0 ? 'checked' : ''}`}
         onClick={() => update('equipment', [])}
-        style={{ marginBottom: '20px', gridColumn: 'span 2' }}
+        style={{ marginTop: '12px', borderStyle: 'dashed', background: selected.length === 0 ? 'rgba(76, 175, 125, 0.12)' : 'transparent' }}
       >
         <div className="equipment-checkbox">{selected.length === 0 && '✓'}</div>
-        <span style={{ fontSize: '16px' }}>🤷</span>
+        <span style={{ fontSize: '18px' }}>🏃</span>
         <span className="equipment-label">{t('onboarding.skip_equipment')}</span>
       </div>
 
-      <button className="btn-primary" onClick={onNext} disabled={selected.length === 0}>
+      <button className="btn-primary" onClick={onNext} style={{ marginTop: '24px' }}>
         {t('onboarding.continue')} →
-      </button>
-      <button className="btn-secondary" onClick={() => { update('equipment', []); onNext(); }}>
-        {t('onboarding.skip_equipment')}
       </button>
     </div>
   )

@@ -156,7 +156,20 @@
     "thu": "خمي",
     "fri": "جمع",
     "sat": "سبت",
-    "sun": "أحد"
+    "dumbbells": "دمبلز",
+    "barbell": "باربل",
+    "bench": "بنچ",
+    "pull_up_bar": "عقلة",
+    "resistance_bands": "حبال مقاومة",
+    "treadmill": "مشاية",
+    "stationary_bike": "دراجة",
+    "kettlebells": "كتل بيل",
+    "cables": "كابلات",
+    "lat_pulldown": "سحب علوي",
+    "leg_press": "دفع أرجل",
+    "smith_machine": "سميث ماشين",
+    "rowing_machine": "جهاز تجديف",
+    "stairmaster": "جهاز درج"
   },
   "progress": {
     "title": "متتبع التقدم",

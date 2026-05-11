@@ -219,7 +219,10 @@ export default function Dashboard() {
               <div>
                 <h2 className="font-heading text-xl font-bold mb-1">{t('dashboard.daily_goal')}</h2>
                 <p className="text-white/60 text-sm mb-4 max-w-sm">
-                  {plan ? `${t('dashboard.todays_plan')} ${calorieTarget} ${t('common.kcal')} ${t('dashboard.today')}` : t('dashboard.no_plan')}
+                  {plan 
+                    ? `${t('dashboard.todays_plan')} ${calorieTarget} ${t('common.kcal')} ${t('dashboard.today')}` 
+                    : `${t('onboarding.daily_calories')}: ${calorieTarget} ${t('common.kcal')}`
+                  }
                 </p>
                 <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur px-4 py-2 rounded-xl">
                   <Flame size={16} className="text-orange-400" />
@@ -293,9 +296,20 @@ export default function Dashboard() {
                 </div>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center text-center py-4">
-                <p className="text-sm text-text-muted mb-4">{t('dashboard.no_plan')}</p>
-                <button onClick={() => navigate('/settings')} className="bg-[#2E7D52] text-white text-sm font-semibold px-4 py-2 rounded-xl">{t('dashboard.generate_plan')}</button>
+              <div className="flex flex-col gap-4">
+                <div className="mb-2">
+                  <div className="flex items-end gap-1 mb-1">
+                    <span className="text-3xl font-bold text-text-primary font-heading">0</span>
+                    <span className="text-sm text-text-muted mb-1">/ {calorieTarget} {t('common.kcal')}</span>
+                  </div>
+                  <p className="text-[10px] text-text-muted">{t('dashboard.no_plan')}</p>
+                </div>
+                <div className="space-y-3">
+                  <MacroBar label={t('nutrition.protein')} current={0} target={Math.round(calorieTarget * 0.3 / 4)} color="#3B82F6" />
+                  <MacroBar label={t('nutrition.carbs')} current={0} target={Math.round(calorieTarget * 0.4 / 4)} color="#F59E0B" />
+                  <MacroBar label={t('nutrition.fat')} current={0} target={Math.round(calorieTarget * 0.3 / 9)} color="#EF4444" />
+                </div>
+                <button onClick={() => navigate('/settings')} className="w-full bg-primary-accent text-white text-xs font-semibold py-2 rounded-xl mt-1">{t('dashboard.generate_plan')}</button>
               </div>
             )}
           </div>
@@ -399,7 +413,7 @@ export default function Dashboard() {
                 </span>
               </div>
               <p className="text-sm text-text-muted leading-relaxed">
-                {coachTip || t('dashboard.no_plan')}
+                {coachTip || t('dashboard.mock_tip')}
               </p>
               <button
                 onClick={() => navigate('/chat')}

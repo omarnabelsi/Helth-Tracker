@@ -20,33 +20,13 @@ const mealEmojis = { Breakfast: '🌅', Lunch: '☀️', Dinner: '🌙', Snack: 
 
 // ── Generate a default daily plan from the food DB based on calorie target ──
 function generateDefaultPlan(calorieTarget) {
-  const target = calorieTarget || 2000
-  const mains = lebaneseFoods.filter(f => f.category === 'main')
-  const perMeal = Math.round(target / 4)
-
-  const pickFood = (seed) => {
-    const idx = Math.abs(seed) % mains.length
-    const food = mains[idx]
-    const g = 250
-    const ratio = g / 100
-    return {
-      ...food,
-      id: food.id + '-' + seed,
-      calories: Math.round(food.caloriesPer100g * ratio),
-      protein: Math.round(food.proteinPer100g * ratio),
-      carbs: Math.round(food.carbsPer100g * ratio),
-      fat: Math.round(food.fatPer100g * ratio),
-      loggedGrams: g
-    }
-  }
-
   const plan = {}
-  days.forEach((day, di) => {
+  days.forEach((day) => {
     plan[day] = {
-      Breakfast: [pickFood(di * 4)],
-      Lunch: [pickFood(di * 4 + 1)],
-      Dinner: [pickFood(di * 4 + 2)],
-      Snack: [pickFood(di * 4 + 3)],
+      Breakfast: [],
+      Lunch: [],
+      Dinner: [],
+      Snack: [],
     }
   })
   return plan
