@@ -17,7 +17,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+/vitalsense-backend/lib/
 lib64/
 parts/
 sdist/
