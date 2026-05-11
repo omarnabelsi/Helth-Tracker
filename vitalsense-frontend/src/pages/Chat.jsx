@@ -40,6 +40,8 @@ export default function Chat() {
   const [copied, setCopied] = useState(null)
   const [generatingSummary, setGeneratingSummary] = useState(false)
   const chatEndRef = useRef(null)
+  const fileInputRef = useRef(null)
+  const [analyzingImage, setAnalyzingImage] = useState(false)
 
   const scrubMessages = (msgs) => {
     return msgs.filter(m =>
@@ -279,6 +281,50 @@ export default function Chat() {
       }
     } finally { setIsTyping(false) }
   }
+  
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    // Convert to base64
+    const reader = new FileReader()
+    reader.onload = async () => {
+      const base64 = reader.result.split(',')[1]
+      
+      setMessages(prev => [...prev, { 
+        role: 'user', 
+        text: t('chat.analyzing_photo') || 'Analyzing photo...', 
+        timestamp: Date.now(),
+        type: 'image'
+      }])
+      setIsTyping(true)
+
+      try {
+        const res = await authFetch(`${API_BASE}/api/analyze-meal-photo/`, {
+          method: 'POST',
+          body: JSON.stringify({ image_base64: base64, user_id: user.id })
+        })
+        if (res.ok) {
+          const data = await res.json()
+          const dishNames = data.dishes.map(d => isAr ? d.arabicName || d.name : d.name).join(', ')
+          setMessages(prev => [...prev, {
+            role: 'ai',
+            type: 'food-check',
+            text: `I've analyzed your photo! I see: ${dishNames}. Total calories: ~${data.totalCalories} kcal.`,
+            total: profile?.calorie_target || 2000,
+            remaining: (profile?.calorie_target || 2000) - data.totalCalories,
+            verdictText: `This meal is about ${data.totalCalories} kcal.`,
+            timestamp: Date.now()
+          }])
+        }
+      } catch (err) {
+        console.error('Image analysis failed:', err)
+      } finally {
+        setIsTyping(false)
+      }
+    }
+    reader.readAsDataURL(file)
+  }
 
   const copyToClipboard = (text, idx) => {
     navigator.clipboard.writeText(text)
@@ -495,7 +541,17 @@ export default function Chat() {
 
         {/* Input Bar */}
         <div className="bg-bg-card border-t border-gray-100 px-5 py-3 flex items-center gap-3 flex-shrink-0">
-          <button className="w-10 h-10 rounded-xl bg-bg-main flex items-center justify-center text-text-muted hover:text-primary-accent hover:bg-primary-pale transition-all flex-shrink-0">
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleImageUpload} 
+            accept="image/*" 
+            className="hidden" 
+          />
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="w-10 h-10 rounded-xl bg-bg-main flex items-center justify-center text-text-muted hover:text-primary-accent hover:bg-primary-pale transition-all flex-shrink-0"
+          >
             <Camera size={18} />
           </button>
           <input
