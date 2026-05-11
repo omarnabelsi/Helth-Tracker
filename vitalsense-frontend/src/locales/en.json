@@ -171,5 +171,22 @@
     "kcal": "kcal",
     "kg": "kg",
     "premium_member": "Premium Member"
+  },
+  "auth": {
+    "login": "Login",
+    "login_title": "Welcome Back",
+    "login_subtitle": "Sign in to continue your journey",
+    "email": "Email Address",
+    "password": "Password",
+    "confirm_password": "Confirm Password",
+    "name": "Full Name",
+    "sign_in": "Sign In",
+    "sign_up": "Sign Up",
+    "signup_title": "Create Account",
+    "signup_subtitle": "Join VitalSense AI and transform your health",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?",
+    "error_invalid": "Invalid email or password",
+    "error_signup": "Failed to create account"
   }
 }

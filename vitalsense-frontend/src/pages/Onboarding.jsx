@@ -31,6 +31,20 @@ const Onboarding = () => {
     setAnimKey(k => k + 1)
   }
 
+  // Pre-fill name from Google if available
+  useEffect(() => {
+    const prefill = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        const googleName = session.user.user_metadata?.full_name || ''
+        if (googleName && !form.name) {
+          update('name', googleName)
+        }
+      }
+    }
+    prefill()
+  }, [])
+
   // TDEE calculation
   const calculateTDEE = () => {
     const w = parseFloat(form.weight)

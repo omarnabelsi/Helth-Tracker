@@ -22,6 +22,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Pricing from './pages/Pricing'
 import Admin from './pages/Admin'
 import { AdminRoute } from './components/AdminRoute'
+import AuthCallback from './pages/AuthCallback'
 
 function useInitializeTheme() {
   const { session } = useAuth();
@@ -83,7 +84,7 @@ export default function App() {
   useEffect(() => {
     if (!loading && !session) {
       // Just track when session becomes null locally via context instead of setting another global auth listener
-      if (window.location.pathname !== '/' && window.location.pathname !== '/signup' && window.location.pathname !== '/login') {
+      if (window.location.pathname !== '/' && window.location.pathname !== '/signup' && window.location.pathname !== '/login' && !window.location.pathname.startsWith('/auth/callback')) {
         navigate('/login', { replace: true })
       }
     }
@@ -96,6 +97,7 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
 
         {/* NO protection for onboarding */}
         <Route path="/onboarding" element={<Onboarding />} />

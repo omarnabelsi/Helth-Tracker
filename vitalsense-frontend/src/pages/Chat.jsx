@@ -4,12 +4,14 @@ import MacroBar from '../components/MacroBar'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { authFetch } from '../utils/authFetch'
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 import { useNavigate } from 'react-router-dom'
 import jsPDF from 'jspdf'
 import { useTranslation } from 'react-i18next'
 import { useSubscription } from '../hooks/useSubscription'
+import { UserAvatar } from '../components/AppLayout'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 const DANGER_KEYWORDS = [
   'chest pain', 'heart attack', 'can\'t breathe', 'shortness of breath',
@@ -302,10 +304,8 @@ export default function Chat() {
       {/* Left Panel — Profile */}
       <div className="w-[300px] bg-bg-card border-r border-gray-100 p-5 overflow-y-auto flex-shrink-0 hidden lg:block">
         <div className="animate-fade-in">
-          <div className="text-center mb-5">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-accent to-primary-light mx-auto flex items-center justify-center ring-4 ring-primary-accent/20">
-              <span className="text-white text-2xl font-bold">{(profile?.name || 'U')[0]}</span>
-            </div>
+          <div className="text-center mb-5 flex flex-col items-center">
+            <UserAvatar profile={profile || { name: profile?.name || user?.user_metadata?.full_name, avatar_url: user?.user_metadata?.avatar_url }} size={80} />
             <h2 className="font-heading font-bold text-text-primary mt-3">{profile?.name || user?.user_metadata?.full_name || 'User'}</h2>
             <span className="text-xs text-primary-accent font-semibold bg-primary-pale px-3 py-1 rounded-full">Premium Member</span>
           </div>

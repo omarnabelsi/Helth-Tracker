@@ -71,7 +71,7 @@ export default function Landing() {
             <a href="#features" className="text-white/70 hover:text-white text-sm transition-colors">{t('landing.nav_features')}</a>
             <a href="#foods" className="text-white/70 hover:text-white text-sm transition-colors">{t('landing.nav_foods')}</a>
             {!user && (
-              <Link to="/login" className="text-white/70 hover:text-white text-sm transition-colors">{t('auth.login')}</Link>
+              <Link to="/login" className="text-white/70 hover:text-white text-sm transition-colors">{t('auth.login', 'Login')}</Link>
             )}
             <Link 
               to={user ? "/dashboard" : "/onboarding"} 
@@ -96,7 +96,7 @@ export default function Landing() {
               {user ? t('landing.go_to_dashboard') : t('landing.get_started')}
             </Link>
             {!user && (
-              <Link to="/login" className="block text-white/70 text-sm py-2 text-center">{t('auth.login')}</Link>
+              <Link to="/login" className="block text-white/70 text-sm py-2 text-center">{t('auth.login', 'Login')}</Link>
             )}
           </div>
         )}

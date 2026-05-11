@@ -12,6 +12,40 @@ import { useSubscription } from '../hooks/useSubscription'
 import { PremiumBadge } from './PremiumGate'
 import { useNavigate } from 'react-router-dom'
 
+export const UserAvatar = ({ profile, size = 36 }) => {
+  if (profile?.avatar_url) {
+    return (
+      <img
+        src={profile.avatar_url}
+        alt={profile.name || 'User'}
+        style={{
+          width: size, height: size,
+          borderRadius: '50%',
+          border: '2px solid var(--accent-light)',
+          objectFit: 'cover'
+        }}
+        onError={e => {
+          e.target.style.display = 'none'
+          e.target.nextSibling.style.display = 'flex'
+        }}
+      />
+    )
+  }
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      background: 'var(--accent-primary)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      color: 'white', fontSize: size * 0.38,
+      fontWeight: '700', flexShrink: 0,
+      border: '2px solid var(--accent-light)'
+    }}>
+      {profile?.name?.charAt(0)?.toUpperCase() || '?'}
+    </div>
+  )
+}
+
+
 const navItems = [
   { to: '/dashboard',    icon: Home,          labelKey: 'nav.home' },
   { to: '/nutrition',    icon: Utensils,       labelKey: 'nav.nutrition' },
@@ -35,7 +69,7 @@ export default function AppLayout() {
 
   useEffect(() => {
     if (!user) return
-    supabase.from('profiles').select('name, is_admin').eq('user_id', user.id).single()
+    supabase.from('profiles').select('name, is_admin, avatar_url').eq('user_id', user.id).single()
       .then(({ data }) => {
         if (data) {
           setSidebarProfile(data)
@@ -143,9 +177,7 @@ export default function AppLayout() {
           )}
 
           <div className={`flex items-center gap-2.5 ${collapsed ? 'justify-center' : ''}`}>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-accent to-primary-light flex items-center justify-center flex-shrink-0 ring-2 ring-primary-light/30">
-              <span className="text-white text-sm font-bold">{initial}</span>
-            </div>
+            <UserAvatar profile={sidebarProfile || { name: displayName, avatar_url: user?.user_metadata?.avatar_url }} size={36} />
             {!collapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-white text-sm font-semibold truncate">{displayName.split(' ')[0]}</p>

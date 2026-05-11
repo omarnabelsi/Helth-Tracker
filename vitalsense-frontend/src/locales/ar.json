@@ -178,5 +178,22 @@
     "kcal": "سعرة",
     "kg": "كغ",
     "premium_member": "عضو مميز"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "login_title": "مرحباً بك مجدداً",
+    "login_subtitle": "سجل الدخول لمتابعة رحلتك",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "confirm_password": "تأكيد كلمة المرور",
+    "name": "الاسم الكامل",
+    "sign_in": "تسجيل الدخول",
+    "sign_up": "إنشاء حساب",
+    "signup_title": "إنشاء حساب",
+    "signup_subtitle": "انضم إلى VitalSense AI وغيّر صحتك",
+    "no_account": "ليس لديك حساب؟",
+    "have_account": "لديك حساب بالفعل؟",
+    "error_invalid": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+    "error_signup": "فشل في إنشاء الحساب"
   }
 }
