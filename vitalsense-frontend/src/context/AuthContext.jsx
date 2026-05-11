@@ -11,7 +11,24 @@ export function AuthProvider({ children }) {
 
   const fetchProfile = async (userId) => {
     setProfileLoading(true)
-    const { data } = await supabase.from('profiles').select('*').eq('user_id', userId).single()
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (!data && !error) {
+      // User exists in auth but has no profile row — likely deleted from DB
+      // Force sign out to clear the stale JWT session
+      console.warn('No profile found for session user — signing out stale session.')
+      await supabase.auth.signOut()
+      setSession(null)
+      setUser(null)
+      setProfile(null)
+      setProfileLoading(false)
+      return
+    }
+
     setProfile(data)
     setProfileLoading(false)
   }
