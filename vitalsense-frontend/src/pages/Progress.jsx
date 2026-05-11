@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { Camera, TrendingDown, TrendingUp, Flame, Bot, Upload, ChevronRight, Scale, Target, Calendar, Award, Share2, Trash2 } from 'lucide-react'
+import { Camera, TrendingDown, TrendingUp, Flame, Bot, Upload, ChevronRight, Scale, Target, Calendar, Award, Share2, Trash2, Loader2 } from 'lucide-react'
 import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area, AreaChart } from 'recharts'
 import { toPng } from 'html-to-image'
 import { useAuth } from '../context/AuthContext'

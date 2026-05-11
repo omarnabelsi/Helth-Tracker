@@ -112,7 +112,7 @@ export default function Chat() {
       .from('chat_messages')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user.id)
-      .gte('created_at', today)
+      .gte('sent_at', today)
     if (count >= 10) {
       setMessages(prev => [...prev, {
         role: 'ai',
