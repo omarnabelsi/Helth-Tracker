@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { NavLink, useLocation, Outlet } from 'react-router-dom'
 import {
   Home, Utensils, Dumbbell, TrendingUp, Brain, MessageCircle,
-  Settings, Crown, ChevronLeft, ChevronRight, Bell, Search, Trophy, Zap
+  Settings, Crown, ChevronLeft, ChevronRight, Bell, Search, Trophy, Zap, ShieldCheck
 } from 'lucide-react'
 import TopBar from './TopBar'
 import { useAuth } from '../context/AuthContext'
@@ -31,11 +31,17 @@ export default function AppLayout() {
   const navigate = useNavigate()
   const isAr = i18n.language === 'ar'
   const [sidebarProfile, setSidebarProfile] = useState(null)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     if (!user) return
-    supabase.from('profiles').select('name').eq('user_id', user.id).single()
-      .then(({ data }) => { if (data) setSidebarProfile(data) })
+    supabase.from('profiles').select('name, is_admin').eq('user_id', user.id).single()
+      .then(({ data }) => {
+        if (data) {
+          setSidebarProfile(data)
+          setIsAdmin(!!data.is_admin)
+        }
+      })
   }, [user])
 
   const displayName = sidebarProfile?.name || user?.user_metadata?.full_name || 'User'
@@ -96,6 +102,30 @@ export default function AppLayout() {
             </NavLink>
           ))}
         </nav>
+
+        {/* Admin Panel — only for admins */}
+        {isAdmin && (
+          <div className="px-2 pb-2">
+            <NavLink
+              to="/admin"
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
+                  isActive
+                    ? 'bg-yellow-500/20 text-yellow-400'
+                    : 'text-yellow-400/70 hover:text-yellow-400 hover:bg-yellow-400/10'
+                }`
+              }
+            >
+              <ShieldCheck size={20} className="flex-shrink-0" />
+              {!collapsed && (
+                <span className="text-sm font-bold">
+                  {isAr ? 'لوحة الإدارة' : 'Admin Panel'}
+                </span>
+              )}
+            </NavLink>
+          </div>
+        )}
 
         {/* User Profile */}
         <div className="p-3 border-t border-white/10">
