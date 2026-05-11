@@ -83,10 +83,12 @@ const Admin = () => {
     fetchAll()
   }
 
-  const filteredUsers = users.filter(u =>
-    u.name?.toLowerCase().includes(search.toLowerCase()) ||
-    u.user_id?.includes(search)
-  )
+  const filteredUsers = users.filter(u => {
+    const searchLower = search.toLowerCase();
+    const nameMatch = (u.name || '').toLowerCase().includes(searchLower);
+    const idMatch = (u.user_id || '').includes(search);
+    return nameMatch || idMatch;
+  })
 
   const premiumCount = users.filter(u => u.subscriptions?.plan === 'premium').length
   const revenue = (premiumCount * 9.99).toFixed(2)
