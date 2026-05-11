@@ -142,15 +142,27 @@ export default function Signup() {
 
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
         options: { data: { full_name: form.name } },
       })
       if (error) throw error
+
+      // Supabase returns identities: [] (empty) when email is already registered
+      if (data?.user && data.user.identities?.length === 0) {
+        setError('__email_exists__')
+        return
+      }
+
       setShowVerifyModal(true)
     } catch (err) {
-      setError(err.message || t('auth.error_signup'))
+      const msg = (err.message || '').toLowerCase()
+      if (msg.includes('already registered') || msg.includes('already been registered') || msg.includes('email already')) {
+        setError('__email_exists__')
+      } else {
+        setError(err.message || t('auth.error_signup'))
+      }
     } finally {
       setLoading(false)
     }
@@ -179,11 +191,21 @@ export default function Signup() {
         {/* Card */}
         <div className="bg-white/[0.07] backdrop-blur-md rounded-3xl border border-white/10 p-8">
           <form onSubmit={handleSignup} className="space-y-4">
-            {error && (
+            {error === '__email_exists__' ? (
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-3 animate-fade-in">
+                <p className="text-yellow-200 text-sm font-semibold">📧 This email is already registered.</p>
+                <p className="text-yellow-200/70 text-xs mt-1">
+                  Already have an account?{' '}
+                  <Link to="/login" className="text-primary-light font-bold underline underline-offset-2 hover:text-primary-lighter">
+                    Sign in instead →
+                  </Link>
+                </p>
+              </div>
+            ) : error ? (
               <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-200 text-sm animate-fade-in">
                 {error}
               </div>
-            )}
+            ) : null}
 
             <div>
               <label className="text-white/70 text-sm font-medium block mb-1.5">{t('auth.name')}</label>

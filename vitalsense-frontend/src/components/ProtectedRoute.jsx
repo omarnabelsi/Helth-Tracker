@@ -27,12 +27,13 @@ export default function ProtectedRoute({ children }) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  // Only redirect to onboarding if:
-  // 1. Profile has loaded (not null — avoids redirect during fetch race)
-  // 2. onboarding_complete is explicitly false
-  // 3. Current path is not exempt (onboarding itself, admin, pricing)
+  // Redirect to onboarding if:
+  // 1. Current path is not exempt
+  // 2. Profile is missing (null) OR onboarding_complete is explicitly false
   const isExempt = ONBOARDING_EXEMPT.some(p => location.pathname.startsWith(p))
-  if (profile !== null && profile?.onboarding_complete === false && !isExempt) {
+  const needsOnboarding = profile === null || profile?.onboarding_complete === false
+
+  if (needsOnboarding && !isExempt) {
     return <Navigate to="/onboarding" replace />
   }
 

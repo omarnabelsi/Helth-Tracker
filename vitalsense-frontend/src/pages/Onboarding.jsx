@@ -102,16 +102,27 @@ const Onboarding = () => {
       // Call generate-plan in background
       const token = session.access_token
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      
       fetch(`${apiUrl}/api/generate-plan`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Authorization': `Bearer ${token}` 
+        },
         body: JSON.stringify({ 
-          age: form.age, gender: form.gender, weight: form.weight, 
-          height: form.height, tdee, calorie_target: calorieTarget, 
-          goal: form.goal, weekly_loss_target: form.weeklyLoss, 
+          user_id: session.user.id,
+          age: parseInt(form.age), 
+          gender: form.gender, 
+          weight: parseFloat(form.weight), 
+          height: parseFloat(form.height), 
+          tdee: parseFloat(tdee), 
+          calorie_target: parseFloat(calorieTarget), 
+          goal: form.goal, 
+          weekly_loss_target: form.weeklyLoss || null, 
           medical_conditions: form.conditions || 'None', 
-          activity_level: form.activity, gym_type: form.gym,
-          available_equipment: form.equipment || []
+          activity_level: form.activity, 
+          gym_type: form.gym || 'home',
+          equipment_list: form.equipment || []
         })
       }).catch(e => console.error('Plan gen error:', e))
 

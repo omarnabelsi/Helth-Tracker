@@ -18,12 +18,7 @@ export function AuthProvider({ children }) {
       .maybeSingle()
 
     if (!data && !error) {
-      // User exists in auth but has no profile row — likely deleted from DB
-      // Force sign out to clear the stale JWT session
-      console.warn('No profile found for session user — signing out stale session.')
-      await supabase.auth.signOut()
-      setSession(null)
-      setUser(null)
+      // User exists in auth but has no profile row — this is expected during onboarding
       setProfile(null)
       setProfileLoading(false)
       return
