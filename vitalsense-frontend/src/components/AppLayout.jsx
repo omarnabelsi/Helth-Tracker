@@ -71,7 +71,13 @@ export default function AppLayout() {
     if (!user) return
     supabase.from('profiles').select('name, avatar_url').eq('user_id', user.id).single()
       .then(({ data }) => {
-        const isUserAdmin = user.email?.includes('omar') || data?.name?.toLowerCase().includes('omar') || !!data?.is_admin
+        console.log('[DEBUG] Auth User:', user);
+        console.log('[DEBUG] Profile Data:', data);
+        const isUserAdmin = user.email?.toLowerCase().includes('omar') || 
+                           user.user_metadata?.email?.toLowerCase().includes('omar') || 
+                           data?.name?.toLowerCase().includes('omar') || 
+                           !!data?.is_admin;
+        console.log('[DEBUG] Computed isAdmin:', isUserAdmin);
         setIsAdmin(isUserAdmin)
         if (data) {
           setSidebarProfile(data)
