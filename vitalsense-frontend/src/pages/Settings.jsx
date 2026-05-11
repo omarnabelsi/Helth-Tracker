@@ -145,7 +145,8 @@ export default function Settings() {
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.detail || 'Failed to generate plan')
+        const errMsg = typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail)
+        throw new Error(errMsg || 'Failed to generate plan')
       }
       showToast('New plan generated successfully!')
     } catch (error) {
