@@ -166,7 +166,7 @@ const Admin = () => {
         ))}
       </div>
 
-      {/* Users Table */}
+      {/* Users & Subscriptions Table */}
       {(tab === 'users' || tab === 'subscriptions') && (
         <div className="bg-bg-card border border-border-color rounded-2xl overflow-hidden animate-fade-in">
           {/* Search */}
@@ -185,7 +185,7 @@ const Admin = () => {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-white/3">
-                  {['User', 'Goal', 'Plan', 'Status', 'Joined', 'Actions'].map(h => (
+                  { (tab === 'users' ? ['User', 'Goal', 'Plan', 'Status', 'Joined', 'Actions'] : ['User', 'Plan', 'Status', 'Started At', 'Expires At', 'Actions']).map(h => (
                     <th
                       key={h}
                       className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-text-muted border-b border-border-color"
@@ -197,7 +197,8 @@ const Admin = () => {
               </thead>
               <tbody>
                 {filteredUsers.map((u, i) => {
-                  const plan = u.subscriptions?.plan || 'free'
+                  const sub = u.subscriptions
+                  const plan = sub?.plan || 'free'
                   const isPrem = plan === 'premium'
                   return (
                     <tr
@@ -216,8 +217,12 @@ const Admin = () => {
                           </div>
                         </div>
                       </td>
-                      {/* Goal */}
-                      <td className="px-4 py-3.5 text-text-muted text-sm">{u.goal || '—'}</td>
+
+                      {/* Tab Specific: Goal (Users only) */}
+                      {tab === 'users' && (
+                        <td className="px-4 py-3.5 text-text-muted text-sm">{u.goal || '—'}</td>
+                      )}
+
                       {/* Plan badge */}
                       <td className="px-4 py-3.5">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold ${
@@ -226,16 +231,32 @@ const Admin = () => {
                           {isPrem ? '👑 Premium' : '🌱 Free'}
                         </span>
                       </td>
+
                       {/* Status */}
                       <td className="px-4 py-3.5">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/15 text-emerald-400">
-                          ● Active
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold ${
+                          (sub?.status === 'active' || !sub) ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'
+                        }`}>
+                          ● {sub?.status || 'Active'}
                         </span>
                       </td>
-                      {/* Joined */}
-                      <td className="px-4 py-3.5 text-text-muted text-xs">
-                        {u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}
-                      </td>
+
+                      {/* Date Fields (Tab Specific) */}
+                      {tab === 'users' ? (
+                        <td className="px-4 py-3.5 text-text-muted text-xs">
+                          {u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}
+                        </td>
+                      ) : (
+                        <>
+                          <td className="px-4 py-3.5 text-text-muted text-xs">
+                            {sub?.started_at ? new Date(sub.started_at).toLocaleDateString() : '—'}
+                          </td>
+                          <td className="px-4 py-3.5 text-text-muted text-xs">
+                            {sub?.expires_at ? new Date(sub.expires_at).toLocaleDateString() : 'Lifetime'}
+                          </td>
+                        </>
+                      )}
+
                       {/* Actions */}
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-2">
@@ -273,7 +294,7 @@ const Admin = () => {
           </div>
 
           <div className="px-4 py-3 border-t border-border-color text-text-muted text-xs">
-            Showing {filteredUsers.length} of {users.length} users
+            Showing {filteredUsers.length} of {users.length} {tab === 'users' ? 'users' : 'subscriptions'}
           </div>
         </div>
       )}
