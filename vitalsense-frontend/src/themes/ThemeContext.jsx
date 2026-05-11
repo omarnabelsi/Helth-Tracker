@@ -18,6 +18,10 @@ export const ThemeProvider = ({ children }) => {
     })
     // Set data attribute for any CSS selectors that need it
     root.setAttribute('data-theme', id)
+    
+    // Set color-scheme for native UI elements (scrollbars, dropdowns)
+    const isDark = ['deep_forest', 'midnight_teal', 'charcoal_gold', 'volcanic_red'].includes(id)
+    root.style.colorScheme = isDark ? 'dark' : 'light'
   }
 
   // Change theme + save everywhere

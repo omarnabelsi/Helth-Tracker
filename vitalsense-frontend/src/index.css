@@ -68,9 +68,15 @@ input, textarea, select {
   background: var(--bg-input) !important;
   border-color: var(--border-color) !important;
   color: var(--text-primary) !important;
+  accent-color: var(--accent-light);
 }
-input:focus, textarea:focus {
+input:focus, textarea:focus, select:focus {
   border-color: var(--accent-light) !important;
+  outline: none;
+}
+option {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
 }
 
 .btn-primary {
@@ -108,6 +114,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ===== Dark Mode ===== */
 [data-theme="dark"] {
+  color-scheme: dark;
   --color-bg-main: #0F1A14;
   --color-bg-card: #1A2E20;
   --color-text-primary: #F0F5F1;

@@ -8,22 +8,28 @@ import TopBar from './TopBar'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { useTranslation } from 'react-i18next'
+import { useSubscription } from '../hooks/useSubscription'
+import { PremiumBadge } from './PremiumGate'
+import { useNavigate } from 'react-router-dom'
 
 const navItems = [
-  { to: '/dashboard', icon: Home, labelKey: 'nav.home' },
-  { to: '/nutrition', icon: Utensils, labelKey: 'nav.nutrition' },
-  { to: '/workout', icon: Dumbbell, labelKey: 'nav.workouts' },
-  { to: '/inbody', icon: Zap, labelKey: 'nav.inbody_ai' },
-  { to: '/progress', icon: TrendingUp, labelKey: 'nav.progress' },
-  { to: '/achievements', icon: Trophy, labelKey: 'nav.achievements' },
-  { to: '/chat', icon: Brain, labelKey: 'nav.insights' },
+  { to: '/dashboard',    icon: Home,          labelKey: 'nav.home' },
+  { to: '/nutrition',    icon: Utensils,       labelKey: 'nav.nutrition' },
+  { to: '/workout',      icon: Dumbbell,       labelKey: 'nav.workouts' },
+  { to: '/inbody',       icon: Zap,            labelKey: 'nav.inbody_ai',   premium: true },
+  { to: '/progress',     icon: TrendingUp,     labelKey: 'nav.progress' },
+  { to: '/achievements', icon: Trophy,         labelKey: 'nav.achievements' },
+  { to: '/chat',         icon: Brain,          labelKey: 'nav.insights',    premium: true },
 ]
 
 export default function AppLayout() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [collapsed, setCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { user } = useAuth()
+  const { isPremium, isFree } = useSubscription()
+  const navigate = useNavigate()
+  const isAr = i18n.language === 'ar'
   const [sidebarProfile, setSidebarProfile] = useState(null)
 
   useEffect(() => {
@@ -82,7 +88,10 @@ export default function AppLayout() {
             >
               <item.icon size={20} className="flex-shrink-0" />
               {!collapsed && (
-                <span className="text-sm font-medium">{t(item.labelKey)}</span>
+                <span className="text-sm font-medium flex items-center">
+                  {t(item.labelKey)}
+                  {item.premium && !isPremium && <PremiumBadge />}
+                </span>
               )}
             </NavLink>
           ))}
@@ -90,6 +99,19 @@ export default function AppLayout() {
 
         {/* User Profile */}
         <div className="p-3 border-t border-white/10">
+          {/* Upgrade Banner for free users */}
+          {isFree && !collapsed && (
+            <div
+              onClick={() => navigate('/pricing')}
+              className="mb-3 p-3 rounded-xl cursor-pointer bg-gradient-to-br from-primary-accent to-primary-light hover:opacity-90 transition-all text-center"
+            >
+              <div className="text-white text-xs font-extrabold flex items-center justify-center gap-1">
+                <Crown size={12} /> {isAr ? 'ترقية إلى بريميوم' : 'Upgrade to Premium'}
+              </div>
+              <div className="text-white/70 text-[10px] mt-0.5">$9.99 / month</div>
+            </div>
+          )}
+
           <div className={`flex items-center gap-2.5 ${collapsed ? 'justify-center' : ''}`}>
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-accent to-primary-light flex items-center justify-center flex-shrink-0 ring-2 ring-primary-light/30">
               <span className="text-white text-sm font-bold">{initial}</span>
@@ -98,8 +120,14 @@ export default function AppLayout() {
               <div className="flex-1 min-w-0">
                 <p className="text-white text-sm font-semibold truncate">{displayName.split(' ')[0]}</p>
                 <div className="flex items-center gap-1">
-                  <Crown size={10} className="text-yellow-400" />
-                  <span className="text-[10px] text-yellow-400 font-medium">{t('common.premium')}</span>
+                  {isPremium ? (
+                    <>
+                      <Crown size={10} className="text-yellow-400" />
+                      <span className="text-[10px] text-yellow-400 font-medium">{t('common.premium')}</span>
+                    </>
+                  ) : (
+                    <span className="text-[10px] text-white/40 font-medium">Free plan</span>
+                  )}
                 </div>
               </div>
             )}

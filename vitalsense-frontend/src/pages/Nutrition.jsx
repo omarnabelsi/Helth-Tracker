@@ -465,7 +465,10 @@ export default function Nutrition() {
           <div className="space-y-4">
             {Object.entries(todayMeals).map(([slot, dishes]) => (
               <div key={slot} className="bg-bg-card rounded-2xl border border-border-color shadow-sm overflow-hidden animate-fade-in-up">
-                <div className="p-4 border-b border-border-color flex items-center justify-between bg-bg-card">
+                <div 
+                  className="p-4 border-b border-border-color flex items-center justify-between bg-bg-card cursor-pointer hover:bg-bg-main transition-colors"
+                  onClick={() => setExpandedMeals(prev => ({ ...prev, [slot]: !prev[slot] }))}
+                >
                   <div className="flex items-center gap-3">
                     <span className="text-xl">{mealEmojis[slot] || '🍽️'}</span>
                     <div>
@@ -473,48 +476,59 @@ export default function Nutrition() {
                       <p className="text-[10px] font-bold text-primary-accent uppercase tracking-wider">{Math.round((dishes || []).reduce((s, d) => s + (d.calories || 0), 0))} {t('common.kcal')}</p>
                     </div>
                   </div>
-                  <ChevronDown size={18} className="text-text-muted" />
+                  <ChevronDown 
+                    size={18} 
+                    className={`text-text-muted transition-transform duration-300 ${expandedMeals[slot] ? 'rotate-180' : ''}`} 
+                  />
                 </div>
-                <div className="p-4 space-y-3">
-                  {(dishes || []).map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 rounded-xl bg-bg-main border border-border-color group hover:border-primary-accent/40 transition-all">
-                      <div className="space-y-2">
-                        <div>
-                          <p className="text-sm font-bold text-text-primary">{item.name}</p>
-                          {item.arabicName && <p className="text-[10px] text-text-muted mt-0.5">{item.arabicName}</p>}
+                {expandedMeals[slot] && (
+                  <div className="p-4 space-y-3 animate-slide-down">
+                    {(dishes || []).map((item, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-4 rounded-xl bg-bg-main border border-border-color group hover:border-primary-accent/40 transition-all">
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-sm font-bold text-text-primary">{item.name}</p>
+                            {item.arabicName && <p className="text-[10px] text-text-muted mt-0.5">{item.arabicName}</p>}
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            <span className="bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded text-[9px] font-bold">P {Math.round(item.protein)}g</span>
+                            <span className="bg-orange-500/10 text-orange-500 px-2 py-0.5 rounded text-[9px] font-bold">C {Math.round(item.carbs)}g</span>
+                            <span className="bg-red-500/10 text-red-500 px-2 py-0.5 rounded text-[9px] font-bold">F {Math.round(item.fat)}g</span>
+                            <span className="bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded text-[9px] font-bold">{Math.round(item.calories)} kcal</span>
+                            <span className="bg-primary-accent/10 text-primary-accent px-2 py-0.5 rounded text-[9px] font-bold">{Math.round(item.loggedGrams)} {t('common.g')}</span>
+                          </div>
                         </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          <span className="bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded text-[9px] font-bold">P {Math.round(item.protein)}g</span>
-                          <span className="bg-orange-500/10 text-orange-500 px-2 py-0.5 rounded text-[9px] font-bold">C {Math.round(item.carbs)}g</span>
-                          <span className="bg-red-500/10 text-red-500 px-2 py-0.5 rounded text-[9px] font-bold">F {Math.round(item.fat)}g</span>
-                          <span className="bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded text-[9px] font-bold">{Math.round(item.calories)} kcal</span>
-                          <span className="bg-primary-accent/10 text-primary-accent px-2 py-0.5 rounded text-[9px] font-bold">{Math.round(item.loggedGrams)} {t('common.g')}</span>
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSwapModal({ open: true, day: activeDay, mealSlot: slot, mode: 'swap', index: idx });
+                            }} 
+                            className="p-2 text-text-muted hover:text-primary-accent transition-colors bg-bg-card rounded-lg shadow-sm border border-border-color"
+                          >
+                            <ArrowLeftRight size={14} />
+                          </button>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeFood(activeDay, slot, idx);
+                            }} 
+                            className="p-2 text-text-muted hover:text-red-500 transition-colors bg-bg-card rounded-lg shadow-sm border border-border-color"
+                          >
+                            <X size={14} />
+                          </button>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <button 
-                          onClick={() => setSwapModal({ open: true, day: activeDay, mealSlot: slot, mode: 'swap', index: idx })} 
-                          className="p-2 text-text-muted hover:text-primary-accent transition-colors bg-bg-card rounded-lg shadow-sm border border-border-color"
-                        >
-                          <ArrowLeftRight size={14} />
-                        </button>
-                        <button 
-                          onClick={() => removeFood(activeDay, slot, idx)} 
-                          className="p-2 text-text-muted hover:text-red-500 transition-colors bg-bg-card rounded-lg shadow-sm border border-border-color"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  <button 
-                    onClick={() => setSwapModal({ open: true, day: activeDay, mealSlot: slot, mode: 'add' })} 
-                    className="w-full py-4 border-2 border-dashed border-gray-100 rounded-xl text-xs font-bold text-text-light hover:text-primary-accent hover:border-primary-accent/20 hover:bg-primary-pale transition-all flex items-center justify-center gap-2"
-                  >
-                    <Sparkles size={14} className="text-primary-accent" />
-                    {t('nutrition.add_meal')}
-                  </button>
-                </div>
+                    ))}
+                    <button 
+                      onClick={() => setSwapModal({ open: true, day: activeDay, mealSlot: slot, mode: 'add' })} 
+                      className="w-full py-4 border-2 border-dashed border-gray-100 rounded-xl text-xs font-bold text-text-light hover:text-primary-accent hover:border-primary-accent/20 hover:bg-primary-pale transition-all flex items-center justify-center gap-2"
+                    >
+                      <Sparkles size={14} className="text-primary-accent" />
+                      {t('nutrition.add_meal')}
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

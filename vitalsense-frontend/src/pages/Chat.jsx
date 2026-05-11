@@ -7,6 +7,7 @@ import { authFetch } from '../utils/authFetch'
 import { useNavigate } from 'react-router-dom'
 import jsPDF from 'jspdf'
 import { useTranslation } from 'react-i18next'
+import { useSubscription } from '../hooks/useSubscription'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -24,9 +25,11 @@ const suggestions = [
 ]
 
 export default function Chat() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth()
+  const { isPremium } = useSubscription()
   const navigate = useNavigate()
+  const isAr = i18n.language === 'ar'
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
@@ -101,6 +104,29 @@ export default function Chat() {
     return DANGER_KEYWORDS.some(kw => lower.includes(kw))
   }
 
+  // Check free-tier daily message limit (10 messages/day)
+  const checkChatLimit = async () => {
+    if (isPremium) return true
+    const today = new Date().toISOString().split('T')[0]
+    const { count } = await supabase
+      .from('chat_messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', today)
+    if (count >= 10) {
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        type: 'upgrade',
+        text: isAr
+          ? 'لقد وصلت إلى حد 10 رسائل اليومي. قم بالترقية إلى بريميوم للحصول على محادثات غير محدودة!'
+          : 'You have reached your 10 message daily limit. Upgrade to Premium for unlimited chat!',
+        timestamp: Date.now()
+      }])
+      return false
+    }
+    return true
+  }
+
   // Generate doctor summary via Gemini backend
   const generateDoctorSummary = async (symptomText) => {
     setGeneratingSummary(true)
@@ -148,6 +174,11 @@ export default function Chat() {
 
   const sendMessage = async () => {
     if (!input.trim()) return
+
+    // Check daily limit for free users before sending
+    const canSend = await checkChatLimit()
+    if (!canSend) { setInput(''); return }
+
     const userMessage = input.trim()
     const now = Date.now()
     setInput('')

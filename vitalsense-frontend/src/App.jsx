@@ -19,6 +19,9 @@ import InBodyAnalysis from './pages/InBodyAnalysis'
 import AppLayout from './components/AppLayout'
 import { Toaster } from 'react-hot-toast'
 import ProtectedRoute from './components/ProtectedRoute'
+import Pricing from './pages/Pricing'
+import Admin from './pages/Admin'
+import { AdminRoute } from './components/AdminRoute'
 
 function useInitializeTheme() {
   const { session } = useAuth();
@@ -113,6 +116,13 @@ export default function App() {
           <Route path="/food-details/:foodName" element={<FoodDetails />} />
           <Route path="/inbody" element={<InBodyAnalysis />} />
         </Route>
+
+        {/* Pricing — accessible to all logged-in users */}
+        <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
+
+        {/* Admin — protected by AdminRoute */}
+        <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+
       </Routes>
       <Toaster position="top-right" toastOptions={{
         style: {
