@@ -1,16 +1,129 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Eye, EyeOff, ArrowRight, Loader2, UserPlus } from 'lucide-react'
+import { Eye, EyeOff, Loader2, UserPlus, Mail, CheckCircle, RefreshCw, ExternalLink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+// ── Email Verification Modal ──────────────────────────────────
+function VerifyEmailModal({ email, onContinue }) {
+  const [resending, setResending] = useState(false)
+  const [resent, setResent] = useState(false)
+  const [cooldown, setCooldown] = useState(0)
+
+  const handleResend = async () => {
+    if (cooldown > 0) return
+    setResending(true)
+    await supabase.auth.resend({ type: 'signup', email })
+    setResending(false)
+    setResent(true)
+    setCooldown(60)
+    const timer = setInterval(() => {
+      setCooldown(prev => {
+        if (prev <= 1) { clearInterval(timer); return 0 }
+        return prev - 1
+      })
+    }, 1000)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+      <div className="bg-bg-card border border-border-color rounded-3xl p-8 max-w-md w-full shadow-2xl animate-fade-in-up text-center space-y-5">
+
+        {/* Animated mail icon */}
+        <div className="relative w-20 h-20 mx-auto">
+          <div className="absolute inset-0 bg-primary-accent/20 rounded-2xl animate-pulse" />
+          <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-primary-accent/30 to-primary-accent/10 border border-primary-accent/40 flex items-center justify-center">
+            <Mail size={36} className="text-primary-accent" />
+          </div>
+        </div>
+
+        {/* Title */}
+        <div className="space-y-2">
+          <h2 className="font-heading text-2xl font-extrabold text-text-primary">
+            Check your inbox ✉️
+          </h2>
+          <p className="text-text-muted text-sm leading-relaxed">
+            We sent a verification link to:
+          </p>
+          <div className="bg-bg-main rounded-xl px-4 py-2.5 border border-border-color inline-block w-full">
+            <span className="text-primary-accent font-bold text-sm">{email}</span>
+          </div>
+          <p className="text-text-muted text-xs leading-relaxed pt-1">
+            Click the link in the email to activate your account, then click the button below to continue.
+          </p>
+        </div>
+
+        {/* Steps */}
+        <div className="bg-bg-main rounded-2xl p-4 border border-border-color text-left space-y-3">
+          {[
+            { step: '1', text: 'Open your Gmail inbox' },
+            { step: '2', text: 'Find the email from VitalSense AI' },
+            { step: '3', text: 'Click "Confirm your email"' },
+          ].map(s => (
+            <div key={s.step} className="flex items-center gap-3">
+              <span className="w-6 h-6 rounded-full bg-primary-accent/20 text-primary-accent text-xs font-extrabold flex items-center justify-center flex-shrink-0">
+                {s.step}
+              </span>
+              <span className="text-text-muted text-sm">{s.text}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Open Gmail */}
+        <a
+          href="https://mail.google.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-border-color bg-white/5 text-text-primary text-sm font-semibold hover:bg-white/10 transition-all"
+        >
+          <ExternalLink size={15} />
+          Open Gmail
+        </a>
+
+        {/* Continue */}
+        <button
+          onClick={onContinue}
+          className="btn-primary w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-lg shadow-primary-accent/20"
+        >
+          <CheckCircle size={16} />
+          I've Verified — Continue
+        </button>
+
+        {/* Resend */}
+        <div>
+          {resent && (
+            <p className="text-xs text-emerald-400 font-medium mb-2 animate-fade-in flex items-center justify-center gap-1">
+              <CheckCircle size={12} /> Email resent successfully!
+            </p>
+          )}
+          <button
+            onClick={handleResend}
+            disabled={resending || cooldown > 0}
+            className="flex items-center gap-1.5 text-xs text-text-muted hover:text-primary-accent transition-colors mx-auto disabled:opacity-40"
+          >
+            <RefreshCw size={12} className={resending ? 'animate-spin' : ''} />
+            {cooldown > 0
+              ? `Resend in ${cooldown}s`
+              : resending
+              ? 'Sending...'
+              : "Didn't receive it? Resend email"}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
+// ── Signup Page ───────────────────────────────────────────────
 export default function Signup() {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showVerifyModal, setShowVerifyModal] = useState(false)
 
   const update = (key, value) => setForm(prev => ({ ...prev, [key]: value }))
 
@@ -28,18 +141,14 @@ export default function Signup() {
     }
 
     setLoading(true)
-
     try {
       const { error } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
-        options: {
-          data: { full_name: form.name },
-        },
+        options: { data: { full_name: form.name } },
       })
       if (error) throw error
-      // After signup, redirect to onboarding
-      navigate('/onboarding')
+      setShowVerifyModal(true)
     } catch (err) {
       setError(err.message || t('auth.error_signup'))
     } finally {
@@ -49,10 +158,10 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-dark to-[#0f2b1f] flex items-center justify-center p-6">
-      {/* Background decoration */}
+      {/* Background blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-20 w-72 h-72 bg-primary-accent/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 left-10 w-80 h-80 bg-primary-light/8 rounded-full blur-3xl"></div>
+        <div className="absolute top-20 right-20 w-72 h-72 bg-primary-accent/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 left-10 w-80 h-80 bg-primary-light/8 rounded-full blur-3xl" />
       </div>
 
       <div className="relative w-full max-w-md animate-fade-in-up">
@@ -161,6 +270,14 @@ export default function Signup() {
 
         <p className="text-center text-white/20 text-xs mt-6">© 2026 VitalSense AI</p>
       </div>
+
+      {/* Email Verification Popup */}
+      {showVerifyModal && (
+        <VerifyEmailModal
+          email={form.email}
+          onContinue={() => navigate('/onboarding')}
+        />
+      )}
     </div>
   )
 }
