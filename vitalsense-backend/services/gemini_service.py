@@ -5,22 +5,23 @@ Uses the google-generativeai SDK with automatic model fallback.
 import os
 import google.generativeai as genai
 
+from services.groq_service import ask_groq
+
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 genai.configure(api_key=GEMINI_API_KEY)
 
 # Ordered fallback chain — models with available quota first
 MODEL_CHAIN = [
-    "models/gemini-2.5-flash",
-    "models/gemini-2.0-flash",
-    "models/gemini-flash-latest",
-    "models/gemini-pro-latest",
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
 ]
 
 
 def ask_gemini(system_prompt: str, conversation_history: list[dict], user_message: str) -> str:
     """
     Send a message to Gemini, automatically falling back through the model chain
-    if a model's quota is exhausted. No long retries — fail fast and try the next model.
+    if a model's quota is exhausted. 
+    If ALL Gemini models fail, it falls back to Groq (Llama 3).
     """
     last_error = None
     for model_name in MODEL_CHAIN:
@@ -49,9 +50,17 @@ def ask_gemini(system_prompt: str, conversation_history: list[dict], user_messag
             if "429" in err_str or "quota" in err_str.lower():
                 continue  # try next model in the chain
             else:
-                raise  # non-quota error, don't try other models
+                # If it's a model not found or other non-quota error, still try the next one 
+                # because some models might be deprecated
+                continue
 
-    raise Exception(f"All Gemini models exhausted. Please wait a few minutes and try again. Last error: {last_error}")
+    # If all Gemini models failed, try Groq
+    try:
+        print("[gemini] Falling back to Groq...")
+        return ask_groq(system_prompt, conversation_history, user_message)
+    except Exception as groq_err:
+        print(f"[gemini] Groq fallback also failed: {str(groq_err)}")
+        raise Exception(f"All AI models exhausted (Gemini & Groq). Please wait. Last Gemini error: {last_error}")
 
 
 def generate_progress_comparison(previous: dict | None, current: dict) -> str:

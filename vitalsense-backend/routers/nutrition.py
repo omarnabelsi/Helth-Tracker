@@ -89,23 +89,23 @@ async def search_food(query: str = Query(...), current_user: dict = Depends(get_
             print(f"USDA error: {e}")
 
     # Layer 3: Gemini fallback
+    from services.groq_service import ask_groq
     gemini_keys_env = os.getenv("GEMINI_API_KEY", "")
     api_keys = [k.strip() for k in gemini_keys_env.split(",") if k.strip()]
+    prompt = f"""Give nutrition info per 100g for the dish: "{query}".
+    Return ONLY a valid JSON array, no explanation, no markdown:
+    [{{"name": "dish name", "calories": 0, "protein": 0.0, "carbs": 0.0, "fat": 0.0, "serving": "100g", "source": "ai_estimate"}}]
+    Include 1 to 3 common variations if they exist."""
+
     if api_keys:
         for api_key in api_keys:
             try:
                 genai.configure(api_key=api_key)
-                model = genai.GenerativeModel("gemini-2.0-flash")
-                prompt = f"""Give nutrition info per 100g for the dish: "{query}".
-                Return ONLY a valid JSON array, no explanation, no markdown:
-                [{{"name": "dish name", "calories": 0, "protein": 0.0, "carbs": 0.0, "fat": 0.0, "serving": "100g", "source": "ai_estimate"}}]
-                Include 1 to 3 common variations if they exist."""
-                
+                model = genai.GenerativeModel("gemini-2.5-flash")
                 response = model.generate_content(prompt)
                 match = re.search(r'\[.*\]', response.text, re.DOTALL)
                 if match:
                     results = json.loads(match.group())
-                    # Add source and defaults to results
                     for r in results:
                         r["source"] = "ai_estimate"
                         r["arabicName"] = ""
@@ -113,6 +113,20 @@ async def search_food(query: str = Query(...), current_user: dict = Depends(get_
             except Exception as e:
                 print(f"Gemini fallback error with key ...{api_key[-4:]}: {e}")
                 continue
+
+    # Layer 4: Groq fallback
+    try:
+        print("[nutrition] Falling back to Groq...")
+        groq_response = ask_groq("You are a nutritionist. Return ONLY valid JSON.", [], prompt)
+        match = re.search(r'\[.*\]', groq_response, re.DOTALL)
+        if match:
+            results = json.loads(match.group())
+            for r in results:
+                r["source"] = "ai_estimate"
+                r["arabicName"] = ""
+            return {"source": "groq", "results": results}
+    except Exception as groq_err:
+        print(f"Groq fallback error in nutrition: {groq_err}")
 
     return {"source": "none", "results": []}
 
@@ -122,17 +136,27 @@ async def translate_food(request: dict, current_user: dict = Depends(get_current
     if not name:
         return {"arabicName": ""}
     
+    from services.groq_service import ask_groq
     gemini_keys_env = os.getenv("GEMINI_API_KEY", "")
     api_keys = [k.strip() for k in gemini_keys_env.split(",") if k.strip()]
+    prompt = f"What is the Arabic name for {name}? Return only the Arabic name."
+
     if api_keys:
         for api_key in api_keys:
             try:
                 genai.configure(api_key=api_key)
-                model = genai.GenerativeModel("gemini-2.0-flash")
-                prompt = f"What is the Arabic name for {name}? Return only the Arabic name."
+                model = genai.GenerativeModel("gemini-2.5-flash")
                 response = model.generate_content(prompt)
                 return {"arabicName": response.text.strip()}
             except Exception as e:
                 print(f"Translation error with key ...{api_key[-4:]}: {e}")
                 continue
-    return {"arabicName": ""}
+    
+    # Groq fallback
+    try:
+        print("[translation] Falling back to Groq...")
+        reply = ask_groq("You are a translator. Return only the Arabic translation.", [], prompt)
+        return {"arabicName": reply.strip()}
+    except Exception as groq_err:
+        print(f"Groq translation error: {groq_err}")
+        return {"arabicName": ""}

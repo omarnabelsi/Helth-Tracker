@@ -19,7 +19,7 @@ try:
     load_dotenv()
 
     # ── Startup env check ──
-    _required_env = ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY', 'GEMINI_API_KEY']
+    _required_env = ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY', 'GEMINI_API_KEY', 'GROQ_API_KEY']
     for _key in _required_env:
         if not os.getenv(_key):
             print(f"[ERROR] Missing env var: {_key}")

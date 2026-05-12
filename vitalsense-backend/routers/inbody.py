@@ -22,49 +22,71 @@ class InBodyData(BaseModel):
 
 @router.post("/analyze")
 async def analyze_inbody(data: InBodyData, current_user: dict = Depends(get_current_user)):
-    gemini_key = os.getenv("GEMINI_API_KEY")
-    if not gemini_key:
-        raise HTTPException(status_code=500, detail="AI provider not configured")
-
+    GEMINI_API_KEYS = [k.strip() for k in os.getenv("GEMINI_API_KEY", "").split(",") if k.strip()]
+    from services.groq_service import ask_groq
+    
+    last_error = None
+    analysis_data = None
+    
     try:
-        genai.configure(api_key=gemini_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        
-        prompt = f"""
-        Analyze the following InBody body composition test results for a {data.age}-year-old {data.gender}:
-        - Weight: {data.weight}kg
-        - Height: {data.height}cm
-        - Body Fat: {data.body_fat_pct}%
-        - Skeletal Muscle Mass: {data.muscle_mass_kg}kg
-        - Visceral Fat Level: {data.visceral_fat}
-        - BMR: {data.bmr} kcal
-        - Body Water: {data.water_pct}%
+        for api_key in GEMINI_API_KEYS:
+            try:
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel("gemini-2.5-flash")
+                
+                prompt = f"""
+                Analyze the following InBody body composition test results for a {data.age}-year-old {data.gender}:
+                - Weight: {data.weight}kg
+                - Height: {data.height}cm
+                - Body Fat: {data.body_fat_pct}%
+                - Skeletal Muscle Mass: {data.muscle_mass_kg}kg
+                - Visceral Fat Level: {data.visceral_fat}
+                - BMR: {data.bmr} kcal
+                - Body Water: {data.water_pct}%
 
-        Based on these results:
-        1. Provide a professional analysis of their current body composition.
-        2. Give 3-5 specific actionable advice to improve their results.
-        3. Suggest a new daily calorie target and macro split (Protein/Carbs/Fat in grams).
-        4. Identify any health risks (e.g., high visceral fat).
+                Based on these results:
+                1. Provide a professional analysis of their current body composition.
+                2. Give 3-5 specific actionable advice to improve their results.
+                3. Suggest a new daily calorie target and macro split (Protein/Carbs/Fat in grams).
+                4. Identify any health risks (e.g., high visceral fat).
 
-        Return ONLY a valid JSON object with these fields:
-        {{
-            "analysis": "Detailed text analysis",
-            "advice": ["advice 1", "advice 2", ...],
-            "recommended_targets": {{
-                "calories": 0,
-                "protein_g": 0,
-                "carbs_g": 0,
-                "fat_g": 0
-            }},
-            "score": 0, // A body composition score out of 100
-            "focus_area": "e.g. Muscle Building, Fat Loss, Recomposition"
-        }}
-        """
-        
-        response = model.generate_content(prompt)
-        match = re.search(r'\{.*\}', response.text, re.DOTALL)
-        if not match:
-            # Fallback mock if AI fails
+                Return ONLY a valid JSON object with these fields:
+                {{
+                    "analysis": "Detailed text analysis",
+                    "advice": ["advice 1", "advice 2", ...],
+                    "recommended_targets": {{
+                        "calories": 0,
+                        "protein_g": 0,
+                        "carbs_g": 0,
+                        "fat_g": 0
+                    }},
+                    "score": 0, // A body composition score out of 100
+                    "focus_area": "e.g. Muscle Building, Fat Loss, Recomposition"
+                }}
+                """
+                
+                response = model.generate_content(prompt)
+                match = re.search(r'\{.*\}', response.text, re.DOTALL)
+                if match:
+                    analysis_data = json.loads(match.group())
+                    break
+            except Exception as e:
+                print(f"[inbody] Gemini key failed: {str(e)[:100]}")
+                last_error = e
+                continue
+                
+        if not analysis_data:
+            try:
+                print("[inbody] Falling back to Groq...")
+                groq_response = ask_groq("You are a professional body composition analyst. Return ONLY valid JSON.", [], prompt)
+                match = re.search(r'\{.*\}', groq_response, re.DOTALL)
+                if match:
+                    analysis_data = json.loads(match.group())
+            except Exception as groq_err:
+                print(f"[inbody] Groq fallback failed: {groq_err}")
+
+        if not analysis_data:
+            # Final static fallback
             analysis_data = {
                 "analysis": "Body composition indicates a need for balanced nutrition and consistent training.",
                 "advice": ["Increase protein intake", "Prioritize sleep", "Regular resistance training"],
@@ -72,8 +94,6 @@ async def analyze_inbody(data: InBodyData, current_user: dict = Depends(get_curr
                 "score": 70,
                 "focus_area": "General Health"
             }
-        else:
-            analysis_data = json.loads(match.group())
 
         # Store the test in Supabase
         supabase.table("inbody_logs").insert({

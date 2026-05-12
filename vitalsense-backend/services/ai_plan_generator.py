@@ -158,11 +158,14 @@ Return valid JSON:
 }}"""
 
     models_to_try = [
-        "models/gemini-2.0-flash",
-        "models/gemini-1.5-flash"
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-3.1-flash-lite",
     ]
     last_error = None
     import copy
+
+    from services.groq_service import ask_groq
 
     for model_id in models_to_try:
         for api_key in GEMINI_API_KEYS:
@@ -190,28 +193,51 @@ Return valid JSON:
                     continue
 
                 data = json.loads(raw)
+                return _finalize_plan(data)
 
-                # Loop 4-day plan → 7-day plan
-                meal_plan = data.get("weeklyMealPlan", {})
-                for new_day, base_day in [("Friday", "Monday"), ("Saturday", "Tuesday"), ("Sunday", "Wednesday")]:
-                    if base_day in meal_plan:
-                        meal_plan[new_day] = copy.deepcopy(meal_plan[base_day])
-                data["weeklyMealPlan"] = meal_plan
-
-                workout_plan = data.get("weeklyWorkoutPlan", [])
-                for new_day, base_day, day_idx in [("Friday", "Monday", 5), ("Saturday", "Tuesday", 6), ("Sunday", "Wednesday", 7)]:
-                    base_w = next((w for w in workout_plan if w.get("dayName") == base_day), None)
-                    if base_w:
-                        w_copy = copy.deepcopy(base_w)
-                        w_copy["day"] = day_idx
-                        w_copy["dayName"] = new_day
-                        workout_plan.append(w_copy)
-                data["weeklyWorkoutPlan"] = workout_plan
-
-                return data
             except Exception as e:
                 print(f"Error with model {model_id} key ...{api_key[-4:]}: {str(e)}")
                 last_error = e
                 continue
 
-    raise last_error or ValueError("Failed to generate diet after multiple attempts.")
+    # Final Fallback to Groq
+    try:
+        print("[AI PLAN] Falling back to Groq...")
+        # Groq doesn't need a system prompt separate from the main prompt for this usage, 
+        # but we'll provide a general system context.
+        system_prompt = "You are a professional nutritionist and fitness coach. Return ONLY valid JSON."
+        groq_response = ask_groq(system_prompt, [], prompt)
+        
+        # JSON extraction for Groq response
+        raw = groq_response.strip()
+        if "```json" in raw:
+            raw = raw.split("```json")[1].split("```")[0]
+        elif "```" in raw:
+            raw = raw.split("```")[1].split("```")[0]
+        raw = raw.strip()
+        
+        data = json.loads(raw)
+        return _finalize_plan(data)
+    except Exception as groq_err:
+        print(f"[AI PLAN] Groq fallback failed: {str(groq_err)}")
+        raise last_error or ValueError(f"Failed to generate diet after multiple attempts. Groq error: {groq_err}")
+
+def _finalize_plan(data: dict) -> dict:
+    import copy
+    # Loop 4-day plan → 7-day plan
+    meal_plan = data.get("weeklyMealPlan", {})
+    for new_day, base_day in [("Friday", "Monday"), ("Saturday", "Tuesday"), ("Sunday", "Wednesday")]:
+        if base_day in meal_plan:
+            meal_plan[new_day] = copy.deepcopy(meal_plan[base_day])
+    data["weeklyMealPlan"] = meal_plan
+
+    workout_plan = data.get("weeklyWorkoutPlan", [])
+    for new_day, base_day, day_idx in [("Friday", "Monday", 5), ("Saturday", "Tuesday", 6), ("Sunday", "Wednesday", 7)]:
+        base_w = next((w for w in workout_plan if w.get("dayName") == base_day), None)
+        if base_w:
+            w_copy = copy.deepcopy(base_w)
+            w_copy["day"] = day_idx
+            w_copy["dayName"] = new_day
+            workout_plan.append(w_copy)
+    data["weeklyWorkoutPlan"] = workout_plan
+    return data
