@@ -15,6 +15,7 @@ const FoodSearch = ({ onSelect, mealType }) => {
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
   const [source, setSource] = useState('')
+  const [searchError, setSearchError] = useState('')
 
   // Cache to avoid repeat API calls
   const cache = useRef({})
@@ -24,6 +25,7 @@ const FoodSearch = ({ onSelect, mealType }) => {
       if (!q.trim() || q.length < 2) {
         setResults([])
         setSource('')
+        setSearchError('')
         return
       }
 
@@ -35,28 +37,43 @@ const FoodSearch = ({ onSelect, mealType }) => {
       }
 
       setLoading(true)
+      setSearchError('')
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 10000) // 10s timeout
+
       try {
         const { data: { session } } = await supabase.auth.getSession()
         const res = await fetch(
           `${API_BASE}/api/search-food?query=${encodeURIComponent(q)}`,
-          { headers: { Authorization: `Bearer ${session?.access_token}` } }
+          {
+            headers: { Authorization: `Bearer ${session?.access_token}` },
+            signal: controller.signal
+          }
         )
         const data = await res.json()
         cache.current[q] = data
         setResults(data.results || [])
         setSource(data.source)
       } catch (err) {
-        console.error('Search error:', err)
+        if (err.name === 'AbortError') {
+          setSearchError(isAr ? 'انتهت مهلة البحث. حاول مرة أخرى.' : 'Search timed out. Please try again.')
+        } else {
+          console.error('Search error:', err)
+          setSearchError(isAr ? 'تعذّر الاتصال بالخادم.' : 'Could not reach the server.')
+        }
         setResults([])
+      } finally {
+        clearTimeout(timeout)
+        setLoading(false)
       }
-      setLoading(false)
     }, 500),
-    []
+    [isAr]
   )
 
   const handleChange = (e) => {
     const val = e.target.value
     setQuery(val)
+    setSearchError('')
     if (val.length >= 2) {
       setLoading(true)
       doSearch(val)
@@ -204,11 +221,19 @@ const FoodSearch = ({ onSelect, mealType }) => {
           </div>
         )}
 
-        {!loading && query.length > 1 && results.length === 0 && (
+        {!loading && searchError && (
+          <div className="text-center py-10 px-6">
+            <div className="text-3xl mb-3 opacity-50">⚠️</div>
+            <p className="text-sm font-bold text-orange-500 mb-1">{searchError}</p>
+            <p className="text-xs text-text-muted">Try searching for a Lebanese dish — it works offline!</p>
+          </div>
+        )}
+
+        {!loading && !searchError && query.length > 1 && results.length === 0 && (
           <div className="text-center py-12 px-6">
             <div className="text-4xl mb-4 opacity-40">🥗</div>
             <p className="text-sm font-bold text-text-primary mb-1">No results for "{query}"</p>
-            <p className="text-xs text-text-muted">Try searching with a simpler term or check for typos.</p>
+            <p className="text-xs text-text-muted">Try a simpler term, or search for a Lebanese dish like Shawarma, Falafel, or Kafta.</p>
           </div>
         )}
       </div>

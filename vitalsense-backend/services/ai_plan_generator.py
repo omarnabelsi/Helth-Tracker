@@ -9,8 +9,9 @@ import google.generativeai as genai
 from typing import Optional
 from services.exercise_db import EXERCISES
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-genai.configure(api_key=GEMINI_API_KEY)
+GEMINI_API_KEYS = [k.strip() for k in os.getenv("GEMINI_API_KEY", "").split(",") if k.strip()]
+if GEMINI_API_KEYS:
+    genai.configure(api_key=GEMINI_API_KEYS[0])
 # Using a fallback chain defined in generate_full_plan
 
 # ── Full Lebanese Food Database with Macros for AI Precision (Per 100g) ──
@@ -82,13 +83,13 @@ def generate_full_plan(
 
     food_db_json = json.dumps(LEBANESE_FOODS_DB)
 
-    prompt = f"""You are a professional nutritionist. Generate a weekly plan (Mon-Sun).
+    prompt = f"""You are a professional nutritionist. Generate a 4-day plan (Monday to Thursday).
 User Profile: Age {age}, {gender}, {weight}kg, {height}cm. 
 DAILY TARGETS: {calorie_target} kcal, Protein: {target_p}g, Carbs: {target_c}g, Fat: {target_f}g.
 
 CRITICAL INSTRUCTION: VARIETY IS MANDATORY. 
-- DO NOT use the same dish more than 2 times in the entire 7-day plan.
-- DO NOT use "Dates" (تمر) more than 2 times per WEEK total.
+- DO NOT use the same dish more than 2 times in the 4-day plan.
+- DO NOT use "Dates" (تمر) more than 1 time in the 4-day plan.
 - NEVER use "Dates" (تمر) as a side dish or filler for Breakfast, Lunch, or Dinner. They are ONLY for the Snack slot.
 - If you need more calories/carbs to hit a target, INCREASE the "grams" of the main dish (e.g., more Riz, more Bread, more Stew) instead of adding Dates.
 - Each day MUST be unique. Rotate proteins (Chicken, Beef, Fish, Legumes) and bases (Rice, Bulgur, Bread).
@@ -117,7 +118,6 @@ DINNER rules:
 SNACK rules:
 - Must be SMALL and LIGHT (max 10% of daily calories).
 - ONLY assign these items as snacks: Mixed Nuts, Apple, Banana, Dates, Yogurt, Cucumber and Tomato.
-- REMINDER: "Dates" (تمر) can only appear here, and max 2 times per week total across all 7 days.
 
 DESSERTS:
 - Baklava, knafeh, maamoul, halawa, mouhallabiya etc.
@@ -131,13 +131,10 @@ CRITICAL: For every dish you add, you MUST specify the "grams" required to reach
 Calculation: meal_calories = (grams / 100) * cal100.
 
 STRICT PPL WORKOUT RULES (4-Day Cycle Repeat):
-1. PUSH — exactly 5 exercises: 2 chest, 2 shoulders, 1 triceps.
-2. PULL — exactly 5 exercises: 2 back, 1 shoulders (rear delts), 2 biceps.
-3. LEGS — exactly 5 exercises: 5 legs exercises (balanced between quads, hamstrings, and calves).
-4. REST — recovery, walking
-(Repeat cycle: if Day 5 is reached, it starts again with PUSH, etc.)
-Plan sequence for 7 days (Example starting on Day 1):
-Day 1: PUSH, Day 2: PULL, Day 3: LEGS, Day 4: REST, Day 5: PUSH, Day 6: PULL, Day 7: LEGS.
+1. Monday: PUSH — exactly 5 exercises: 2 chest, 2 shoulders, 1 triceps.
+2. Tuesday: PULL — exactly 5 exercises: 2 back, 1 shoulders (rear delts), 2 biceps.
+3. Wednesday: LEGS — exactly 5 exercises: 5 legs exercises (balanced between quads, hamstrings, and calves).
+4. Thursday: REST — recovery, walking
 
 Available Equipment: {equipment_str}.
 Medical conditions: {medical_conditions}.
@@ -146,74 +143,75 @@ If user has medical conditions, remove unsafe exercises and add a safety note.
 For every exercise, provide "sets", "reps", "muscleGroup", and "notes".
 Return valid JSON:
 {{
-  "weeklyMealPlan": {{ ... }},
-  "weeklyWorkoutPlan": [
-    {{
-      "day": 1,
-      "dayName": "Monday",
-      "type": "push",
-      "workoutName": "Push Day",
-      "targetMuscles": ["chest", "shoulders", "triceps"],
-      "duration": 60,
-      "healthNote": "...",
-      "exercises": [
-        {{ "name": "...", "nameAr": "...", "sets": 4, "reps": "8-10", "muscleGroup": "chest", "notes": "..." }}
-      ]
-    }},
-    ... (total 7 days)
-  ]
-}}
-
-Return valid JSON:
-{{
   "weeklyMealPlan": {{
     "Monday": [
       {{ "meal": "Breakfast", "dishes": [{{ "name": "...", "arabicName": "...", "grams": 250, "calories": 0, "protein": 0, "carbs": 0, "fat": 0 }}] }},
       ...
     ],
-    ...
+    "Tuesday": [...],
+    "Wednesday": [...],
+    "Thursday": [...]
   }},
-  "weeklyWorkoutPlan": [{{ "day": "Monday", "dayType": "Workout/Rest", "workoutName": "...", "exercises": [{{ "name": "Push-ups", "sets": 3, "reps": 12, "notes": "Form focus" }}] }}],
+  "weeklyWorkoutPlan": [{{ "day": 1, "dayName": "Monday", "type": "push", "workoutName": "...", "targetMuscles": ["chest"], "exercises": [{{ "name": "Push-ups", "sets": 3, "reps": "12", "notes": "Form focus" }}] }}, ... (up to Thursday)],
   "healthWarnings": ["Avoid high-impact...", "..."],
   "coachTip": "Drink water and..."
 }}"""
 
     models_to_try = [
         "models/gemini-2.0-flash",
-        "models/gemini-1.5-flash",
-        "models/gemini-flash-latest",
-        "models/gemini-1.5-pro",
+        "models/gemini-1.5-flash"
     ]
     last_error = None
+    import copy
 
     for model_id in models_to_try:
-        try:
-            print(f"[AI PLAN] Trying {model_id}...")
-            config = {"temperature": 0.4}
-            if "1.5" in model_id:
-                config["response_mime_type"] = "application/json"
-                
-            model = genai.GenerativeModel(
-                model_name=model_id,
-                generation_config=config,
-            )
-            response = model.generate_content(prompt)
-            raw = response.text.strip()
-            
-            # More robust JSON extraction
-            if "```json" in raw:
-                raw = raw.split("```json")[1].split("```")[0]
-            elif "```" in raw:
-                raw = raw.split("```")[1].split("```")[0]
-            
-            raw = raw.strip()
-            # If empty, skip
-            if not raw: continue
-            
-            return json.loads(raw)
-        except Exception as e:
-            print(f"Error with model {model_id}: {str(e)}")
-            last_error = e
-            continue
+        for api_key in GEMINI_API_KEYS:
+            try:
+                genai.configure(api_key=api_key)
+                print(f"[AI PLAN] Trying {model_id} with key ending in ...{api_key[-4:]}")
+                config = {
+                    "temperature": 0.4,
+                    "response_mime_type": "application/json"
+                }
+                model = genai.GenerativeModel(
+                    model_name=model_id,
+                    generation_config=config,
+                )
+                response = model.generate_content(prompt)
+                raw = response.text.strip()
+
+                # JSON extraction
+                if "```json" in raw:
+                    raw = raw.split("```json")[1].split("```")[0]
+                elif "```" in raw:
+                    raw = raw.split("```")[1].split("```")[0]
+                raw = raw.strip()
+                if not raw:
+                    continue
+
+                data = json.loads(raw)
+
+                # Loop 4-day plan → 7-day plan
+                meal_plan = data.get("weeklyMealPlan", {})
+                for new_day, base_day in [("Friday", "Monday"), ("Saturday", "Tuesday"), ("Sunday", "Wednesday")]:
+                    if base_day in meal_plan:
+                        meal_plan[new_day] = copy.deepcopy(meal_plan[base_day])
+                data["weeklyMealPlan"] = meal_plan
+
+                workout_plan = data.get("weeklyWorkoutPlan", [])
+                for new_day, base_day, day_idx in [("Friday", "Monday", 5), ("Saturday", "Tuesday", 6), ("Sunday", "Wednesday", 7)]:
+                    base_w = next((w for w in workout_plan if w.get("dayName") == base_day), None)
+                    if base_w:
+                        w_copy = copy.deepcopy(base_w)
+                        w_copy["day"] = day_idx
+                        w_copy["dayName"] = new_day
+                        workout_plan.append(w_copy)
+                data["weeklyWorkoutPlan"] = workout_plan
+
+                return data
+            except Exception as e:
+                print(f"Error with model {model_id} key ...{api_key[-4:]}: {str(e)}")
+                last_error = e
+                continue
 
     raise last_error or ValueError("Failed to generate diet after multiple attempts.")

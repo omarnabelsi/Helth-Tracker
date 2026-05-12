@@ -60,12 +60,12 @@ async def search_food(query: str = Query(...), current_user: dict = Depends(get_
 
                         # USDA nutrients can have different names depending on the dataset
                         calories = round(
-                            nutrients.get("Energy", 0) or
-                            nutrients.get("Energy (Atwater General Factors)", 0)
+                            (nutrients.get("Energy") or 0) or
+                            (nutrients.get("Energy (Atwater General Factors)") or 0)
                         )
-                        protein = round(nutrients.get("Protein", 0), 1)
-                        carbs = round(nutrients.get("Carbohydrate, by difference", 0), 1)
-                        fat = round(nutrients.get("Total lipid (fat)", 0), 1)
+                        protein = round(nutrients.get("Protein") or 0, 1)
+                        carbs = round(nutrients.get("Carbohydrate, by difference") or 0, 1)
+                        fat = round(nutrients.get("Total lipid (fat)") or 0, 1)
 
                         if calories == 0:
                             continue  # skip items with no calorie data
@@ -89,27 +89,30 @@ async def search_food(query: str = Query(...), current_user: dict = Depends(get_
             print(f"USDA error: {e}")
 
     # Layer 3: Gemini fallback
-    gemini_key = os.getenv("GEMINI_API_KEY")
-    if gemini_key:
-        try:
-            genai.configure(api_key=gemini_key)
-            model = genai.GenerativeModel("gemini-2.0-flash")
-            prompt = f"""Give nutrition info per 100g for the dish: "{query}".
-            Return ONLY a valid JSON array, no explanation, no markdown:
-            [{{"name": "dish name", "calories": 0, "protein": 0.0, "carbs": 0.0, "fat": 0.0, "serving": "100g", "source": "ai_estimate"}}]
-            Include 1 to 3 common variations if they exist."""
-            
-            response = model.generate_content(prompt)
-            match = re.search(r'\[.*\]', response.text, re.DOTALL)
-            if match:
-                results = json.loads(match.group())
-                # Add source and defaults to results
-                for r in results:
-                    r["source"] = "ai_estimate"
-                    r["arabicName"] = ""
-                return {"source": "gemini", "results": results}
-        except Exception as e:
-            print(f"Gemini fallback error: {e}")
+    gemini_keys_env = os.getenv("GEMINI_API_KEY", "")
+    api_keys = [k.strip() for k in gemini_keys_env.split(",") if k.strip()]
+    if api_keys:
+        for api_key in api_keys:
+            try:
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel("gemini-2.0-flash")
+                prompt = f"""Give nutrition info per 100g for the dish: "{query}".
+                Return ONLY a valid JSON array, no explanation, no markdown:
+                [{{"name": "dish name", "calories": 0, "protein": 0.0, "carbs": 0.0, "fat": 0.0, "serving": "100g", "source": "ai_estimate"}}]
+                Include 1 to 3 common variations if they exist."""
+                
+                response = model.generate_content(prompt)
+                match = re.search(r'\[.*\]', response.text, re.DOTALL)
+                if match:
+                    results = json.loads(match.group())
+                    # Add source and defaults to results
+                    for r in results:
+                        r["source"] = "ai_estimate"
+                        r["arabicName"] = ""
+                    return {"source": "gemini", "results": results}
+            except Exception as e:
+                print(f"Gemini fallback error with key ...{api_key[-4:]}: {e}")
+                continue
 
     return {"source": "none", "results": []}
 
@@ -119,14 +122,17 @@ async def translate_food(request: dict, current_user: dict = Depends(get_current
     if not name:
         return {"arabicName": ""}
     
-    gemini_key = os.getenv("GEMINI_API_KEY")
-    if gemini_key:
-        try:
-            genai.configure(api_key=gemini_key)
-            model = genai.GenerativeModel("gemini-2.0-flash")
-            prompt = f"What is the Arabic name for {name}? Return only the Arabic name."
-            response = model.generate_content(prompt)
-            return {"arabicName": response.text.strip()}
-        except Exception as e:
-            print(f"Translation error: {e}")
+    gemini_keys_env = os.getenv("GEMINI_API_KEY", "")
+    api_keys = [k.strip() for k in gemini_keys_env.split(",") if k.strip()]
+    if api_keys:
+        for api_key in api_keys:
+            try:
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel("gemini-2.0-flash")
+                prompt = f"What is the Arabic name for {name}? Return only the Arabic name."
+                response = model.generate_content(prompt)
+                return {"arabicName": response.text.strip()}
+            except Exception as e:
+                print(f"Translation error with key ...{api_key[-4:]}: {e}")
+                continue
     return {"arabicName": ""}

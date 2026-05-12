@@ -69,7 +69,7 @@ export default function AppLayout() {
 
   useEffect(() => {
     if (!user) return
-    supabase.from('profiles').select('name, avatar_url').eq('user_id', user.id).single()
+    supabase.from('profiles').select('name').eq('user_id', user.id).single()
       .then(({ data }) => {
         console.log('[DEBUG] Auth User:', user);
         console.log('[DEBUG] Profile Data:', data);
