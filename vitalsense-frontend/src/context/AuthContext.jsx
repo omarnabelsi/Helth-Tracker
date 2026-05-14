@@ -68,7 +68,8 @@ export function AuthProvider({ children }) {
     profile,
     signOut,
     loading: session === undefined || (session !== null && profileLoading),
-    refreshProfile: () => user && fetchProfile(user.id)
+    refreshProfile: () => user && fetchProfile(user.id),
+    setProfile
   }
 
   return (

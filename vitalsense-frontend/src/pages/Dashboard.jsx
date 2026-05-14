@@ -13,7 +13,7 @@ import { supabase } from '../lib/supabase'
 import { unlockFirstLogin } from '../utils/streaks'
 import { authFetch } from '../utils/authFetch'
 import { useTranslation } from 'react-i18next'
-import { PPL_SCHEDULE, getPPLDay } from '../data/pplSplit'
+import { PPL_SCHEDULE, getPPLDay, PPL_EXERCISES } from '../data/pplSplit'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -119,6 +119,12 @@ export default function Dashboard() {
     setDismissedAdvisories(next)
     localStorage.setItem(`dismissed_advisories_${user.id}`, JSON.stringify(next))
   }
+
+  // Fallback exercises
+  const pplDayNum = getPPLDay()
+  const pplInfo = PPL_SCHEDULE[pplDayNum]
+  const gymType = profile?.gym_type || 'big_gym'
+  const fallbackExercises = PPL_EXERCISES[pplInfo.type]?.[gymType] || []
 
   // Extract today's data from plan
   const todayDayName = fullDayNames[today.getDay()]
@@ -320,8 +326,6 @@ export default function Dashboard() {
             onClick={() => navigate('/workout')}
           >
             {(() => {
-              const pplDayNum = getPPLDay()
-              const pplInfo = PPL_SCHEDULE[pplDayNum]
               const pplColors = { push: '#E53935', pull: '#1E88E5', legs: '#43A047', rest: '#757575' }
               const isAr = i18n.language === 'ar'
               
@@ -349,23 +353,33 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  {todayWorkout ? (
-                    <div className="space-y-1.5 mb-4">
-                      {todayWorkout.exercises?.slice(0, 2).map((ex, i) => (
-                        <div key={i} className="flex justify-between items-center text-xs">
-                          <span className="text-text-primary font-medium truncate mr-2">{isAr ? ex.nameAr : ex.name}</span>
-                          <span className="text-text-muted flex-shrink-0">{ex.sets}×{ex.reps}</span>
+                  {(() => {
+                    const displayExercises = (todayWorkout?.exercises && todayWorkout.exercises.length > 0)
+                      ? todayWorkout.exercises
+                      : fallbackExercises
+
+                    if (displayExercises.length > 0) {
+                      return (
+                        <div className="space-y-1.5 mb-4">
+                          {displayExercises.slice(0, 2).map((ex, i) => (
+                            <div key={i} className="flex justify-between items-center text-xs">
+                              <span className="text-text-primary font-medium truncate mr-2">{isAr ? ex.nameAr : ex.name}</span>
+                              <span className="text-text-muted flex-shrink-0">{ex.sets}×{ex.reps}</span>
+                            </div>
+                          ))}
+                          {displayExercises.length > 2 && (
+                            <p className="text-[10px] text-text-light">+{displayExercises.length - 2} {t('workout.exercises')}</p>
+                          )}
                         </div>
-                      ))}
-                      {(todayWorkout.exercises?.length || 0) > 2 && (
-                        <p className="text-[10px] text-text-light">+{todayWorkout.exercises.length - 2} {t('workout.exercises')}</p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="py-4 text-center">
-                      <p className="text-xs text-text-muted mb-2">{t('dashboard.no_plan')}</p>
-                    </div>
-                  )}
+                      )
+                    } else {
+                      return (
+                        <div className="py-4 text-center">
+                          <p className="text-xs text-text-muted mb-2">{t('dashboard.no_plan')}</p>
+                        </div>
+                      )
+                    }
+                  })()}
 
                   <button 
                     className="w-full text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2"

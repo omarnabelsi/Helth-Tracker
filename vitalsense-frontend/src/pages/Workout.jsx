@@ -80,9 +80,12 @@ export default function Workout() {
   })
 
   // Fallback to PPL DB if the plan doesn't have exercises for this day
+  const gymType = profile?.gym_type || 'big_gym'
+  const fallbackExercises = PPL_EXERCISES[dayInfo.type]?.[gymType] || []
+  
   const exercises = (todayWorkout?.exercises && todayWorkout.exercises.length > 0)
     ? todayWorkout.exercises
-    : [] // Removed fallback to PPL_EXERCISES for new users
+    : fallbackExercises
   const hasCondition = profile?.medical_conditions && profile.medical_conditions !== 'None'
 
   const markWorkoutComplete = async () => {

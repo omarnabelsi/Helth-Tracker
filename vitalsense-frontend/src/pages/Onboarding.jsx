@@ -5,9 +5,11 @@ import { supabase } from '../lib/supabase'
 import { VitaBot } from '../components/VitaBot'
 import { SpeechBubble } from '../components/SpeechBubble'
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '../context/AuthContext'
 
 const Onboarding = () => {
   const { t } = useTranslation()
+  const { refreshProfile, setProfile } = useAuth()
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [animKey, setAnimKey] = useState(0)
@@ -139,6 +141,17 @@ const Onboarding = () => {
           equipment_list: form.equipment || []
         })
       }).catch(e => console.error('Plan gen error:', e))
+
+      // Update local profile state immediately so ProtectedRoute doesn't redirect
+      // This is the most reliable way to handle the navigation
+      setProfile(prev => ({
+        ...(prev || {}),
+        ...profileData,
+        available_equipment: form.equipment || []
+      }))
+
+      // Background refresh to stay in sync with DB
+      refreshProfile()
 
       // Navigate to dashboard — use replace so back button doesn't return to onboarding
       navigate('/dashboard', { replace: true })
